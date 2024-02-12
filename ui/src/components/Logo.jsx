@@ -8,5 +8,6 @@ export default function Logo({ className, inverted }) {
     className={className}
     src={inverted ? logoInverted : logo}
     alt="Transcriber"
+    style={{ height: "100px", width: "100px"}}
   />
 }
