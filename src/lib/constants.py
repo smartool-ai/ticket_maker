@@ -1,0 +1,3 @@
+ORIGINS = [
+    "http://localhost",
+]
