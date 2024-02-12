@@ -17,7 +17,7 @@ class Application:
     def __init__(self, config: "Config"):
         self.logger: Logger = config.LOGGER if config.LOGGER else getLogger()
         self.logger.setLevel(config.LOG_LEVEL)
-        self._app = FastAPI(title="JKBX Rider")
+        self._app = FastAPI(title="Ticket Transcriber API")
 
         # Add CORS headers
         self._app.add_middleware(
@@ -47,10 +47,7 @@ class Application:
         import src.controllers as controllers
 
         routers = [
-            controllers.artist_image.router,
-            controllers.asset.router,
-            controllers.brassica.router,
-            controllers.user.router
+            controllers.file_management.router
         ]
 
         for router in routers:

@@ -1,0 +1,9 @@
+[flake8]
+# H903  Windows style line endings not allowed in code
+# E266 too many leading '#' for block comment
+# D203 : One blank line required before class docstring
+# H306  : imports not in alphabetical order
+ignore = H903, E266, D203, H306, E501
+exclude = .git, .pytest_cache, .venv, .vscode, __pycache__, .env
+max-complexity = 15
+max_line_length = 140

@@ -1,0 +1,188 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform:
+  - AWS::Serverless-2016-10-31
+
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: rider
+    Description: JKBX Rider API
+    Author: jakep
+    SemanticVersion: 0.1.0
+
+Globals:
+  Function:
+    Timeout: 10
+  Api:
+    BinaryMediaTypes:
+      - "multipart/form-data"
+Parameters:
+  StageName:
+    Type: String
+    Default: local
+    AllowedValues:
+      - local
+      - dev
+      - staging
+      - staging-v2
+      - staging-v3
+      - prod
+  JkbxConfiguration:
+    Type: String
+    Default: testing
+  AccountId:
+    Type: String
+    Default: testing
+  AccountId:
+    Type: String
+    Default: testId
+  Auth0Domain:
+    Type: String
+    Default: testId
+  Auth0ClientId:
+    Type: String
+    Default: testId
+  Auth0MgmtClientId:
+    Type: String
+    Default: testId
+  Auth0MgmtClientSecret:
+    Type: String
+    Default: testId
+  BrassicaServer:
+    Type: String
+    Default: testId
+  BrassicaToken:
+    Type: String
+    Default: testId
+
+Mappings:
+  EnvMappings:
+    local:
+      tagenv: local
+      env: local
+      REGION: us-west-2
+      subnet1: subnet-02f38a4e7e5eaa18a
+      subnet2: subnet-03536e111e52f07d1
+      vpcId: vpc-0eb92d75213be5f79
+      logLevel: DEBUG
+      artistImagesBucket: artist-images-local
+      auth0Audience: https://rider.jkbx.com
+      brassicaPlatformSlug: jkbx
+    dev:
+      tagenv: development
+      env: development
+      REGION: us-west-2
+      subnet1: subnet-0c7c0ec11696dede7
+      subnet2: subnet-0d3b4188338107455
+      vpcId: vpc-01af31f3ea4c9b542
+      logLevel: DEBUG
+      artistImagesBucket: artist-images-dev
+      auth0Audience: https://rider.jkbx.com
+      brassicaPlatformSlug: jkbx
+    staging:
+      tagenv: staging
+      env: staging
+      REGION: us-west-2
+      subnet1: subnet-0c5791f86563fb1ae
+      subnet2: subnet-0108fe429f7f4bcd6
+      vpcId: vpc-0810e2d41cc7d1eae
+      logLevel: DEBUG
+      artistImagesBucket: artist-images-staging
+      auth0Audience: https://rider.jkbx.com
+      brassicaPlatformSlug: jkbx
+    prod:
+      tagenv: production
+      env: prod
+      REGION: us-west-2
+      subnet1: subnet-0149c6becff2735ce
+      subnet2: subnet-0bdc6a89ca07edc88
+      vpcId: vpc-0c561ddff33cdb10d
+      logLevel: INFO
+      artistImagesBucket: artist-images
+      auth0Audience: https://rider.jkbx.com
+      brassicaPlatformSlug: jkbx
+
+Resources:
+  RiderSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable access to metadata db
+      VpcId: !FindInMap [EnvMappings, !Ref StageName, vpcId]
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 10.0.0.0/0
+
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub ${StageName}-RiderApiLogs
+      RetentionInDays: 1096
+
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub JKBX Rider ${StageName}
+      Description: !Sub ${StageName} - An API Gateway and Lambda Integration for REST API
+      StageName: !Ref StageName
+
+  RiderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 15
+      MemorySize: 1024
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref RiderSecurityGroup
+        SubnetIds:
+          - !FindInMap [EnvMappings, !Ref StageName, subnet1]
+          - !FindInMap [EnvMappings, !Ref StageName, subnet2]
+      PackageType: Image
+      Environment:
+        Variables:
+          REGION_NAME: !FindInMap [EnvMappings, !Ref StageName, REGION]
+          JKBX_CONFIGURATION: !Ref JkbxConfiguration
+          ARTIST_IMAGES_BUCKET: !FindInMap [EnvMappings, !Ref StageName, artistImagesBucket]
+          LOG_LEVEL: !FindInMap [EnvMappings, !Ref StageName, logLevel]
+          AUTH0_DOMAIN: !Ref Auth0Domain
+          AUTH0_CLIENT_ID: !Ref Auth0ClientId
+          AUTH0_AUDIENCE: !FindInMap [EnvMappings, !Ref StageName, auth0Audience]
+          AUTH0_MGMT_CLIENT_ID: !Ref Auth0MgmtClientId
+          AUTH0_MGMT_CLIENT_SECRET: !Ref Auth0MgmtClientSecret
+          BRASSICA_PLATFORM_SLUG: !FindInMap [EnvMappings, !Ref StageName, brassicaPlatformSlug]
+          BRASSICA_SERVER: !Ref BrassicaServer
+          BRASSICA_TOKEN: !Ref BrassicaToken
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /{proxy+}
+            RestApiId: !Ref Api
+        Root:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /
+            RestApiId: !Ref Api
+      Role: !Join
+        - ""
+        - - "arn:aws:iam::"
+          - !Ref AccountId
+          - ":role/DynamoDatabasesAccessRole"
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+              Resource:
+                - Fn::Sub:
+                  - "arn:aws:s3:::${Bucket}/*"
+                  - Bucket: !FindInMap [EnvMappings, !Ref StageName, artistImagesBucket]
+    Metadata:
+      DockerTag: latest
+      DockerContext: ./
+      Dockerfile: Dockerfile.lambda
