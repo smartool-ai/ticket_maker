@@ -22,10 +22,10 @@ build-docker:
 	docker build -t latest -f Dockerfile.lambda .
 
 deploy-docker-dev:
-	docker push ${DEV_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/rider:latest
+	docker push ${DEV_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/transcriber:latest
 
 deploy-docker-local:
-	docker push ${LOCAL_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/rider:latest
+	docker push ${LOCAL_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/transcriber:latest
 
 aws-login-dev:
 	aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${DEV_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com
@@ -36,56 +36,40 @@ aws-login-local:
 sam-package-local:
 	sam package \
 		--region us-west-2 \
-		--image-repository ${LOCAL_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/rider \
-		--s3-bucket jkbx-rider-builds-${STAGE_NAME} \
+		--image-repository ${LOCAL_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/transcriber \
+		--s3-bucket transcriber-builds-${STAGE_NAME} \
 		--s3-prefix api_builds \
 		--output-template-file packaged.yaml
 
 sam-package-dev:
 	sam package \
 		--region us-west-2 \
-		--image-repository ${DEV_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/rider \
-		--s3-bucket jkbx-rider-builds-${STAGE_NAME} \
+		--image-repository ${DEV_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/transcriber \
+		--s3-bucket transcriber-builds-${STAGE_NAME} \
 		--s3-prefix api_builds \
 		--output-template-file packaged.yaml
 
 sam-package-staging:
 	sam package \
 		--region us-west-2 \
-		--image-repository ${STAGING_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/rider \
-		--s3-bucket jkbx-rider-builds-${STAGE_NAME} \
-		--s3-prefix api_builds \
-		--output-template-file packaged.yaml
-
-sam-package-staging-v2:
-	sam package \
-		--region us-west-2 \
-		--image-repository ${STAGING_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/rider-v2 \
-		--s3-bucket jkbx-rider-builds-${STAGE_NAME} \
-		--s3-prefix api_builds \
-		--output-template-file packaged.yaml
-
-sam-package-staging-v3:
-	sam package \
-		--region us-west-2 \
-		--image-repository ${STAGING_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/rider-v3 \
-		--s3-bucket jkbx-rider-builds-${STAGE_NAME} \
+		--image-repository ${STAGING_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/transcriber \
+		--s3-bucket transcriber-builds-${STAGE_NAME} \
 		--s3-prefix api_builds \
 		--output-template-file packaged.yaml
 
 sam-package-production:
 	sam package \
 		--region us-west-2 \
-		--image-repository ${PRODUCTION_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/rider \
-		--s3-bucket jkbx-rider-builds-${STAGE_NAME} \
+		--image-repository ${PRODUCTION_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/transcriber \
+		--s3-bucket transcriber-builds-${STAGE_NAME} \
 		--s3-prefix api_builds \
 		--output-template-file packaged.yaml
 
 sam-package-demo:
 	sam package \
 		--region us-west-2 \
-		--image-repository ${STAGING_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/rider-demo \
-		--s3-bucket jkbx-rider-builds-${STAGE_NAME} \
+		--image-repository ${STAGING_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/transcriber-demo \
+		--s3-bucket transcriber-builds-${STAGE_NAME} \
 		--s3-prefix api_builds \
 		--output-template-file packaged.yaml
 
@@ -95,19 +79,15 @@ sam-deploy-dev:
 
 	sam deploy \
 		--region us-west-2 \
-		--image-repository ${DEV_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/rider \
+		--image-repository ${DEV_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/transcriber \
 		--no-fail-on-empty-changeset \
 		--template-file packaged.yaml \
-		--stack-name RIDER-API-DEV \
+		--stack-name transcriber-API-DEV \
 		--capabilities CAPABILITY_IAM --parameter-overrides StageName=${STAGE_NAME} \
-		JkbxConfiguration=${JKBX_CONFIGURATION} \
+		TranscriberConfiguration=${TRANSCRIBER_CONFIGURATION} \
 		AccountId=${DEV_AWS_ACCOUNT_ID} \
 		Auth0Domain=${AUTH0_DOMAIN} \
-		Auth0ClientId=${AUTH0_CLIENT_ID} \
-		Auth0MgmtClientId=${AUTH0_MGMT_CLIENT_ID} \
-		Auth0MgmtClientSecret=${AUTH0_MGMT_CLIENT_SECRET} \
-		BrassicaServer=${BRASSICA_SERVER} \
-		BrassicaToken=${BRASSICA_TOKEN}
+		Auth0ClientId=${AUTH0_CLIENT_ID}
 
 sam-deploy-staging:
 	make build
@@ -115,12 +95,12 @@ sam-deploy-staging:
 
 	sam deploy \
 		--region us-west-2 \
-		--image-repository ${STAGING_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/rider \
+		--image-repository ${STAGING_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/transcriber \
 		--no-fail-on-empty-changeset \
 		--template-file packaged.yaml \
-		--stack-name RIDER-API-STAGING \
+		--stack-name transcriber-API-STAGING \
 		--capabilities CAPABILITY_IAM --parameter-overrides StageName=${STAGE_NAME} \
-		JkbxConfiguration=${JKBX_CONFIGURATION} \
+		TranscriberConfiguration=${TRANSCRIBER_CONFIGURATION} \
 		AccountId=${STAGING_AWS_ACCOUNT_ID} \
 		Auth0Domain=${AUTH0_DOMAIN} \
 		Auth0ClientId=${AUTH0_CLIENT_ID} \
@@ -135,12 +115,12 @@ sam-deploy-local:
 
 	sam deploy \
 		--region us-west-2 \
-		--image-repository ${LOCAL_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/rider \
+		--image-repository ${LOCAL_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/transcriber \
 		--no-fail-on-empty-changeset \
 		--template-file packaged.yaml \
-		--stack-name RIDER-API-LOCAL \
+		--stack-name transcriber-API-LOCAL \
 		--capabilities CAPABILITY_IAM --parameter-overrides StageName=${STAGE_NAME} \
-		JkbxConfiguration=${JKBX_CONFIGURATION} \
+		TranscriberConfiguration=${TRANSCRIBER_CONFIGURATION} \
 		AccountId=${LOCAL_AWS_ACCOUNT_ID} \
 		Auth0Domain=${AUTH0_DOMAIN} \
 		Auth0ClientId=${AUTH0_CLIENT_ID} \
@@ -155,12 +135,12 @@ sam-deploy-production:
 
 	sam deploy \
 		--region us-west-2 \
-		--image-repository ${PRODUCTION_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/rider \
+		--image-repository ${PRODUCTION_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/transcriber \
 		--no-fail-on-empty-changeset \
 		--template-file packaged.yaml \
-		--stack-name RIDER-API-PRODUCTION \
+		--stack-name transcriber-API-PRODUCTION \
 		--capabilities CAPABILITY_IAM --parameter-overrides StageName=${STAGE_NAME} \
-		JkbxConfiguration=production \
+		TranscriberConfiguration=production \
 		AccountId=${PRODUCTION_AWS_ACCOUNT_ID} \
 		Auth0Domain=${AUTH0_DOMAIN_PRODUCTION} \
 		Auth0ClientId=${AUTH0_CLIENT_ID_PRODUCTION} \
