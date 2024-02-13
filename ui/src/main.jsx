@@ -17,8 +17,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       domain={identityProvider.domain}
       clientId={identityProvider.clientId}
       authorizationParams={{
-        redirect_uri: appRoot,
-        audience: __AUTH0_AUDIENCE__
+        redirect_uri: appRoot
       }}
     >
       <App />

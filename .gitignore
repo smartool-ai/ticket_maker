@@ -151,5 +151,3 @@ node_modules/
 cached_uploads/*
 .aws-sam
 packaged.yaml
-
-static/
