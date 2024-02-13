@@ -7,6 +7,7 @@ import Spinner from './Spinner';
 import Layout from './Layout';
 import Logo from './Logo';
 import WelcomePage from '../views/WelcomePage';
+import UploadTranscript from '../views/UploadTranscript';
 // import ArtistImages from '../views/ArtistImages';
 // import DeleteUser from '../views/DeleteUser';
 // import BrassicaOfferings from '../views/BrassicaOfferings';
@@ -40,6 +41,7 @@ export default function App() {
     return <Router hook={useHashLocation}>
       <Layout current={location} token={token} >
         <Route path="/welcome" component={WelcomePage} />
+        <Route path="/upload-transcript" component={UploadTranscript} />
         {/* <Route path="/delete-user" component={DeleteUser} />
         <Route path="/brassica-offerings/new" component={CreateBrassicaOffering} />
         <Route path="/brassica-offerings/:id/assets" component={BrassicaSecurities} />

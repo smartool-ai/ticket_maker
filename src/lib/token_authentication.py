@@ -71,7 +71,6 @@ class TokenAuthentication:
 
     def require_user_with_permission(self, permission: str) -> Dict:
         """Require the request to contain a valid Bearer token with a specific Auth0 permission."""
-
         def _require_user_with_permission(
             token: Optional[HTTPAuthorizationCredentials] = Depends(
                 token_auth_scheme)

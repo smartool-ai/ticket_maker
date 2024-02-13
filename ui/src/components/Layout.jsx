@@ -12,6 +12,7 @@ import { Link } from "wouter";
 import Logo from './Logo'
 
 const navigation = [
+  { name: 'Upload Transcript', href: '/upload-transcript', icon: Bars3Icon, permission:'manage:upload_transcripts' },
   { name: 'Upload Artist Image', href: '/artist-images', icon: PhotoIcon, permission: 'manage:artist_images' },
   { name: 'Delete User', href: '/delete-user', icon: UserMinusIcon, permission: 'manage:users' },
   { name: 'Brassica Assets', href: '/brassica-offerings', icon: ArrowUpOnSquareStackIcon, permission: 'manage:brassica_offerings' },

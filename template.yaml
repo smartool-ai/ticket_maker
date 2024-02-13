@@ -5,7 +5,7 @@ Transform:
 Metadata:
   AWS::ServerlessRepo::Application:
     Name: rider
-    Description: JKBX Rider API
+    Description: Transcriber API
     Author: jakep
     SemanticVersion: 0.1.0
 
@@ -23,34 +23,17 @@ Parameters:
       - local
       - dev
       - staging
-      - staging-v2
-      - staging-v3
       - prod
-  JkbxConfiguration:
+  TranscriberConfiguration:
     Type: String
     Default: testing
   AccountId:
     Type: String
     Default: testing
-  AccountId:
-    Type: String
-    Default: testId
   Auth0Domain:
     Type: String
     Default: testId
   Auth0ClientId:
-    Type: String
-    Default: testId
-  Auth0MgmtClientId:
-    Type: String
-    Default: testId
-  Auth0MgmtClientSecret:
-    Type: String
-    Default: testId
-  BrassicaServer:
-    Type: String
-    Default: testId
-  BrassicaToken:
     Type: String
     Default: testId
 
@@ -64,9 +47,6 @@ Mappings:
       subnet2: subnet-03536e111e52f07d1
       vpcId: vpc-0eb92d75213be5f79
       logLevel: DEBUG
-      artistImagesBucket: artist-images-local
-      auth0Audience: https://rider.jkbx.com
-      brassicaPlatformSlug: jkbx
     dev:
       tagenv: development
       env: development
@@ -75,9 +55,6 @@ Mappings:
       subnet2: subnet-0d3b4188338107455
       vpcId: vpc-01af31f3ea4c9b542
       logLevel: DEBUG
-      artistImagesBucket: artist-images-dev
-      auth0Audience: https://rider.jkbx.com
-      brassicaPlatformSlug: jkbx
     staging:
       tagenv: staging
       env: staging
@@ -86,9 +63,6 @@ Mappings:
       subnet2: subnet-0108fe429f7f4bcd6
       vpcId: vpc-0810e2d41cc7d1eae
       logLevel: DEBUG
-      artistImagesBucket: artist-images-staging
-      auth0Audience: https://rider.jkbx.com
-      brassicaPlatformSlug: jkbx
     prod:
       tagenv: production
       env: prod
@@ -97,12 +71,9 @@ Mappings:
       subnet2: subnet-0bdc6a89ca07edc88
       vpcId: vpc-0c561ddff33cdb10d
       logLevel: INFO
-      artistImagesBucket: artist-images
-      auth0Audience: https://rider.jkbx.com
-      brassicaPlatformSlug: jkbx
 
 Resources:
-  RiderSecurityGroup:
+  TranscriberSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Enable access to metadata db
@@ -116,24 +87,24 @@ Resources:
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub ${StageName}-RiderApiLogs
+      LogGroupName: !Sub ${StageName}-TranscriberApiLogs
       RetentionInDays: 1096
 
   Api:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub JKBX Rider ${StageName}
+      Name: !Sub Transcriber ${StageName}
       Description: !Sub ${StageName} - An API Gateway and Lambda Integration for REST API
       StageName: !Ref StageName
 
-  RiderFunction:
+  TranscriberFunction:
     Type: AWS::Serverless::Function
     Properties:
       Timeout: 15
       MemorySize: 1024
       VpcConfig:
         SecurityGroupIds:
-          - !Ref RiderSecurityGroup
+          - !Ref TranscriberSecurityGroup
         SubnetIds:
           - !FindInMap [EnvMappings, !Ref StageName, subnet1]
           - !FindInMap [EnvMappings, !Ref StageName, subnet2]
@@ -141,17 +112,10 @@ Resources:
       Environment:
         Variables:
           REGION_NAME: !FindInMap [EnvMappings, !Ref StageName, REGION]
-          JKBX_CONFIGURATION: !Ref JkbxConfiguration
-          ARTIST_IMAGES_BUCKET: !FindInMap [EnvMappings, !Ref StageName, artistImagesBucket]
+          TRANSCRIBER_CONFIGURATION: !Ref JkbxConfiguration
           LOG_LEVEL: !FindInMap [EnvMappings, !Ref StageName, logLevel]
           AUTH0_DOMAIN: !Ref Auth0Domain
           AUTH0_CLIENT_ID: !Ref Auth0ClientId
-          AUTH0_AUDIENCE: !FindInMap [EnvMappings, !Ref StageName, auth0Audience]
-          AUTH0_MGMT_CLIENT_ID: !Ref Auth0MgmtClientId
-          AUTH0_MGMT_CLIENT_SECRET: !Ref Auth0MgmtClientSecret
-          BRASSICA_PLATFORM_SLUG: !FindInMap [EnvMappings, !Ref StageName, brassicaPlatformSlug]
-          BRASSICA_SERVER: !Ref BrassicaServer
-          BRASSICA_TOKEN: !Ref BrassicaToken
       Events:
         CatchAll:
           Type: Api
@@ -181,8 +145,8 @@ Resources:
               Resource:
                 - Fn::Sub:
                   - "arn:aws:s3:::${Bucket}/*"
-                  - Bucket: !FindInMap [EnvMappings, !Ref StageName, artistImagesBucket]
+                  - Bucket: !FindInMap [EnvMappings, !Ref StageName, transcriptions-ai]
     Metadata:
       DockerTag: latest
       DockerContext: ./
-      Dockerfile: Dockerfile.lambda
+      Dockerfile: Dockerfile

@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.109.2"
-boto3 = "^1.34.39"
+boto3 = "^1.34.34"
 pillow = "^10.2.0"
 uvicorn = "^0.27.1"
 mangum = "^0.17.0"
@@ -18,6 +18,10 @@ requests = "^2.31.0"
 python-multipart = "^0.0.9"
 botocore-stubs = "^1.34.40"
 pydantic = "^2.6.1"
+pycountry = "^23.12.11"
+pynamodb = "^6.0.0"
+aioboto3 = "^12.3.0"
+python-dotenv = "^1.0.1"
 
 
 [build-system]

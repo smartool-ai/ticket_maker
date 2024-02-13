@@ -74,7 +74,7 @@ app_config = {
 }
 
 
-CONFIGURATION_NAME = os.getenv("JKBX_CONFIGURATION", "testing")
+CONFIGURATION_NAME = os.getenv("TRANSCRIBER_CONFIGURATION", "testing")
 
 if CONFIGURATION_NAME not in app_config:
     raise RuntimeError(f"Invalid configuration string {CONFIGURATION_NAME}")

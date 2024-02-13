@@ -1,50 +1,59 @@
 import os
-import boto3
+from typing import List
 from datetime import datetime
+
+import boto3
+import botocore
+from fastapi import UploadFile
 
 
 AWS_REGION = os.getenv("AWS_REGION", "us-west-2")
 AWS_SECRET_ACCESS = os.getenv("AWS_ACCESS_KEY", "test")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_SECRET", "test")
+s3 = boto3.resource("s3", region_name=AWS_REGION, 
+    aws_access_key_id=AWS_SECRET_ACCESS,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,)
+bucket = s3.Bucket(os.environ.get("ARTIST_IMAGES_BUCKET", "transcriptions-ai"))
 
-
-class S3CLI:
-    def __init__(self, bucket_name):
-        self.bucket_name = bucket_name
-        self.s3 = boto3.client('s3', region_name=AWS_REGION, aws_access_key_id=AWS_SECRET_ACCESS, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
-
-    def upload_file(self, local_file_path, s3_key):
-        try:
-            self.s3.upload_file(local_file_path, self.bucket_name, s3_key)
-            print(f"Successfully uploaded {local_file_path} to S3 bucket {self.bucket_name} with key {s3_key}")
-        except Exception as e:
-            print(f"Failed to upload {local_file_path} to S3 bucket {self.bucket_name}: {str(e)}")
-
-    def download_file(self, s3_key, local_file_path):
-        try:
-            self.s3.download_file(self.bucket_name, s3_key, local_file_path)
-            print(f"Successfully downloaded {s3_key} from S3 bucket {self.bucket_name} to {local_file_path}")
-        except Exception as e:
-            print(f"Failed to download {s3_key} from S3 bucket {self.bucket_name}: {str(e)}")
-
-
-def upload_file_to_s3(file_object, app_name):
-    """
-    Uploads a file to an S3 bucket.
-
-    Args:
-        file_object (File): The file object received from a FastAPI endpoint.
-        app_name (str): The name of the FastAPI app.
-
-    Returns:
-        bool: True if the file was successfully uploaded, False otherwise.
-    """
+def upload_file_to_s3(file_object: UploadFile) -> str:
     try:
-        s3_client = boto3.client('s3')
-        current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        object_name = f"{file_object.filename}_{current_datetime}"
-        s3_client.upload_fileobj(file_object, app_name, object_name)
-        return True
+        bucket.put_object(Key=file_object.filename, Body=file_object.file)
+        print(
+            f"Successfully uploaded file to S3 bucket  with key {file_object.filename}"
+        )
+        return file_object.filename
     except Exception as e:
-        print(f"Error uploading file to S3: {e}")
-        return False
+        print(
+            f"Failed to upload file to S3 bucket : {str(e)}"
+        )
+        print(e.__class__.__name__)
+
+
+def download_file_from_s3(s3_key):
+    try:
+        obj = s3.Object(bucket.name, s3_key)
+        obj.load()
+        return {
+            "bucket_name": bucket.name,
+            "filename": obj.key,
+            "url": f"https://{bucket.name}.s3.amazonaws.com/{obj.key}"
+        }
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == "404":
+            return {"error": "File not found", "status_code": 404}
+        else:
+            raise
+
+
+if __name__ == "__main__":
+    try:
+        # get file object from f"{os.getcwd()}/example_transcription.txt" and send it to upload_file_to_s3
+        file_object = open(f"{os.getcwd()}/example_transcription.txt", "rb")
+        filename: str = upload_file_to_s3(file_object, "dev")
+        file_object.close()
+        # with open(f"{os.getcwd()}/example_transcription.txt") as f:
+
+        #     filename: str = upload_file_to_s3(f, "dev")
+        download_file_from_s3(filename)
+    except Exception as e:
+        print(e)
