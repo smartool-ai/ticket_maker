@@ -1,12 +1,11 @@
 from logging import getLogger
-import os
 from typing import Dict
 
 from fastapi import APIRouter, Depends, File, UploadFile, Response
 from src.lib.authorized_api_handler import authorized_api_handler
-from src.lib.enums import AWSService
 
 from src.lib.token_authentication import TokenAuthentication
+from src.models.dynamo.documents import DocumentsModel
 from src.services.file_management import upload_file_to_s3, download_file_from_s3
 
 router = APIRouter()
@@ -18,13 +17,23 @@ granted_user = token_authentication.require_user_with_permission("manage:upload_
 @router.post("/upload")
 @authorized_api_handler()
 async def upload_file(
-    file: UploadFile = File(...), _: Dict = Depends(granted_user)
+    file: UploadFile = File(...), user: Dict = Depends(granted_user)
 ) -> Dict:
-    return (
-        "File uploaded successfully"
-        if upload_file_to_s3(file)
-        else Response(status_code=400, content="Error uploading file to S3")
-    )
+    resp: dict = upload_file_to_s3(file)
+    user_id: str = user.get("sub").split("|")[1]
+
+    for k, item in resp.get("files").items():
+        logger.info(f"item: {item}")
+        document: DocumentsModel = await DocumentsModel.initialize(
+            user_id=user_id,
+            document_id=item.get("name"),
+            document_type=item.get("extension"),
+            memo=f"Transcript with filename: {item.get('name')} and extension: {item.get('extension')}",
+        )
+
+        await document.save()
+
+    return resp
 
 
 @router.get("/file/{file_name}")

@@ -1,6 +1,6 @@
 import enum
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
 from src.lib.loggers import get_module_logger
 
