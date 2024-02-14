@@ -42,12 +42,6 @@ export default function App() {
       <Layout current={location} token={token} >
         <Route path="/welcome" component={WelcomePage} />
         <Route path="/upload-transcript" component={UploadTranscript} />
-        {/* <Route path="/delete-user" component={DeleteUser} />
-        <Route path="/brassica-offerings/new" component={CreateBrassicaOffering} />
-        <Route path="/brassica-offerings/:id/assets" component={BrassicaSecurities} />
-        <Route path="/brassica-offerings/:id/edit" component={EditBrassicaOffering} />
-        <Route path="/brassica-offerings/:id/assets/new" component={CreateBrassicaSecurity} />
-        <Route path="/brassica-offerings" component={BrassicaOfferings} /> */}
       </Layout>
     </Router>
   } else {

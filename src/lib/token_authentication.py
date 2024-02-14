@@ -59,12 +59,8 @@ class TokenAuthentication:
         # The JWT "sub" claim is prefixed with "auth0|"
         sub_prefix = payload.get("sub").split("|")[0]
 
-        if sub_prefix != "auth0":
+        if sub_prefix not in ["auth0", "google-oauth2"]:
             logger.error("User not authorized (sub prefix check)")
-            raise unauthorized_error
-
-        if not payload.get("email", "").endswith("@jkbx.com"):
-            logger.error("User not authorized (email domain check)")
             raise unauthorized_error
 
         return payload

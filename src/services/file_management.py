@@ -6,13 +6,13 @@ import boto3
 import botocore
 from fastapi import UploadFile
 
+from src.lib.loggers import get_module_logger
+
+logger = get_module_logger()
+
 
 AWS_REGION = os.getenv("AWS_REGION", "us-west-2")
-AWS_SECRET_ACCESS = os.getenv("AWS_ACCESS_KEY", "test")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_SECRET", "test")
-s3 = boto3.resource("s3", region_name=AWS_REGION, 
-    aws_access_key_id=AWS_SECRET_ACCESS,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,)
+s3 = boto3.resource("s3", region_name=AWS_REGION)
 bucket = s3.Bucket(os.environ.get("ARTIST_IMAGES_BUCKET", "transcriptions-ai"))
 
 def upload_file_to_s3(file_object: UploadFile) -> str:
@@ -32,7 +32,9 @@ def upload_file_to_s3(file_object: UploadFile) -> str:
 def download_file_from_s3(s3_key):
     try:
         obj = s3.Object(bucket.name, s3_key)
+        logger.info(f"Loading file...")
         obj.load()
+        logger.info(f"File loaded")
         return {
             "bucket_name": bucket.name,
             "filename": obj.key,

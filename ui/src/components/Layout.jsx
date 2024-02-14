@@ -3,19 +3,16 @@ import { Fragment, useState } from 'react'
 import { Dialog, Menu, Transition } from '@headlessui/react'
 import {
   Bars3Icon,
-  PhotoIcon,
   UserMinusIcon,
   XMarkIcon,
-  ArrowUpOnSquareStackIcon,
+  FolderIcon
 } from '@heroicons/react/24/outline'
 import { Link } from "wouter";
 import Logo from './Logo'
 
 const navigation = [
-  { name: 'Upload Transcript', href: '/upload-transcript', icon: Bars3Icon, permission:'manage:upload_transcripts' },
-  { name: 'Upload Artist Image', href: '/artist-images', icon: PhotoIcon, permission: 'manage:artist_images' },
+  { name: 'Upload Transcript', href: '/upload-transcript', icon: FolderIcon, permission:'manage:upload_transcripts' },
   { name: 'Delete User', href: '/delete-user', icon: UserMinusIcon, permission: 'manage:users' },
-  { name: 'Brassica Assets', href: '/brassica-offerings', icon: ArrowUpOnSquareStackIcon, permission: 'manage:brassica_offerings' },
 ]
 
 function classNames(...classes) {
