@@ -30,6 +30,9 @@ Parameters:
   AccountId:
     Type: String
     Default: testing
+  Auth0Audience:
+    Type: String
+    Default: "https://extension.artificially-intelligent.io/api"
   Auth0Domain:
     Type: String
     Default: testId
@@ -51,9 +54,11 @@ Mappings:
       tagenv: development
       env: development
       REGION: us-west-2
-      subnet1: subnet-074edb54ea8581430
-      subnet2: subnet-0cc91c934651ba357
-      vpcId: vpc-0deab6d1721ad511d
+      subnet1: subnet-08bd34f49cb453b6e
+      subnet2: subnet-0e65b1573ed6e8c7d
+      subnet3: subnet-0a39def94f6098c94
+      subnet4: subnet-03371945689166a9a
+      vpcId: vpc-0970b43a50e0a6038
       logLevel: DEBUG
     staging:
       tagenv: staging
@@ -100,7 +105,7 @@ Resources:
   TranscriberFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Timeout: 15
+      Timeout: 30
       MemorySize: 1024
       VpcConfig:
         SecurityGroupIds:
@@ -108,6 +113,8 @@ Resources:
         SubnetIds:
           - !FindInMap [EnvMappings, !Ref StageName, subnet1]
           - !FindInMap [EnvMappings, !Ref StageName, subnet2]
+          - !FindInMap [EnvMappings, !Ref StageName, subnet3]
+          - !FindInMap [EnvMappings, !Ref StageName, subnet4]
       PackageType: Image
       Environment:
         Variables:
@@ -116,6 +123,7 @@ Resources:
           LOG_LEVEL: !FindInMap [EnvMappings, !Ref StageName, logLevel]
           AUTH0_DOMAIN: !Ref Auth0Domain
           AUTH0_CLIENT_ID: !Ref Auth0ClientId
+          AUTH0_AUDIENCE: !Ref Auth0Audience
       Events:
         CatchAll:
           Type: Api

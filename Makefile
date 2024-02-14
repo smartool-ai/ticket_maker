@@ -82,7 +82,7 @@ sam-deploy-dev:
 		--image-repository ${DEV_AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/transcriber \
 		--no-fail-on-empty-changeset \
 		--template-file packaged.yaml \
-		--stack-name transcriber-API-DEV \
+		--stack-name TRANSCRIBER-API-DEV \
 		--capabilities CAPABILITY_IAM --parameter-overrides StageName=${STAGE_NAME} \
 		TranscriberConfiguration=${TRANSCRIBER_CONFIGURATION} \
 		AccountId=${DEV_AWS_ACCOUNT_ID} \

@@ -16,19 +16,19 @@ granted_user = token_authentication.require_user_with_permission("manage:upload_
 
 
 @router.post("/upload")
-# @authorized_api_handler()
+@authorized_api_handler()
 async def upload_file(
-    upload: UploadFile, user: Dict = Depends(granted_user)
+    file: UploadFile = File(...), _: Dict = Depends(granted_user)
 ) -> Dict:
     return (
-        Response(status_code=201, content="File uploaded successfully")
-        if upload_file_to_s3(upload)
+        "File uploaded successfully"
+        if upload_file_to_s3(file)
         else Response(status_code=400, content="Error uploading file to S3")
     )
 
 
 @router.get("/file/{file_name}")
-# @authorized_api_handler()
+@authorized_api_handler()
 async def get_file(file_name: str, user: Dict = Depends(granted_user)) -> Response:
     """Get file from S3"""
     logger.info(f"Getting file from S3: {file_name}")

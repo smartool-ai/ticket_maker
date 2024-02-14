@@ -8,15 +8,25 @@ export default function useRequest() {
   const { getAccessTokenSilently } = useAuth0();
 
   const requestCallback = useCallback(
-    async (path, options) => {
+    async (path, options = {}) => {
       const token = await getAccessTokenSilently();
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      // Only set Content-Type to application/json if the body is not FormData
+      if (!(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+        // Assuming you want to stringify JSON bodies:
+        options.body = JSON.stringify(options.body);
+      }
 
       return await fetch(`${apiRoot}${path}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
         ...options,
+        headers: {
+          ...options.headers,
+          ...headers,
+        },
       });
     },
     [getAccessTokenSilently]

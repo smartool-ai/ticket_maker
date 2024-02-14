@@ -11,11 +11,11 @@ from src.lib.loggers import get_module_logger
 logger = get_module_logger()
 
 
-AWS_REGION = os.getenv("AWS_REGION", "us-west-2")
-s3 = boto3.resource("s3", region_name=AWS_REGION)
-bucket = s3.Bucket(os.environ.get("ARTIST_IMAGES_BUCKET", "transcriptions-ai"))
 
 def upload_file_to_s3(file_object: UploadFile) -> str:
+    AWS_REGION = os.getenv("AWS_REGION", "us-west-2")
+    s3 = boto3.resource("s3", region_name=AWS_REGION)
+    bucket = s3.Bucket(os.environ.get("ARTIST_IMAGES_BUCKET", "transcriptions-ai"))
     try:
         bucket.put_object(Key=file_object.filename, Body=file_object.file)
         print(
@@ -30,6 +30,9 @@ def upload_file_to_s3(file_object: UploadFile) -> str:
 
 
 def download_file_from_s3(s3_key):
+    AWS_REGION = os.getenv("AWS_REGION", "us-west-2")
+    s3 = boto3.resource("s3", region_name=AWS_REGION)
+    bucket = s3.Bucket(os.environ.get("ARTIST_IMAGES_BUCKET", "transcriptions-ai"))
     try:
         obj = s3.Object(bucket.name, s3_key)
         logger.info(f"Loading file...")
