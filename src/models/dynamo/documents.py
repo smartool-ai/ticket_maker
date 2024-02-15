@@ -1,6 +1,5 @@
 import datetime
 import json
-import pytz
 import os
 from typing import Any, Dict, Optional
 

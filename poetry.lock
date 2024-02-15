@@ -269,13 +269,13 @@ crt = ["awscrt (==0.19.19)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.34.40"
+version = "1.34.42"
 description = "Type annotations and code completion for botocore"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "botocore_stubs-1.34.40-py3-none-any.whl", hash = "sha256:50870a5ac8b638dac575aa26d92506dda8cc38e179f93ce2ffe48197ce054dbf"},
-    {file = "botocore_stubs-1.34.40.tar.gz", hash = "sha256:d6322bfb9aa882006fe7f8fc3d8a933a66c5627dcf571e65d65a5233c6c172be"},
+    {file = "botocore_stubs-1.34.42-py3-none-any.whl", hash = "sha256:7f0d783e5c84a378721e5cae0922bb8ef6aad11d748eda3fd48eeb8d22ee6e42"},
+    {file = "botocore_stubs-1.34.42.tar.gz", hash = "sha256:d1de9b7f4fd1c3491846862fc635fea8484a2d4c6d92291d736bafed4ab0344b"},
 ]
 
 [package.dependencies]
@@ -1091,17 +1091,6 @@ files = [
 dev = ["atomicwrites (==1.4.1)", "attrs (==23.2.0)", "coverage (==7.4.1)", "hatch", "invoke (==2.2.0)", "more-itertools (==10.2.0)", "pbr (==6.0.0)", "pluggy (==1.4.0)", "py (==1.11.0)", "pytest (==8.0.0)", "pytest-cov (==4.1.0)", "pytest-timeout (==2.2.0)", "pyyaml (==6.0.1)", "ruff (==0.2.1)"]
 
 [[package]]
-name = "pytz"
-version = "2024.1"
-description = "World timezone definitions, modern and historical"
-optional = false
-python-versions = "*"
-files = [
-    {file = "pytz-2024.1-py2.py3-none-any.whl", hash = "sha256:328171f4e3623139da4983451950b28e95ac706e13f3f2630a879749e7a8b319"},
-    {file = "pytz-2024.1.tar.gz", hash = "sha256:2a29735ea9c18baf14b448846bde5a48030ed267578472d8955cd0e7443a9812"},
-]
-
-[[package]]
 name = "requests"
 version = "2.31.0"
 description = "Python HTTP for Humans."
@@ -1420,4 +1409,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "c59c552502ad7d9b3871aff05fb35d9e6cede93a46583ff20db25781f13894e1"
+content-hash = "a74d09641ae9d15ab8a5b2b811eb42505bdaa6f2b2900ec35301c611b85f0e8e"

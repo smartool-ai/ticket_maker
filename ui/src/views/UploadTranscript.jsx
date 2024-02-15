@@ -63,6 +63,28 @@ export default function UploadTranscript() {
         }
     };
 
+    const doSubmit = async (fileInfo) => {
+        try {
+            const submitResponse = await apiRequest('/submit-file', {
+                method: "post",
+                headers: {
+                    // Ensure your apiRequest already sets Authorization headers as needed
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(fileInfo),
+            });
+
+            if (!submitResponse.ok) {
+                throw new Error('Submit failed');
+            }
+
+            const result = await submitResponse.json();
+            alert(`File submitted successfully: ${result.message}`);
+        } catch (error) {
+            alert(error.message || "An error occurred while submitting the file.");
+        }
+    };
+
     const uploadButton = (
         <label
             htmlFor="upload"
@@ -77,6 +99,23 @@ export default function UploadTranscript() {
                 onChange={doUpload}
                 className="sr-only"
             />
+        </label>
+    );
+    
+    const submitButton = (
+        <label
+            htmlFor="upload"
+            className="relative cursor-pointer flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+        >
+            <span>Create Tickets</span>
+            {/* <input
+                type="file"
+                id="upload"
+                name="upload"
+                ref={fileInput}
+                onChange={doUpload}
+                className="sr-only"
+            /> */}
         </label>
     );
 
@@ -134,6 +173,9 @@ export default function UploadTranscript() {
                                     >
                                         {url}
                                     </a>
+                                </td>
+                                <td>
+                                  {{submitButton}}
                                 </td>
                             </tr>
                         ),
