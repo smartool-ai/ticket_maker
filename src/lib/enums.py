@@ -10,6 +10,14 @@ from pycountry import db
 logger = get_module_logger()
 
 
+class PlatformEnum(str, enum.Enum):
+    """Enum for the platform of the ticket."""
+    JIRA = "Jira"
+    GITHUB = "GitHub"
+    TRELLO = "Trello"
+    ASANA = "Asana"  # Add more platforms as needed
+
+
 class AgreementType(str, enum.Enum):
     """Enum for the type of onboarding agreement to retrieve."""
 

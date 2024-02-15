@@ -1,5 +1,6 @@
 import datetime
 import os
+from typing import Optional
 
 import boto3
 import botocore
@@ -32,16 +33,14 @@ def upload_file_to_s3(file_object: UploadFile) -> dict:
                     "url": f"https://{bucket.name}.s3.{AWS_REGION}.amazonaws.com/{file_object.filename}",
                     "extension": file_extension,
                 }
-            }
+            },
         }
     except Exception as e:
-        print(
-            f"Failed to upload file to S3 bucket : {str(e)}"
-        )
+        print(f"Failed to upload file to S3 bucket : {str(e)}")
         raise
 
 
-def download_file_from_s3(s3_key):
+def get_file_details_from_s3(s3_key):
     try:
         obj = s3.Object(bucket.name, s3_key)
         logger.info("Loading file...")
@@ -50,11 +49,33 @@ def download_file_from_s3(s3_key):
         return {
             "bucket_name": bucket.name,
             "filename": obj.key,
-            "url": f"https://{bucket.name}.s3.amazonaws.com/{obj.key}"
+            "url": f"https://{bucket.name}.s3.amazonaws.com/{obj.key}",
         }
     except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == "404":
+        if e.response["Error"]["Code"] == "404":
             return {"error": "File not found", "status_code": 404}
+        else:
+            raise
+
+
+def download_file_from_s3(s3_key) -> Optional[str]:
+    """Download file and return its contents
+
+    Args:
+        s3_key (str): The S3 key of the file to download
+
+    Returns:
+        str: The contents of the file
+    """
+    try:
+        obj = s3.Object(bucket.name, s3_key)
+        logger.info("Loading file...")
+        obj.load()
+        logger.info("File loaded")
+        return obj.get()["Body"].read().decode("utf-8")
+    except botocore.exceptions.ClientError as e:
+        if e.response["Error"]["Code"] == "404":
+            return None
         else:
             raise
 
@@ -68,6 +89,6 @@ if __name__ == "__main__":
         # with open(f"{os.getcwd()}/example_transcription.txt") as f:
 
         #     filename: str = upload_file_to_s3(f, "dev")
-        download_file_from_s3(filename)
+        get_file_details_from_s3(filename)
     except Exception as e:
         print(e)

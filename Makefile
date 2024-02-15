@@ -87,7 +87,8 @@ sam-deploy-dev:
 		TranscriberConfiguration=${TRANSCRIBER_CONFIGURATION} \
 		AccountId=${DEV_AWS_ACCOUNT_ID} \
 		Auth0Domain=${AUTH0_DOMAIN} \
-		Auth0ClientId=${AUTH0_CLIENT_ID}
+		Auth0ClientId=${AUTH0_CLIENT_ID} \
+		OpenaiApiKey=${OPENAI_API_KEY}
 
 sam-deploy-staging:
 	make build
