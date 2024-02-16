@@ -69,7 +69,7 @@ export default function UploadTranscript() {
         try {
             setIsPolling(true);
 
-            const submitResponse = await apiRequest(`/file/${fileName}/tickets`, {
+            const submitResponse = await apiRequest(`/file/${fileName}/tickets?number_of_tickets=20`, {
                 method: "post"
             });
 
@@ -85,7 +85,7 @@ export default function UploadTranscript() {
                 let response = null;
                 let count = 0;
 
-                while (!response && count < 12) {
+                while (!response && count < 24) {
                     const res = await apiRequest(`/file/${fileName}/tickets?generation_datetime=${submitedResponseJson.ticket_generation_datetime}`, {
                         method: "get",
                     });
