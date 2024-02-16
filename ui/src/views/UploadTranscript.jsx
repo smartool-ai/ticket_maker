@@ -212,7 +212,7 @@ export default function UploadTranscript() {
                             </td>
                         </tr>
                     ))}
-                    {ticketsResponse && ticketsResponse.tickets && Object.entries(ticketsResponse.tickets).map(([key, { subject, body, estimation_points }]) => (
+                    {ticketsResponse && ticketsResponse.tickets && Object.entries(ticketsResponse.tickets).map(([key, { subject, body, estimationpoints }]) => (
                         <tr key={subject}>
                             <td className="py-4 text-sm text-black-500 pr-3">
                                 {subject}
@@ -221,7 +221,7 @@ export default function UploadTranscript() {
                                 {body}
                             </td>
                             <td className="py-4 text-sm text-gray-500">
-                                {estimation_points}
+                                {estimationpoints}
                             </td>
                         </tr>
                     ))}
