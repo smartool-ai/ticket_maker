@@ -1,7 +1,7 @@
 from logging import getLogger
 from typing import Dict, Optional
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends
 
 from src.lib.enums import PlatformEnum
 from src.lib.authorized_api_handler import authorized_api_handler

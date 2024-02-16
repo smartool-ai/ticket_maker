@@ -1,5 +1,4 @@
 import json
-from typing import Union
 
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 

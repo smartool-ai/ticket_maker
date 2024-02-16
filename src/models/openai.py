@@ -7,6 +7,15 @@ from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from src.lib.enums import PlatformEnum
 
 
+def modify_keys(data):
+    if isinstance(data, dict):
+        return {key.lower().replace(" ", ""): modify_keys(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [modify_keys(item) for item in data]
+    else:
+        return data
+
+
 class OpenAIClient(OpenAI):
     ticket_prompt_prefix: str = (
         "Given the following transcript from a video call, please create {n} {platform} tickets with the following information in json format:\n\n \
@@ -30,7 +39,7 @@ class OpenAIClient(OpenAI):
             self.ticket_prompt_prefix.format(
                 n=number_of_tickets, platform=platform.value
             )
-            + prompt
+            + prompt  # noqa
         )
         params: dict = {
             "model": "gpt-4-turbo-preview",
@@ -42,7 +51,7 @@ class OpenAIClient(OpenAI):
             params.update(kwargs)
 
         response = self.chat.completions.create(**params)
-        return response.choices[0].message
+        return modify_keys(response.choices[0].message)
 
 
 # Example usage
