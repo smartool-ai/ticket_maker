@@ -5,15 +5,10 @@ from openai import OpenAI
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
 from src.lib.enums import PlatformEnum
+from src.lib.loggers import get_module_logger
 
 
-def modify_keys(data):
-    if isinstance(data, dict):
-        return {key.lower().replace(" ", ""): modify_keys(value) for key, value in data.items()}
-    elif isinstance(data, list):
-        return [modify_keys(item) for item in data]
-    else:
-        return data
+logger = get_module_logger()
 
 
 class OpenAIClient(OpenAI):
@@ -51,7 +46,8 @@ class OpenAIClient(OpenAI):
             params.update(kwargs)
 
         response = self.chat.completions.create(**params)
-        return modify_keys(response.choices[0].message)
+        logger.info(response)
+        return response.choices[0].message
 
 
 # Example usage

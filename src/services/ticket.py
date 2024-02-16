@@ -1,11 +1,26 @@
+import datetime
 import json
+import os
+from typing import List, Optional
 
+import boto3
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
+from src.lib.enums import PlatformEnum
 
 from src.lib.loggers import get_module_logger
+from src.models.dynamo.ticket import TicketModel
 from src.models.openai import OpenAIClient
 
 logger = get_module_logger()
+
+
+def modify_keys(data: dict) -> dict:
+    if isinstance(data, dict):
+        return {key.lower().replace(" ", ""): modify_keys(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [modify_keys(item) for item in data]
+    else:
+        return data
 
 
 def generate_tickets(prompt: str, number_of_tickets: int, platform: str) -> dict:
@@ -21,13 +36,54 @@ def generate_tickets(prompt: str, number_of_tickets: int, platform: str) -> dict
     """
     client = OpenAIClient()
     try:
+        logger.info("Generating tickets from transcript...")
         completion: ChatCompletionMessage = client.create_tickets(prompt, number_of_tickets, platform)
-        return json.loads(completion.content)
+
+        tickets_dict: dict = json.loads(completion.content)
+
+        logger.info("Tickets generated from transcript")
+        return modify_keys(tickets_dict)
     except Exception as e:
         logger.error(e)
-        return {
-            "error": {
-                "status_code": 500,
-                "error": "Failed to generate tickets",
-            }
-        }
+        raise e("Error generating tickets from transcript. Please try again.")
+
+
+async def invoke_ticket_generation_lambda(document_id: str, user_id: str, number_of_tickets: Optional[int] = 10, platform: Optional[PlatformEnum] = PlatformEnum.JIRA) -> None:
+    """Invoke the ticket generation lambda function."""
+    try:
+        lambda_client = boto3.client(
+            'lambda',
+            region_name=os.getenv("AWS_REGION", "us-west-2")
+        )
+        generation_datetime: str = datetime.datetime.now().isoformat()
+
+        lambda_client.invoke(
+            FunctionName=f'TRANSCRIBER-LAMBDA-{os.getenv("STAGE_NAME", "dev")}',
+            InvocationType='Event',
+            Payload=json.dumps(
+                {
+                    "document_id": document_id,
+                    "user_id": user_id,
+                    "number_of_tickets": number_of_tickets,
+                    "platform": platform.value,
+                    "generation_datetime": generation_datetime,
+                }
+            )
+        )
+        return generation_datetime
+    except Exception as e:
+        logger.error(e)
+        raise e("Error invoking ticket generation lambda function. Please try again.")
+
+
+async def get_tickets(document_id: str, generation_datetime: str) -> List[TicketModel]:
+    """Get the generated tickets from the database."""
+    try:
+        tickets = TicketModel.query(document_id, filter_condition=TicketModel.created_datetime == generation_datetime)
+
+        if not tickets:
+            return []
+        return [ticket for ticket in tickets]
+    except Exception as e:
+        logger.error(e)
+        raise e("Error getting tickets from the database. Please try again.")

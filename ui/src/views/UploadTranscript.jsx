@@ -6,6 +6,7 @@ import Notice from '../components/Notice';
 export default function UploadTranscript() {
     const fileInput = useRef(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [isPolling, setIsPolling] = useState(false);
     const [response, setResponse] = useState(null);
     const [ticketsResponse, setTicketsResponse] = useState(null);
     const apiRequest = useRequest();
@@ -69,15 +70,50 @@ export default function UploadTranscript() {
             setIsUploading(true);
 
             const submitResponse = await apiRequest(`/file/${fileName}/tickets`, {
-                method: "get"
+                method: "post"
             });
 
             if (submitResponse && !submitResponse.ok) {
                 throw new Error('Ticket generation failed');
             }
 
-            setIsUploading(false);
-            setTicketsResponse(await submitResponse.json());
+            const submitedResponseJson = await submitResponse.json();
+            console.log(submitedResponseJson);
+
+
+            const pollTickets = async (fileName) => {
+                let response = null;
+                let count = 0;
+
+                while (!response && count < 20) {
+                    const res = await apiRequest(`/file/${fileName}/tickets?generation_datetime=${submitedResponseJson.ticket_generation_datetime}`, {
+                        method: "get",
+                    });
+
+                    if (res.status === 200) {
+                        let resJson = await res.json();
+                        console.log(resJson);
+                        if (response.tickets && response.tickets.length > 0) {
+                            setIsUploading(false);
+                            setTicketsResponse(resJson);
+                            response = true;
+                        } else {
+                            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds before making the next request
+                            count++;
+                        }
+                    } else {
+                        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds before making the next request
+                        count++;
+                    }
+                }
+
+                if (!response) {
+                    setIsUploading(false);
+                    alert("Ticket generation timed out.");
+                }
+            };
+
+            pollTickets(fileName);
         } catch (error) {
             setIsUploading(false);
             alert(error.message || "An error occurred while generating your tickets.");
@@ -160,13 +196,23 @@ export default function UploadTranscript() {
                                     className="relative cursor-pointer flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
                                     onClick={() => generateTickets({name})}
                                 >
-                                    <span>{ticketsResponse ? "Regenerate Tickets" : "Generate Tickets"}</span>
-
+                                    {isPolling ? (
+                                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path
+                                                className="opacity-75"
+                                                fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l1.414-1.414C2.56 15.544 1.5 13.88 1.5 12H6zm10-5.291A7.962 7.962 0 0120 12h4c0-6.627-5.373-12-12-12v4c3.042 0 5.824 1.135 7.938 3l-1.414 1.414z"
+                                            ></path>
+                                        </svg>
+                                    ) : (
+                                        <span>{ticketsResponse ? "Regenerate Tickets" : "Generate Tickets"}</span>
+                                    )}
                                 </button>
                             </td>
                         </tr>
                     ))}
-                    {ticketsResponse && ticketsResponse.tickets && Object.entries(ticketsResponse.tickets).map(([key, { subject, body, estimationPoints }]) => (
+                    {ticketsResponse && ticketsResponse.tickets && Object.entries(ticketsResponse.tickets).map(([key, { subject, body, estimation_points }]) => (
                         <tr key={subject}>
                             <td className="py-4 text-sm text-black-500 pr-3">
                                 {subject}
@@ -175,7 +221,7 @@ export default function UploadTranscript() {
                                 {body}
                             </td>
                             <td className="py-4 text-sm text-gray-500">
-                                {estimationPoints}
+                                {estimation_points}
                             </td>
                         </tr>
                     ))}

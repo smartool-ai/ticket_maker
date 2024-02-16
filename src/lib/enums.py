@@ -12,35 +12,10 @@ logger = get_module_logger()
 
 class PlatformEnum(str, enum.Enum):
     """Enum for the platform of the ticket."""
-    JIRA = "Jira"
-    GITHUB = "GitHub"
-    TRELLO = "Trello"
-    ASANA = "Asana"  # Add more platforms as needed
-
-
-class AgreementType(str, enum.Enum):
-    """Enum for the type of onboarding agreement to retrieve."""
-
-    DISCLOSURE = "DISCLOSURE"
-    CUSTODY = "CUSTODY"
-    NOMINEE = "NOMINEE"
-
-
-class DocumentType(str, enum.Enum):
-    """Enum representing the type of a document."""
-
-    SUBSCRIPTION_AGREEMENT = "SUBSCRIPTION_AGREEMENT"
-
-
-class SignerType(str, enum.Enum):
-    """Enum for the type of signer id to retrieve"""
-
-    NOMINEE_TRUST_AGREEMENT = "nominee-trust-agreement"
-    NOMINEE_TRUST_AGREEMENT_ELECTRONIC_SIGNATURE = (
-        "nominee-trust-agreement-electronic-signature"
-    )
-    SIGNER_AGREEMENTS = "signer-agreements"
-    SIGNER_ELECTRONIC_SIGNATURES = "signer-electronic-signatures"
+    JIRA = "JIRA"
+    GITHUB = "GITHUB"
+    TRELLO = "TRELLO"
+    ASANA = "ASANA"  # Add more platforms as needed
 
 
 class Role(str, enum.Enum):
@@ -49,29 +24,6 @@ class Role(str, enum.Enum):
     GENERAL_USER = "GENERAL_USER"
     VALIDATED_USER = "VALIDATED_USER"
     ADMIN = "ADMIN"
-
-
-class WireType(str, enum.Enum):
-    WIRE_DOMESTIC = "wire-domestic"
-    WIRE_INTERNATIONAL = "wire-international"
-
-
-class TransferTypeEnum(str, enum.Enum):
-    """Enum representing the account type of the user."""
-
-    ACH = "ACH"
-    EFT = "EFT"
-    INTERNATIONAL = "INTERNATIONAL"
-    BACS = "BACS"
-
-
-class TransferStatus(str, enum.Enum):
-    """Enum representing the status of the transfer."""
-
-    SUBMITTED = "SUBMITTED"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-    IN_PROGRESS = "IN PROGRESS"
 
 
 class AWSService(str, enum.Enum):
@@ -101,23 +53,6 @@ class LambdaLogLevel(str, enum.Enum):
     WARN = "WARN"
     ERROR = "ERROR"
     CRITICAL = "CRITICAL"
-
-
-class OrderStatus(str, enum.Enum):
-    SUBMITTED = "SUBMITTED"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-    IN_PROGRESS = "IN PROGRESS"
-    CANCELLED = "CANCELLED"
-
-
-class OrderType(str, enum.Enum):
-    buy = "buy"
-    sell = "sell"
-    buy_limit = "buy_limit"
-    sell_limit = "sell_limit"
-    reserve = "reserve"
-    cancel = "cancel"
 
 
 class Currency(str, enum.Enum):

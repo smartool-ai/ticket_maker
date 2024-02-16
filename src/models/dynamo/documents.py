@@ -29,8 +29,8 @@ class DocumentsModel(BaseModel):
         table_name = "Document"
         region = os.getenv("AWS_REGION", "us-west-2")
 
-    user_id = UnicodeAttribute(range_key=True)
-    document_id = UnicodeAttribute(hash_key=True)
+    user_id = UnicodeAttribute(hash_key=True)
+    document_id = UnicodeAttribute(range_key=True)
     document_type = UnicodeAttribute(null=False)
     memo = UnicodeAttribute(null=True)
 

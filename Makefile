@@ -154,7 +154,7 @@ sam-serve:
 	sam local start-api \
 		--debug \
 		-d 5858 \
-		-p 5000 \
+		-p 8000 \
 		--container-host localhost \
 		--parameter-overrides \
 		StageName=local \
