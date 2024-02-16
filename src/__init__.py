@@ -47,7 +47,9 @@ class Application:
         import src.controllers as controllers
 
         routers = [
-            controllers.file_management.router
+            controllers.file_management.router,
+            controllers.ticket.router,
+            controllers.user_metadata.router
         ]
 
         for router in routers:

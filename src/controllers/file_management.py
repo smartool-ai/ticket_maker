@@ -17,7 +17,7 @@ granted_user = token_authentication.require_user_with_permission(
 
 
 @router.post("/upload")
-@authorized_api_handler()
+@authorized_api_handler(initialize_dynamo_tables=[DocumentsModel])
 async def upload_file(
     file: UploadFile = File(...), user: Dict = Depends(granted_user)
 ) -> Dict:
@@ -40,7 +40,7 @@ async def upload_file(
 
 @router.get("/file/{file_name}")
 @authorized_api_handler()
-async def get_file(file_name: str, user: Dict = Depends(granted_user)) -> Response:
+async def get_file(file_name: str, _: Dict = Depends(granted_user)) -> Response:
     """Get file from S3"""
     logger.info(f"Getting file from S3: {file_name}")
     resp: dict = get_file_details_from_s3(file_name)

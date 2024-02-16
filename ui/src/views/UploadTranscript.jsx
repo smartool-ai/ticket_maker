@@ -7,6 +7,7 @@ export default function UploadTranscript() {
     const fileInput = useRef(null);
     const [isUploading, setIsUploading] = useState(false);
     const [response, setResponse] = useState(null);
+    const [ticketsResponse, setTicketsResponse] = useState(null);
     const apiRequest = useRequest();
 
     if (isUploading) {
@@ -63,24 +64,23 @@ export default function UploadTranscript() {
         }
     };
 
-    const doSubmit = async (fileName) => {
+    const generateTickets = async (fileName) => {
         try {
-            const submitResponse = await apiRequest('/ticket', {
-                method: "get",
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(fileName),
+            setIsUploading(true);
+
+            const submitResponse = await apiRequest(`/file/${fileName}/tickets`, {
+                method: "get"
             });
 
-            if (!submitResponse.ok) {
-                throw new Error('Submit failed');
+            if (submitResponse && !submitResponse.ok) {
+                throw new Error('Ticket generation failed');
             }
 
-            const result = await submitResponse.json();
-            alert(`Tickets created successfully: ${result.message}`);
+            setIsUploading(false);
+            setTicketsResponse(await submitResponse.json());
         } catch (error) {
-            alert(error.message || "An error occurred while creating tickets.");
+            setIsUploading(false);
+            alert(error.message || "An error occurred while generating your tickets.");
         }
     };
 
@@ -101,7 +101,7 @@ export default function UploadTranscript() {
         </label>
     );
 
-    return response ? (
+    return response ? ticketsResponse ? (
         <div className="flex flex-col gap-6">
             <Notice>
                 Your transcript has been uploaded!
@@ -140,33 +140,115 @@ export default function UploadTranscript() {
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                    {Object.entries(response.files).map(
-                        ([size, { name, url }]) => (
-                            <tr key={size}>
-                                <td className="py-4 text-sm text-gray-500 pr-3">
-                                    {size}
-                                </td>
-                                <td className="py-4 text-sm text-gray-500">
-                                    <p className="font-medium">{name}</p>
-                                    <a
-                                        className="text-blue-600 hover:text-blue-900 text-xs"
-                                        href={url}
-                                        target="_blank"
-                                    >
-                                        {url}
-                                    </a>
-                                </td>
-                                <td>
-                                    <button
-                                        onClick={() => doSubmit(name)}
-                                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                                    >
-                                        Create Tickets
-                                    </button>
-                                </td>
-                            </tr>
-                        ),
-                    )}
+                    {Object.entries(response.files).map(([size, { name, url }]) => (
+                        <tr key={size}>
+                            <td className="py-4 text-sm text-gray-500 pr-3">
+                                {size}
+                            </td>
+                            <td className="py-4 text-sm text-gray-500">
+                                <p className="font-medium">{name}</p>
+                                <a
+                                    className="text-blue-600 hover:text-blue-900 text-xs"
+                                    href={url}
+                                    target="_blank"
+                                >
+                                    {url}
+                                </a>
+                            </td>
+                            <td>
+                                <button
+                                    className="relative cursor-pointer flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                                    onClick={() => generateTickets({name})}
+                                >
+                                    <span>{ticketsResponse ? "Regenerate Tickets" : "Generate Tickets"}</span>
+
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                    {ticketsResponse && ticketsResponse.tickets && Object.entries(ticketsResponse.tickets).map(([key, { subject, body, estimationPoints }]) => (
+                        <tr key={subject}>
+                            <td className="py-4 text-sm text-black-500 pr-3">
+                                {subject}
+                            </td>
+                            <td className="py-4 text-sm text-gray-500">
+                                {body}
+                            </td>
+                            <td className="py-4 text-sm text-gray-500">
+                                {estimationPoints}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+
+            {uploadButton}
+        </div>
+    ) : (
+        <div className="flex flex-col gap-6">
+            <Notice>
+                Your transcript has been uploaded!
+            </Notice>
+
+            <table className="w-full divide-y divide-gray-300">
+                <thead>
+                    <tr>
+                        <th
+                            scope="col"
+                            className="py-3.5 text-left text-sm font-semibold text-gray-900"
+                        >
+                            Bucket
+                        </th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                    <tr>
+                        <td className="py-4 text-sm text-gray-500">
+                            {response.bucket}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table className="w-full divide-y divide-gray-300">
+                <thead>
+                    <tr>
+                        <th
+                            scope="col"
+                            colSpan="3"
+                            className="py-3.5 text-left text-sm font-semibold text-gray-900"
+                        >
+                            File
+                        </th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                    {Object.entries(response.files).map(([size, { name, url }]) => (
+                        <tr key={size}>
+                            <td className="py-4 text-sm text-gray-500 pr-3">
+                                {size}
+                            </td>
+                            <td className="py-4 text-sm text-gray-500">
+                                <p className="font-medium">{name}</p>
+                                <a
+                                    className="text-blue-600 hover:text-blue-900 text-xs"
+                                    href={url}
+                                    target="_blank"
+                                >
+                                    {url}
+                                </a>
+                            </td>
+                            <td className="py-4 text-sm text-gray-500">
+                                <button
+                                    className="relative cursor-pointer flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                                    onClick={() => generateTickets(name)}
+                                >
+                                    <span>Generate Tickets</span>
+
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
 
@@ -180,5 +262,5 @@ export default function UploadTranscript() {
 
             {uploadButton}
         </div>
-    )
+    );
 };

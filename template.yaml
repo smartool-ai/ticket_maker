@@ -110,14 +110,14 @@ Resources:
     Properties:
       Timeout: 30
       MemorySize: 1024
-      VpcConfig:
-        SecurityGroupIds:
-          - !Ref TranscriberSecurityGroup
-        SubnetIds:
-          - !FindInMap [EnvMappings, !Ref StageName, subnet1]
-          - !FindInMap [EnvMappings, !Ref StageName, subnet2]
-          - !FindInMap [EnvMappings, !Ref StageName, subnet3]
-          - !FindInMap [EnvMappings, !Ref StageName, subnet4]
+      # VpcConfig:
+      #   SecurityGroupIds:
+      #     - !Ref TranscriberSecurityGroup
+      #   SubnetIds:
+      #     - !FindInMap [EnvMappings, !Ref StageName, subnet1]
+      #     - !FindInMap [EnvMappings, !Ref StageName, subnet2]
+      #     - !FindInMap [EnvMappings, !Ref StageName, subnet3]
+      #     - !FindInMap [EnvMappings, !Ref StageName, subnet4]
       PackageType: Image
       Environment:
         Variables:

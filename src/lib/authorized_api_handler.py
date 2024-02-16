@@ -45,7 +45,7 @@ class AuthorizedApiHandler:
         *args: Any,
         **kwargs: Any,
     ) -> Any:
-        self.dependencies["logger"].info(
+        self.dependencies["logger"].debug(
             f"Initializing Dynamo Tables: {models_to_initialize}"
         )
         try:
@@ -64,10 +64,10 @@ class AuthorizedApiHandler:
             async def wrapper(*args: Any, **kwargs: Any) -> Any:
                 try:
                     self.dependencies["logger"].info("Calling route function")
-                    self.dependencies["logger"].info(
+                    self.dependencies["logger"].debug(
                         f"Here are the kwargs passed to route function: {kwargs}"
                     )
-                    self.dependencies["logger"].info(
+                    self.dependencies["logger"].debug(
                         f"Here are the args passed to route function: {args}"
                     )
                     return await func(*args, **kwargs)
