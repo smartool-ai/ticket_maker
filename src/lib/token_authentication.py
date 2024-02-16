@@ -46,10 +46,12 @@ class TokenAuthentication:
         # Decode the JWT and verify it using the JWKs from Auth0
         try:
             logger.debug("Getting signing key...")
-            logger.debug(f"domain: {domain} and audience: {audience} and jwks_url: {jwks_url}")
+            logger.debug(
+                f"domain: {domain} and audience: {audience} and jwks_url: {jwks_url}"
+            )
             key = self.get_signing_key_from_jwt(token.credentials)
             logger.debug("Signing key retrieved successfully")
-            
+
             logger.debug("Decoding JWT...")
             payload = jwt.decode(
                 token.credentials,
@@ -69,7 +71,7 @@ class TokenAuthentication:
 
         # The JWT "sub" claim is prefixed with "auth0|"
         sub_prefix = payload.get("sub").split("|")[0]
-        
+
         logger.debug(f"Sub prefix: {sub_prefix}")
 
         if sub_prefix not in ["auth0", "google-oauth2"]:
@@ -80,9 +82,9 @@ class TokenAuthentication:
 
     def require_user_with_permission(self, permission: str) -> Dict:
         """Require the request to contain a valid Bearer token with a specific Auth0 permission."""
+
         def _require_user_with_permission(
-            token: Optional[HTTPAuthorizationCredentials] = Depends(
-                token_auth_scheme)
+            token: Optional[HTTPAuthorizationCredentials] = Depends(token_auth_scheme),
         ) -> Dict:
             payload = self.require_any_user(token)
 

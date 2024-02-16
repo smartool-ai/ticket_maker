@@ -3,6 +3,7 @@ config.py:  Maintains the configuration settings for the application
             Should be one of the first modules imported and should not
             have any application dependencies in its import.
 """
+
 import os
 import json
 from logging import getLogger, Logger

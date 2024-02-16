@@ -40,8 +40,7 @@ class UserManagementModel(BaseModel):
     created_datetime = UnicodeAttribute(null=True)
 
     plaid_access_token = UnicodeAttribute(null=True)
-    _role = UnicodeAttribute(
-        null=True, default=Role.GENERAL_USER, attr_name="role")
+    _role = UnicodeAttribute(null=True, default=Role.GENERAL_USER, attr_name="role")
 
     email_index = UserManagementIndex()
 

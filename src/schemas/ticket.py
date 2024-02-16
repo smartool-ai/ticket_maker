@@ -1,11 +1,11 @@
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Ticket(BaseModel):
     subject: str
     body: str
-    estimation_points: str
+    estimation_points: int = Field(..., alias="estimationpoints")
 
 
 class TicketList(BaseModel):

@@ -10,20 +10,20 @@ ENV_VAR_ALLOWLIST = [
 
 
 def bootstrap():
-    """Performs any necessary bootstrapping for the application before serving.
-    """
-    prepare_static_dir(os.path.join(
-        os.path.dirname(__file__), "..", "static"), "/tmp/static")
+    """Performs any necessary bootstrapping for the application before serving."""
+    prepare_static_dir(
+        os.path.join(os.path.dirname(__file__), "..", "static"), "/tmp/static"
+    )
 
 
 def prepare_static_dir(input_path, output_path):
-    """Recursively replaces environment variables in all files in a directory.
-    """
+    """Recursively replaces environment variables in all files in a directory."""
     for root, dirs, files in os.walk(input_path):
         for file in files:
             path = os.path.join(root, file)
-            prepare_static_file(path, os.path.join(
-                output_path, os.path.relpath(path, input_path)))
+            prepare_static_file(
+                path, os.path.join(output_path, os.path.relpath(path, input_path))
+            )
 
 
 def prepare_static_file(input_path, output_path):

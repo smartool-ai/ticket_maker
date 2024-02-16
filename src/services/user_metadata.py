@@ -10,8 +10,7 @@ async def add_or_update_user_metadata(user_id: str, **kwargs) -> UserMetadataMod
     except UserMetadataModel.DoesNotExist:
         # Create a new user metadata record if it doesn't exist
         user_metadata = await UserMetadataModel.initialize(user_id=user_id)
-    
-    
+
     # Update the existing user metadata record with partial updates
     for key, value in metadata.items():
         if key != "user_id":

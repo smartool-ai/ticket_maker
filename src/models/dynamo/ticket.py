@@ -6,11 +6,29 @@ from typing import Any, Dict, Optional
 from src.lib.dynamo_utils import BaseModel
 from src.lib.loggers import get_module_logger
 
-from pynamodb.attributes import UnicodeAttribute
+from pynamodb.attributes import (
+    ListAttribute,
+    MapAttribute,
+    NumberAttribute,
+    UnicodeAttribute,
+)
 from pynamodb.expressions.condition import Condition
 
 
 logger = get_module_logger()
+
+
+class TicketModel(MapAttribute):
+    subject = UnicodeAttribute()
+    body = UnicodeAttribute()
+    estimationpoints = NumberAttribute()
+
+    async def to_serializable_dict(self) -> dict:
+        return {
+            "subject": self.subject,
+            "body": self.body,
+            "estimationpoints": self.estimationpoints,
+        }
 
 
 class TicketModel(BaseModel):
@@ -29,40 +47,28 @@ class TicketModel(BaseModel):
         region = os.getenv("AWS_REGION", "us-west-2")
 
     document_id = UnicodeAttribute(hash_key=True)
-    created_datetime = UnicodeAttribute()
-    subject = UnicodeAttribute()
-    body = UnicodeAttribute()
-    estimation_points = UnicodeAttribute()
+    created_datetime = UnicodeAttribute(range_key=True)
+    tickets = ListAttribute(of=TicketModel)
 
     @classmethod
     async def initialize(
         cls,
         document_id: str,
-        subject: str,
-        body: str,
-        estimation_points: str,
+        tickets: list[Dict[str, Any]],
     ) -> "TicketModel":
         ticket = TicketModel(
             document_id=document_id,
             created_datetime=datetime.datetime.now(),
-            subject=subject,
-            body=body,
-            estimation_points=estimation_points,
+            tickets=tickets,
         )
 
         return ticket
 
-    async def save(
-        self,
-        condition: Optional[Condition] = None
-    ) -> Dict[str, Any]:
+    async def save(self, condition: Optional[Condition] = None) -> Dict[str, Any]:
         """Save the ticket to DynamoDB."""
         return super().save(condition)
 
-    async def delete(
-        self,
-        condition: Optional[Condition] = None
-    ) -> Dict[str, Any]:
+    async def delete(self, condition: Optional[Condition] = None) -> Dict[str, Any]:
         """Delete the ticket from DynamoDB."""
         return super().delete(condition)
 
@@ -73,9 +79,11 @@ class TicketModel(BaseModel):
         return {
             "document_id": self.document_id,
             "created_datetime": self.created_datetime,
-            "subject": self.subject,
-            "body": self.body,
-            "estimation_points": self.estimation_points,
+            "tickets": (
+                [await ticket.to_serializable_dict() for ticket in self.tickets]
+                if self.tickets
+                else []
+            ),
         }
 
     async def to_json(self) -> str:

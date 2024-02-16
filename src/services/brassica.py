@@ -45,13 +45,15 @@ class BrassicaClient:
 
         if not isinstance(response["data"], list):
             raise Exception(
-                f"Expected response to be a list, received: {response['data']}")
+                f"Expected response to be a list, received: {response['data']}"
+            )
 
         data = response["data"]
 
         while "next" in response["links"]:
             response = self._brassica_request(
-                method, response["links"]["next"], body).json()
+                method, response["links"]["next"], body
+            ).json()
 
             data.extend(response["data"])
 
@@ -186,7 +188,9 @@ class BrassicaClient:
             List[dict]: A list of agreement templates
         """
         return self._brassica_scroll(
-            "GET", f"/api/platforms/{self.platform_slug}/agreement-templates?page_size=100", None
+            "GET",
+            f"/api/platforms/{self.platform_slug}/agreement-templates?page_size=100",
+            None,
         )
 
     def get_agreement_content(self, agreement_id: str) -> str:
@@ -198,7 +202,8 @@ class BrassicaClient:
             dict: _description_
         """
         response = self._brassica_request(
-            "GET", f"/api/agreement-templates/{agreement_id}", None)
+            "GET", f"/api/agreement-templates/{agreement_id}", None
+        )
         return response.json().get("data", {}).get("attributes", {}).get("draftContent")
 
     def get_all_offering_series_assets(self, offering_series_id: str) -> List[dict]:
@@ -212,7 +217,9 @@ class BrassicaClient:
             List[dict]: A list of offering series assets
         """
         return self._brassica_scroll(
-            "GET", f"/api/offering-series/{offering_series_id}/offering-series-assets?page_size=100", None
+            "GET",
+            f"/api/offering-series/{offering_series_id}/offering-series-assets?page_size=100",
+            None,
         )
 
     def create_offering_series(
@@ -308,7 +315,8 @@ class BrassicaClient:
             None
         """
         self._brassica_request(
-            "DELETE", f"/api/offering-series/{offering_series_id}", None)
+            "DELETE", f"/api/offering-series/{offering_series_id}", None
+        )
 
         return None
 
@@ -364,11 +372,11 @@ class BrassicaClient:
             str: _description_
         """
         # No attributes are sent but... you have to send an empty JSON:API document presently.
-        body = {
-            "data": {}
-        }
+        body = {"data": {}}
         agreement_template_resp = self._brassica_request(
-            "POST", f"/api/agreement-templates/{agreement_template_id}/agreement-template-versions", body
+            "POST",
+            f"/api/agreement-templates/{agreement_template_id}/agreement-template-versions",
+            body,
         )
 
         return agreement_template_resp.json()
@@ -396,8 +404,9 @@ class BrassicaClient:
             "POST", f"/api/offerings/{offering_id}/purchase-agreement-template", body
         )
 
-        purchase_agreement_template_id = agreement_template_resp.json().get("data",
-                                                                            {}).get("id")
+        purchase_agreement_template_id = (
+            agreement_template_resp.json().get("data", {}).get("id")
+        )
 
         self.publish_agreement_template(purchase_agreement_template_id)
 

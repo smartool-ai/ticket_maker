@@ -34,9 +34,7 @@ class Application:
         # Fallback to the UI
         if os.path.exists("/tmp/static"):
             self._app.mount(
-                "/",
-                StaticFiles(directory="/tmp/static", html=True),
-                name="static"
+                "/", StaticFiles(directory="/tmp/static", html=True), name="static"
             )
 
     @property
@@ -49,7 +47,7 @@ class Application:
         routers = [
             controllers.file_management.router,
             controllers.ticket.router,
-            controllers.user_metadata.router
+            controllers.user_metadata.router,
         ]
 
         for router in routers:

@@ -27,7 +27,7 @@ BAD_REQUEST_ERRORS = (
     MissingRequiredData,
     ObjectDoesNotExist,
 )
-SERVICE_UNAVAILABLE_ERRORS = (ServerFailureError)
+SERVICE_UNAVAILABLE_ERRORS = ServerFailureError
 
 
 class AuthorizedApiHandler:

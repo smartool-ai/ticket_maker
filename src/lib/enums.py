@@ -12,6 +12,7 @@ logger = get_module_logger()
 
 class PlatformEnum(str, enum.Enum):
     """Enum for the platform of the ticket."""
+
     JIRA = "JIRA"
     GITHUB = "GITHUB"
     TRELLO = "TRELLO"

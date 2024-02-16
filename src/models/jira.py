@@ -34,7 +34,9 @@ class JiraClient:
 
     def create_issue(self, issue_data: dict):
         url = f"{JIRA_BASE_URL}/issue"
-        response = requests.post(url, json=issue_data, headers=self.headers, auth=self.auth)
+        response = requests.post(
+            url, json=issue_data, headers=self.headers, auth=self.auth
+        )
         if response.status_code == 201:
             return response.json()
         else:

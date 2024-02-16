@@ -4,6 +4,7 @@ import os
 from typing import Any, Dict, Optional
 
 from src.lib.dynamo_utils import BaseModel
+
 # from src.lib.enums import DocumentType
 from src.lib.loggers import get_module_logger
 
@@ -52,14 +53,9 @@ class DocumentsModel(BaseModel):
 
         return document
 
-    async def save(
-        self,
-        condition: Optional[Condition] = None
-    ) -> Dict[str, Any]:
+    async def save(self, condition: Optional[Condition] = None) -> Dict[str, Any]:
         """Save the document to DynamoDB."""
-        return super().save(
-            condition=condition, add_version_condition=True
-        )
+        return super().save(condition=condition, add_version_condition=True)
 
     async def __eq__(self, other: Any) -> bool:
         """Return True if two records have the same attributes.

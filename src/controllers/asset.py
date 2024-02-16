@@ -11,11 +11,10 @@ router = APIRouter()
 logger = getLogger(__name__)
 token_authentication = TokenAuthentication()
 granted_user = token_authentication.require_user_with_permission(
-    "manage:brassica_offerings")
+    "manage:brassica_offerings"
+)
 
 
 @router.get("/asset")
-async def get_all_assets(
-    user: Dict = Depends(granted_user)
-) -> List:
+async def get_all_assets(user: Dict = Depends(granted_user)) -> List:
     return [asset.to_dict() for asset in list_assets()]

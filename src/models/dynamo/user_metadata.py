@@ -12,6 +12,7 @@ from pynamodb.expressions.condition import Condition
 
 logger = get_module_logger()
 
+
 class UserMetadataModel(BaseModel):
     """Model representing a User and their metadata.
 
@@ -37,7 +38,7 @@ class UserMetadataModel(BaseModel):
         user_id: str,
         email: Optional[str] = None,
         jira_api_key: Optional[str] = None,
-        jira_email: Optional[str] = None
+        jira_email: Optional[str] = None,
     ) -> "UserMetadataModel":
         """Initialize a UserMetadataModel."""
         user_metadata = UserMetadataModel(
@@ -45,31 +46,28 @@ class UserMetadataModel(BaseModel):
             email=email,
             jira_api_key=jira_api_key,
             jira_email=jira_email,
-            created_datetime=datetime.datetime.now()
+            created_datetime=datetime.datetime.now(),
         )
 
         return user_metadata
-    
-    async def save(
-        self,
-        condition: Optional[Condition] = None
-    ) -> Dict[str, Any]:
+
+    async def save(self, condition: Optional[Condition] = None) -> Dict[str, Any]:
         """Save the user metadata to DynamoDB."""
         return super().save(condition)
-    
+
     async def __eq__(self, other: Any) -> bool:
         """Check if two UserMetadataModels are equal."""
         return self.user_id == other.user_id
-    
+
     async def to_serializable_dict(self) -> dict:
         """Return a serializable dictionary representation of the UserMetadataModel."""
         return {
             "user_id": self.user_id,
             "email": self.email,
             "jira_api_key": self.jira_api_key,
-            "jira_email": self.jira_email
+            "jira_email": self.jira_email,
         }
-    
+
     async def to_json(self) -> str:
         """Return a json string representation of the UserMetadataModel."""
         return json.dumps(await self.to_serializable_dict())

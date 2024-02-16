@@ -111,8 +111,8 @@ def delete_auth0_user(id: str) -> bool:
         client_secret=os.environ["AUTH0_MGMT_CLIENT_SECRET"],
     )
 
-    token = get_token.client_credentials('https://{}/api/v2/'.format(domain))
-    mgmt_api_token = token['access_token']
+    token = get_token.client_credentials("https://{}/api/v2/".format(domain))
+    mgmt_api_token = token["access_token"]
 
     auth0 = Auth0(domain, mgmt_api_token)
 
@@ -125,8 +125,7 @@ def delete_auth0_user(id: str) -> bool:
 
 
 def delete_reserve_orders_by_email(email):
-    """Deletes all reserve orders for a given email address.
-    """
+    """Deletes all reserve orders for a given email address."""
     orders = OrderModel.query(email)
     for order in orders:
         if order.order_type == "reserve":

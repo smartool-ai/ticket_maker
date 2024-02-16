@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 from fastapi import APIRouter, Depends
 
@@ -27,7 +27,12 @@ async def get_file(
     user: Dict = Depends(granted_user),
 ) -> TicketGenerationSchema:
     """Get file from S3"""
-    ticket_generation_datetime: str = await invoke_ticket_generation_lambda(document_id=file_name, user_id=user.get("sub"), number_of_tickets=number_of_tickets, platform=platform)
+    ticket_generation_datetime: str = await invoke_ticket_generation_lambda(
+        document_id=file_name,
+        user_id=user.get("sub"),
+        number_of_tickets=number_of_tickets,
+        platform=platform,
+    )
 
     # logger.info(f"Getting file from S3: {file_name}")
     # _: str = user.get("sub").split("|")[1]
@@ -48,6 +53,13 @@ async def get_tickets_by_generation_time(
     _: Dict = Depends(granted_user),
 ) -> TicketList:
     """Get all tickets"""
-    tickets: List[TicketModel] = await get_tickets(document_id=file_name, generation_datetime=generation_datetime)
+    ticket: Optional[TicketModel] = await get_tickets(
+        document_id=file_name, generation_datetime=generation_datetime
+    )
 
-    return {"tickets": [await ticket.to_serializable_dict() for ticket in tickets] if tickets else []}
+    if not ticket:
+        return {"tickets": []}
+
+    ticket_dict: dict = await ticket.to_serializable_dict()
+
+    return {"tickets": ticket_dict.get("tickets")}

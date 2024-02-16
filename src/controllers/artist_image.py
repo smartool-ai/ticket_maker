@@ -13,8 +13,7 @@ from src.lib.token_authentication import TokenAuthentication
 router = APIRouter()
 logger = getLogger(__name__)
 token_authentication = TokenAuthentication()
-granted_user = token_authentication.require_user_with_permission(
-    "manage:artist_images")
+granted_user = token_authentication.require_user_with_permission("manage:artist_images")
 
 region_name = os.environ.get("AWS_REGION", "us-west-2")
 s3 = boto3.resource("s3", region_name=region_name)
@@ -58,7 +57,7 @@ async def get_artist_image(
             "url": f"https://{bucket.name}.s3.{region_name}.amazonaws.com/{obj.key}",
         }
     except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == "404":
+        if e.response["Error"]["Code"] == "404":
             response.status_code = 404
             return {"error": "File not found"}
         else:
@@ -75,7 +74,7 @@ async def upload_artist_image(
     xlarge_image_name = upload_image(upload.filename, upload.file)
     uploaded_files["xlarge"] = {
         "name": xlarge_image_name,
-        "url": f"https://{bucket.name}.s3.{region_name}.amazonaws.com/{xlarge_image_name}"
+        "url": f"https://{bucket.name}.s3.{region_name}.amazonaws.com/{xlarge_image_name}",
     }
 
     # Resize and upload other image sizes

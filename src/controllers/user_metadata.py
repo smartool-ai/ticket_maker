@@ -20,8 +20,7 @@ granted_user = token_authentication.require_user_with_permission(
 @router.put("/user-metadata")
 @authorized_api_handler()
 async def put_user_metadata(
-    user_metadata: UserMetadataSchema,
-    user: Dict = Depends(granted_user)
+    user_metadata: UserMetadataSchema, user: Dict = Depends(granted_user)
 ) -> Dict:
     """
     Add or update user metadata
@@ -35,6 +34,8 @@ async def put_user_metadata(
     """
     user_id = user.get("sub").split("|")[1]
 
-    user_metadata_model: UserMetadataModel = await add_or_update_user_metadata(user_id, **user_metadata.model_dump())
+    user_metadata_model: UserMetadataModel = await add_or_update_user_metadata(
+        user_id, **user_metadata.model_dump()
+    )
 
     return await user_metadata_model.to_serializable_dict()

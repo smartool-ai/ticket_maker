@@ -67,7 +67,7 @@ export default function UploadTranscript() {
 
     const generateTickets = async (fileName) => {
         try {
-            setIsUploading(true);
+            setIsPolling(true);
 
             const submitResponse = await apiRequest(`/file/${fileName}/tickets`, {
                 method: "post"
@@ -85,7 +85,7 @@ export default function UploadTranscript() {
                 let response = null;
                 let count = 0;
 
-                while (!response && count < 20) {
+                while (!response && count < 12) {
                     const res = await apiRequest(`/file/${fileName}/tickets?generation_datetime=${submitedResponseJson.ticket_generation_datetime}`, {
                         method: "get",
                     });
@@ -93,8 +93,8 @@ export default function UploadTranscript() {
                     if (res.status === 200) {
                         let resJson = await res.json();
                         console.log(resJson);
-                        if (response.tickets && response.tickets.length > 0) {
-                            setIsUploading(false);
+                        if (resJson.tickets && resJson.tickets.length > 0) {
+                            setIsPolling(false);
                             setTicketsResponse(resJson);
                             response = true;
                         } else {
@@ -108,14 +108,14 @@ export default function UploadTranscript() {
                 }
 
                 if (!response) {
-                    setIsUploading(false);
+                    setIsPolling(false);
                     alert("Ticket generation timed out.");
                 }
             };
 
             pollTickets(fileName);
         } catch (error) {
-            setIsUploading(false);
+            setIsPolling(false);
             alert(error.message || "An error occurred while generating your tickets.");
         }
     };
