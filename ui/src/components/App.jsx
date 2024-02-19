@@ -6,7 +6,6 @@ import useHashLocation from '../hooks/useHashLocation';
 import Spinner from './Spinner';
 import Layout from './Layout';
 import Logo from './Logo';
-import WelcomePage from '../views/WelcomePage';
 import UploadTranscript from '../views/UploadTranscript';
 // import ArtistImages from '../views/ArtistImages';
 // import DeleteUser from '../views/DeleteUser';
@@ -40,7 +39,6 @@ export default function App() {
   } else if (isAuthenticated) {
     return <Router hook={useHashLocation}>
       <Layout current={location} token={token} >
-        <Route path="/welcome" component={WelcomePage} />
         <Route path="/upload-transcript" component={UploadTranscript} />
       </Layout>
     </Router>
