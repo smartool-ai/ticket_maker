@@ -6,7 +6,7 @@ export default function WelcomePage({ loginWithPopup }) {
             <Logo />
             <button
                 onClick={() => loginWithPopup()}
-                className="rounded-md bg-blue-600 px-5 py-2.5 text-lg font-semibold text-white hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                className="rounded-md bg-blue-600 px-5 py-2.5 text-lg font-semibold text-white hover:bg-[#4654A3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
             >
                 Sign in
             </button>
