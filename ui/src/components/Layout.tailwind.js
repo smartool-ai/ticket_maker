@@ -4,7 +4,7 @@ export const topNav_tw = "sticky top-0 z-40 flex items-center gap-x-6 bg-gray-90
 
 export const hamburgerIcon_tw = "-m-2.5 p-2.5 text-gray-400 lg:hidden";
 
-export const topNavCurrentItem_tw = "flex-1 text-sm font-semibold leading-6 text-white";
+export const topNavCurrentItem_tw = "flex gap-x-2 flex-1 text-sm font-semibold leading-6 text-white";
 
 export const sidebarContainer_tw = "flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 py-4";
 

@@ -110,6 +110,7 @@ export default function Layout({ current, token, children }) {
           <Bars3Icon className="h-6 w-6" aria-hidden="true" />
         </button>
         <div className={styles.topNavCurrentItem_tw}>
+          <currentNavigation.icon className="h-6 w-6 shrink-0" aria-hidden="true" />
           {currentNavigation && currentNavigation.name}
         </div>
         <Menu as="div">
