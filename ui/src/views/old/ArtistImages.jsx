@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
-import useRequest from '../hooks/useRequest';
-import Spinner from '../components/Spinner';
-import Notice from '../components/Notice';
+import useRequest from '../../hooks/useRequest';
+import Spinner from '../../components/Spinner';
+import Notice from '../../components/Notice';
 
 export default function ArtistImages() {
   const fileInput = useRef(null);

@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import useRequest from '../hooks/useRequest';
 import Spinner from '../components/Spinner';
 import Notice from '../components/Notice';
+import * as styles from "./UploadTranscript.tailwind";
 
 export default function UploadTranscript() {
     const fileInput = useRef(null);
@@ -120,14 +121,14 @@ export default function UploadTranscript() {
         }
     };
 
-    const saveTicket = async (fileName, subject, body, estimationpoints) => {
+    const saveTicket = async (fileName, subject, body, estimationPoints) => {
 
     };
 
     const uploadButton = (
         <label
             htmlFor="upload"
-            className="relative cursor-pointer flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            className={styles.uploadButton_tw}
         >
             <span>{response ? "Upload another transcript" : "Upload transcript"}</span>
             <input
@@ -142,183 +143,159 @@ export default function UploadTranscript() {
     );
 
     return response ? ticketsResponse ? (
-        <div className="flex flex-col gap-6">
-            <Notice>
-                Your transcript has been uploaded!
-            </Notice>
-
-            <table className="w-full divide-y divide-gray-300">
-                <thead>
-                    <tr>
-                        <th
-                            scope="col"
-                            className="py-3.5 text-left text-sm font-semibold text-gray-900"
-                        >
-                            Bucket
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                    <tr>
-                        <td className="py-4 text-sm text-gray-500">
-                            {response.bucket}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <table className="w-full divide-y divide-gray-300">
-                <thead>
-                    <tr>
-                        <th
-                            scope="col"
-                            colSpan="3"
-                            className="py-3.5 text-left text-sm font-semibold text-gray-900"
-                        >
-                            File
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                    {Object.entries(response.files).map(([size, { name, url }]) => (
-                        <tr key={size}>
-                            <td className="py-4 text-sm text-gray-500 pr-3">
-                                {size}
-                            </td>
-                            <td className="py-4 text-sm text-gray-500">
-                                <p className="font-medium">{name}</p>
-                                <a
-                                    className="text-blue-600 hover:text-blue-900 text-xs"
-                                    href={url}
-                                    target="_blank"
-                                >
-                                    {url}
-                                </a>
-                            </td>
-                            <td>
-                                <button
-                                    className="relative cursor-pointer flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                                    onClick={() => generateTickets({name})}
-                                >
-                                    {isPolling ? (
-                                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path
-                                                className="opacity-75"
-                                                fill="currentColor"
-                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l1.414-1.414C2.56 15.544 1.5 13.88 1.5 12H6zm10-5.291A7.962 7.962 0 0120 12h4c0-6.627-5.373-12-12-12v4c3.042 0 5.824 1.135 7.938 3l-1.414 1.414z"
-                                            ></path>
-                                        </svg>
-                                    ) : (
-                                        <span>{ticketsResponse ? "Regenerate Tickets" : "Generate Tickets"}</span>
-                                    )}
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                    {ticketsResponse && ticketsResponse.tickets && Object.entries(ticketsResponse.tickets).map(([key, { subject, body, estimationpoints }]) => (
-                        <tr key={subject}>
-                            <td className="py-4 text-sm text-black-500 pr-3">
-                                {subject}
-                            </td>
-                            <td className="py-4 text-sm text-gray-500">
-                                {body}
-                            </td>
-                            <td className="py-4 text-sm text-gray-500">
-                                {estimationpoints}
-                            </td>
-                            <td>
-                                <button
-                                    className="relative cursor-pointer flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                                    onClick={() => saveTicket({subject, body, estimationpoints})}
-                                >
-                                    Save Ticket
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
+        <div className={styles.transcriptContainer_tw}>
+            <Notice> Your transcript has been uploaded!</Notice>
+            <BucketTable response={response} />
+            <FileTable
+                generateTickets={generateTickets}
+                response={response}
+                ticketsResponse={ticketsResponse}
+                saveTicket={saveTicket}
+                isPolling={isPolling}
+                isButtonOptionA={false}
+            />
             {uploadButton}
         </div>
     ) : (
-        <div className="flex flex-col gap-6">
-            <Notice>
-                Your transcript has been uploaded!
-            </Notice>
-
-            <table className="w-full divide-y divide-gray-300">
-                <thead>
-                    <tr>
-                        <th
-                            scope="col"
-                            className="py-3.5 text-left text-sm font-semibold text-gray-900"
-                        >
-                            Bucket
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                    <tr>
-                        <td className="py-4 text-sm text-gray-500">
-                            {response.bucket}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <table className="w-full divide-y divide-gray-300">
-                <thead>
-                    <tr>
-                        <th
-                            scope="col"
-                            colSpan="3"
-                            className="py-3.5 text-left text-sm font-semibold text-gray-900"
-                        >
-                            File
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                    {Object.entries(response.files).map(([size, { name, url }]) => (
-                        <tr key={size}>
-                            <td className="py-4 text-sm text-gray-500 pr-3">
-                                {size}
-                            </td>
-                            <td className="py-4 text-sm text-gray-500">
-                                <p className="font-medium">{name}</p>
-                                <a
-                                    className="text-blue-600 hover:text-blue-900 text-xs"
-                                    href={url}
-                                    target="_blank"
-                                >
-                                    {url}
-                                </a>
-                            </td>
-                            <td className="py-4 text-sm text-gray-500">
-                                <button
-                                    className="relative cursor-pointer flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                                    onClick={() => generateTickets(name)}
-                                >
-                                    <span>Generate Tickets</span>
-
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
+        <div className={styles.transcriptContainer_tw}>
+            <Notice>Your transcript has been uploaded!</Notice>
+            <BucketTable response={response} />
+            <FileTable
+                generateTickets={generateTickets}
+                response={response}
+                ticketsResponse={ticketsResponse}
+                saveTicket={{saveTicket}}
+                isPolling={isPolling}
+                isButtonOptionA={true}
+            />
             {uploadButton}
         </div>
     ) : (
-        <div className="flex flex-col gap-6">
+        <div className={styles.transcriptContainer_tw}>
             <Notice>
                 <p>Please note that currently only .txt files are supported</p>
             </Notice>
-
             {uploadButton}
         </div>
+    );
+};
+
+
+const BucketTable = ({ response }) => (
+    <table className={styles.bucketTableContainer_tw}>
+        <thead>
+            <tr>
+                <th
+                    scope="col"
+                    className={styles.tableHeader_tw}
+                >
+                    Bucket
+                </th>
+            </tr>
+        </thead>
+        <tbody className={styles.tableBodyContainer_tw}>
+            <tr>
+                <td className="py-4 text-sm text-gray-500">
+                    {response.bucket}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+);
+
+const FileTable = ({ generateTickets, response, ticketsResponse, saveTicket, isPolling, isButtonOptionA = true }) => {
+    const buttonOptionA = (name) => (
+        <td className="py-4 text-sm text-gray-500">
+            <button
+                className={styles.generateTicketsButton_tw}
+                onClick={() => generateTickets(name)}
+            >
+                <span>Generate Tickets</span>
+            </button>
+        </td>
+    );
+
+    const buttonOptionB = (name) => (
+        <td>
+            <button
+                className={styles.regenerateTicketsButton_tw}
+                onClick={() => generateTickets(name)}
+            >
+                {isPolling ? (
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l1.414-1.414C2.56 15.544 1.5 13.88 1.5 12H6zm10-5.291A7.962 7.962 0 0120 12h4c0-6.627-5.373-12-12-12v4c3.042 0 5.824 1.135 7.938 3l-1.414 1.414z"
+                        ></path>
+                    </svg>
+                ) : (
+                    <span>{ticketsResponse ? "Regenerate Tickets" : "Generate Tickets"}</span>
+                )}
+            </button>
+        </td>
+    );
+
+    const saveTicketButton = ({ subject, body, estimationPoints}) => (
+        <tr key={subject}>
+            <td className="py-4 text-sm text-black-500 pr-3">
+                {subject}
+            </td>
+            <td className="py-4 text-sm text-gray-500">
+                {body}
+            </td>
+            <td className="py-4 text-sm text-gray-500">
+                {estimationPoints}
+            </td>
+            <td>
+                <button
+                    className={styles.saveTicketButton_tw}
+                    onClick={() => saveTicket({ subject, body, estimationPoints })}
+                >
+                    Save Ticket
+                </button>
+            </td>
+        </tr>
+    );
+
+    return (
+        <table className={styles.fileTableContainer_tw}>
+            <thead>
+                <tr>
+                    <th
+                        scope="col"
+                        colSpan="3"
+                        className={styles.tableHeader_tw}
+                    >
+                        File
+                    </th>
+                </tr>
+            </thead>
+            <tbody className={styles.tableBodyContainer_tw}>
+                {Object.entries(response.files).map(([size, { name, url }]) => (
+                    <tr key={size}>
+                        <td className="py-4 text-sm text-white pr-3">
+                            {size}
+                        </td>
+                        <td className="py-4 text-sm text-gray-500">
+                            <p className="font-medium">{name}</p>
+                            <a
+                                className={styles.fileTableUrl_tw}
+                                href={url}
+                                target="_blank"
+                            >
+                                {url}
+                            </a>
+                        </td>
+                        {isButtonOptionA ? buttonOptionA(name) : buttonOptionB(name)}
+                    </tr>
+                ))}
+                {/* Call saveTicketButton() if isButtonOptionA === false */}
+                {!isButtonOptionA && ticketsResponse && ticketsResponse.tickets && Object.entries(ticketsResponse.tickets).map(([key, { subject, body, estimationPoints }]) => (
+                    saveTicketButton(subject, body, estimationPoints)
+                ))}
+            </tbody>
+        </table>
     );
 };

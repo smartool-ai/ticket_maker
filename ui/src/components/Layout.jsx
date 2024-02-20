@@ -1,23 +1,24 @@
 import { useAuth0 } from '@auth0/auth0-react';
-import { Fragment, useState } from 'react'
-import { Dialog, Menu, Transition } from '@headlessui/react'
+import { Fragment, useState } from 'react';
+import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
   Bars3Icon,
   UserMinusIcon,
   XMarkIcon,
   FolderIcon
-} from '@heroicons/react/24/outline'
+} from '@heroicons/react/24/outline';
 import { Link } from "wouter";
-import Logo from './Logo'
+import Logo from './Logo';
+import * as styles from "./Layout.tailwind.js";
 
 const navigation = [
-  { name: 'Upload Transcript', href: '/upload-transcript', icon: FolderIcon, permission:'manage:upload_transcripts' },
+  { name: 'Upload Transcript', href: '/upload-transcript', icon: FolderIcon, permission: 'manage:upload_transcripts' },
   { name: 'Delete User', href: '/delete-user', icon: UserMinusIcon, permission: 'manage:users' },
-]
+];
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
+  return classes.filter(Boolean).join(' ');
+};
 
 export default function Layout({ current, token, children }) {
   const {
@@ -25,16 +26,16 @@ export default function Layout({ current, token, children }) {
     logout,
   } = useAuth0();
 
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const currentNavigation = navigation.find((item) => current.startsWith(item.href))
+  const currentNavigation = navigation.find((item) => current.startsWith(item.href));
 
   const permittedNavigation = navigation.filter((item) => {
     if (item.permission && token && token.permissions) {
       return token.permissions.includes(item.permission);
     } else {
       return true;
-    }
+    };
   });
 
   return (
@@ -80,111 +81,46 @@ export default function Layout({ current, token, children }) {
                     </button>
                   </div>
                 </Transition.Child>
-                <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-2 ring-1 ring-white/10">
-                  <div className="flex h-16 shrink-0 items-center">
-                    <Logo inverted={true} className="h-6 w-auto" />
-                  </div>
-                  <nav className="flex flex-1 flex-col">
-                    <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                      <li>
-                        <ul role="list" className="-mx-2 space-y-1">
-                          {permittedNavigation.map((item) => (
-                            <li key={item.name}>
-                              <Link
-                                href={item.href}
-                                className={classNames(
-                                  currentNavigation && currentNavigation.href == item.href
-                                    ? 'bg-gray-800 text-white'
-                                    : 'text-gray-400 hover:text-white hover:bg-gray-800',
-                                  'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
-                                )}
-                              >
-                                <item.icon className="h-6 w-6 shrink-0" aria-hidden="true" />
-                                {item.name}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </li>
-                    </ul>
-                  </nav>
-                </div>
+                <NavItem
+                  classNames={classNames}
+                  currentNavigation={currentNavigation}
+                  logout={logout}
+                  permittedNavigation={permittedNavigation}
+                  user={user}
+                  setSidebarOpen={setSidebarOpen}
+                />
               </Dialog.Panel>
             </Transition.Child>
           </div>
         </Dialog>
       </Transition.Root>
-
-      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6">
-          <div className="flex h-16 shrink-0 items-center">
-            <Logo inverted={true} className="h-6 w-auto" />
-          </div>
-          <nav className="flex flex-1 flex-col">
-            <ul role="list" className="flex flex-1 flex-col gap-y-7">
-              <li>
-                <ul role="list" className="-mx-2 space-y-1">
-                  {permittedNavigation.map((item) => (
-                    <li key={item.name}>
-                      <Link
-                        href={item.href}
-                        className={classNames(
-                          currentNavigation && currentNavigation.href == item.href
-                            ? 'bg-gray-800 text-white'
-                            : 'text-gray-400 hover:text-white hover:bg-gray-800',
-                          'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
-                        )}
-                      >
-                        <item.icon className="h-6 w-6 shrink-0" aria-hidden="true" />
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-              <li className="-mx-6 mt-auto">
-                <div
-                  className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-white"
-                >
-                  <img
-                    className="h-8 w-8 rounded-full bg-gray-800"
-                    src={user.picture}
-                    alt=""
-                  />
-                  <div className="flex flex-col items-start">
-                    <span className="sr-only">Your profile</span>
-                    <span aria-hidden="true">{user.name}</span>
-                    <button
-                      onClick={() => logout({ returnTo: window.location.origin })}
-                      className="block text-xs font-semibold text-blue-500 hover:underline hover:text-blue-400"
-                    >
-                      Sign out
-                    </button>
-                  </div>
-                </div>
-              </li>
-            </ul>
-          </nav>
-        </div>
+      <div className={styles.sideNav_tw}>
+        <NavItem
+          classNames={classNames}
+          currentNavigation={currentNavigation}
+          logout={logout}
+          permittedNavigation={permittedNavigation}
+          user={user}
+          setSidebarOpen={setSidebarOpen}
+        />
       </div>
-
-      <div className="sticky top-0 z-40 flex items-center gap-x-6 bg-gray-900 px-4 py-4 shadow-sm sm:px-6 lg:hidden">
-        <button type="button" className="-m-2.5 p-2.5 text-gray-400 lg:hidden" onClick={() => setSidebarOpen(true)}>
+      <div className={styles.topNav_tw}>
+        <button type="button" className={styles.hamburgerIcon_tw} onClick={() => setSidebarOpen(true)}>
           <span className="sr-only">Open sidebar</span>
           <Bars3Icon className="h-6 w-6" aria-hidden="true" />
         </button>
-        <div className="flex-1 text-sm font-semibold leading-6 text-white">
+        <div className={styles.topNavCurrentItem_tw}>
+          {currentNavigation?.icon && <currentNavigation.icon className="h-6 w-6 shrink-0" aria-hidden="true" />}
           {currentNavigation && currentNavigation.name}
         </div>
         <Menu as="div">
           <Menu.Button className="block">
             <img
-              className="h-8 w-8 rounded-full bg-gray-800"
+              className={styles.avatar_tw}
               src={user.picture}
-              alt=""
+              alt="User Avatar"
             />
           </Menu.Button>
-
           <Transition
             as={Fragment}
             enter="transition ease-out duration-100"
@@ -194,30 +130,84 @@ export default function Layout({ current, token, children }) {
             leaveFrom="transform opacity-100 scale-100"
             leaveTo="transform opacity-0 scale-95"
           >
-            <Menu.Items className="absolute right-4 z-10 mt-2 w-auto origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-              <div className="py-1">
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      onClick={() => logout({ returnTo: window.location.origin })}
-                      className={classNames(
-                        active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                        'block w-full px-4 py-2 text-left text-sm'
-                      )}
-                    >
-                      Sign out
-                    </button>
-                  )}
-                </Menu.Item>
-              </div>
+            <Menu.Items className={styles.avatarDropdownContainer_tw}>
+              <Menu.Item>
+                {({ active }) => (
+                  <button
+                    onClick={() => logout({ returnTo: window.location.origin })}
+                    className={classNames(
+                      active ? 'bg-gray-200 text-gray-900' : 'text-gray-700',
+                      styles.dropdownLogoutButton_tw
+                    )}
+                  >
+                    Sign out
+                  </button>
+                )}
+              </Menu.Item>
             </Menu.Items>
           </Transition>
         </Menu>
       </div>
-
-      <main className="h-full py-10 lg:pl-72">
-        <div className="h-full px-4 sm:px-6 lg:px-8">{children}</div>
+      <main className={styles.mainContainer_tw}>
+        <div className={styles.mainChildren_tw}>{children}</div>
       </main>
     </>
-  )
-}
+  );
+};
+
+const NavItem = ({
+  classNames,
+  currentNavigation,
+  permittedNavigation,
+  logout,
+  user,
+  setSidebarOpen,
+}) => {
+  return (
+    <div className={styles.sidebarContainer_tw}>
+      <Link href="/" onClick={() => setSidebarOpen(false)}>
+        <div className={styles.logo_tw}>
+          <Logo inverted={true} size="sm" />
+          <h1 className={styles.logoName_tw}>Transcriber</h1>
+        </div>
+      </Link>
+      <nav className={styles.navContainer_tw}>
+        <ul role="list">
+          {permittedNavigation.map((item) => (
+            <li key={item.name} onClick={() => setSidebarOpen(false)} >
+              <Link
+                href={item.href}
+                className={classNames(
+                  currentNavigation && currentNavigation.href == item.href
+                    ? 'bg-gray-800 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-800',
+                  styles.navItem_tw
+                )}
+              >
+                <item.icon className="h-6 w-6 shrink-0" aria-hidden="true" />
+                {item.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <div className={styles.profileAndSignOutContainer_tw}>
+        <img
+          className={styles.avatar_tw}
+          src={user.picture}
+          alt="User Avatar"
+        />
+        <div className={styles.logoutContainer_tw}>
+          <span className="sr-only">Your profile</span>
+          <span aria-hidden="true">{user.name}</span>
+          <button
+            onClick={() => logout({ returnTo: window.location.origin })}
+            className={styles.logoutButton_tw}
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
