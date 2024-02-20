@@ -237,7 +237,7 @@ const FileTable = ({ generateTickets, response, ticketsResponse, saveTicket, isP
         </td>
     );
 
-    const saveTicketButton = ({ subject, body, estimationPoints}) => (
+    const saveTicketButton = (subject, body, estimationPoints) => (
         <tr key={subject}>
             <td className="py-4 text-sm text-black-500 pr-3">
                 {subject}
@@ -292,8 +292,8 @@ const FileTable = ({ generateTickets, response, ticketsResponse, saveTicket, isP
                     </tr>
                 ))}
                 {/* Call saveTicketButton() if isButtonOptionA === false */}
-                {!isButtonOptionA && ticketsResponse && ticketsResponse.tickets && Object.entries(ticketsResponse.tickets).map(([key, { subject, body, estimationPoints }]) => (
-                    saveTicketButton(subject, body, estimationPoints)
+                {!isButtonOptionA && ticketsResponse && ticketsResponse.tickets && Object.entries(ticketsResponse.tickets).map(([key, { subject, body, estimationpoints }]) => (
+                    saveTicketButton(subject, body, estimationpoints)
                 ))}
             </tbody>
         </table>
