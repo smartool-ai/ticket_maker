@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import useRequest from '../hooks/useRequest';
-import Spinner from '../components/Spinner';
+import useRequest from '../../hooks/useRequest';
+import Spinner from '../../components/Spinner';
 import { Link } from "wouter";
 
 export default function BrassicaOfferings() {

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import useRequest from '../hooks/useRequest';
-import Spinner from '../components/Spinner';
+import useRequest from '../../hooks/useRequest';
+import Spinner from '../../components/Spinner';
 import { useLocation } from "wouter";
 import { Link } from "wouter";
 
