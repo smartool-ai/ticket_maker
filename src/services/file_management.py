@@ -28,10 +28,11 @@ def upload_file_to_s3(file_object: UploadFile) -> dict:
         return {
             "bucket": bucket.name,
             "files": {
-                "1": {
+                "0": {
                     "name": filename,
                     "url": f"https://{bucket.name}.s3.{AWS_REGION}.amazonaws.com/{file_object.filename}",
                     "extension": file_extension,
+                    "size": file_object.size / 1000,
                 }
             },
         }
