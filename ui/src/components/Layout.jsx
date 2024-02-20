@@ -110,7 +110,7 @@ export default function Layout({ current, token, children }) {
           <Bars3Icon className="h-6 w-6" aria-hidden="true" />
         </button>
         <div className={styles.topNavCurrentItem_tw}>
-          <currentNavigation.icon className="h-6 w-6 shrink-0" aria-hidden="true" />
+          {currentNavigation?.icon && <currentNavigation.icon className="h-6 w-6 shrink-0" aria-hidden="true" />}
           {currentNavigation && currentNavigation.name}
         </div>
         <Menu as="div">
@@ -121,7 +121,6 @@ export default function Layout({ current, token, children }) {
               alt="User Avatar"
             />
           </Menu.Button>
-
           <Transition
             as={Fragment}
             enter="transition ease-out duration-100"
@@ -166,10 +165,12 @@ const NavItem = ({
 }) => {
   return (
     <div className={styles.sidebarContainer_tw}>
-      <div className={styles.logo_tw}>
-        <Logo inverted={true} size="sm" />
-        <h1 className={styles.logoName_tw}>Transcriber</h1>
-      </div>
+      <Link href="/">
+        <div className={styles.logo_tw}>
+          <Logo inverted={true} size="sm" />
+          <h1 className={styles.logoName_tw}>Transcriber</h1>
+        </div>
+      </Link>
       <nav className={styles.navContainer_tw}>
         <ul role="list">
           {permittedNavigation.map((item) => (

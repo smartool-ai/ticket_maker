@@ -8,9 +8,9 @@ export const topNavCurrentItem_tw = "flex gap-x-2 flex-1 text-sm font-semibold l
 
 export const sidebarContainer_tw = "flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 py-4";
 
-export const logo_tw = "flex items-center";
+export const logo_tw = "flex items-center hover:cursor-pointer";
 
-export const logoName_tw = "text-white ml-1";
+export const logoName_tw = "text-white ml-1 hover:cursor-pointer";
 
 export const navContainer_tw = "flex flex-1 flex-col";
 
