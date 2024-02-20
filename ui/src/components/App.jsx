@@ -8,6 +8,7 @@ import Layout from './Layout';
 import UploadTranscript from '../views/UploadTranscript';
 import DeleteUser from '../views/DeleteUser';
 import WelcomePage from './WelcomePage';
+import HomePage from './HomePage';
 
 export default function App() {
   const {
@@ -27,12 +28,17 @@ export default function App() {
     }
   }, [isAuthenticated, isLoading, user]);
 
+  const userFirstName = user && user.name.split(" ")[0];
+
   if (isLoading) {
     return <Spinner />
   } else if (isAuthenticated) {
     return (
       <Router hook={useHashLocation}>
-        <Layout current={location} token={token} >
+        <Layout current={location} token={token}>
+          <Route path="/">
+            <HomePage userFirstName={userFirstName}/>
+          </Route>
           <Route path="/upload-transcript" component={UploadTranscript} />
           <Route path="/delete-user" component={DeleteUser} />
         </Layout>
