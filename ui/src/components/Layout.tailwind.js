@@ -28,6 +28,6 @@ export const logoutContainer_tw = "flex flex-col items-start";
 
 export const logoutButton_tw = "block text-xs font-semibold text-blue-500 hover:underline hover:text-blue-400";
 
-export const mainContainer_tw = "h-full py-10 lg:pl-72 bg-[#1d223a]";
+export const mainContainer_tw = "h-full py-10 lg:pl-72";
 
 export const mainChildren_tw = "h-full px-4 sm:px-6 lg:px-8";

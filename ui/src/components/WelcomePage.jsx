@@ -2,7 +2,7 @@ import Logo from './Logo';
 
 export default function WelcomePage({ loginWithPopup }) {
     return(
-        <div className="h-full w-full flex flex-col items-center justify-center gap-y-6 bg-[#1d223a]">
+        <div className="h-full w-full flex flex-col items-center justify-center gap-y-6">
             <Logo />
             <button
                 onClick={() => loginWithPopup()}
