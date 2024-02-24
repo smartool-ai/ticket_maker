@@ -26,6 +26,18 @@ unauthorized_error = HTTPException(
 
 class TokenAuthentication:
     def get_signing_key_from_jwt(self, token: str) -> str:
+        """
+        Get the signing key from the JWT token.
+
+        Args:
+            token (str): The JWT token.
+
+        Returns:
+            str: The signing key.
+
+        Raises:
+            HTTPException: If the signing key cannot be retrieved.
+        """
         try:
             logger.debug("Getting signing key...")
             signing_key = jwks_client.get_signing_key_from_jwt(token)
@@ -38,7 +50,18 @@ class TokenAuthentication:
     def require_any_user(
         self, token: Optional[HTTPAuthorizationCredentials] = Depends(token_auth_scheme)
     ) -> Dict:
-        """Require the request to contain a valid Bearer token."""
+        """
+        Require the request to contain a valid Bearer token.
+
+        Args:
+            token (Optional[HTTPAuthorizationCredentials], optional): The Bearer token. Defaults to Depends(token_auth_scheme).
+
+        Returns:
+            Dict: The decoded JWT payload.
+
+        Raises:
+            HTTPException: If the request does not contain a valid Bearer token or if the JWT cannot be decoded or verified.
+        """
         logger.debug("Checking for valid Bearer token...")
         if not token:
             raise unauthorized_error
@@ -81,8 +104,19 @@ class TokenAuthentication:
         return payload
 
     def require_user_with_permission(self, permission: str) -> Dict:
-        """Require the request to contain a valid Bearer token with a specific Auth0 permission."""
+        """
+        Require the request to contain a valid Bearer token with a specific Auth0 permission.
 
+        Args:
+            permission (str): The required permission.
+
+        Returns:
+            Dict: The decoded JWT payload.
+
+        Raises:
+            HTTPException: If the request does not contain a valid Bearer token, if the JWT cannot be decoded or verified,
+                           or if the user does not have the required permission.
+        """
         def _require_user_with_permission(
             token: Optional[HTTPAuthorizationCredentials] = Depends(token_auth_scheme),
         ) -> Dict:

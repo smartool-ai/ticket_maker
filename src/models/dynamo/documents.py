@@ -4,13 +4,9 @@ import os
 from typing import Any, Dict, Optional
 
 from src.lib.dynamo_utils import BaseModel
-
-# from src.lib.enums import DocumentType
-from src.lib.loggers import get_module_logger
-
 from pynamodb.attributes import UnicodeAttribute
 from pynamodb.expressions.condition import Condition
-
+from src.lib.loggers import get_module_logger
 
 logger = get_module_logger()
 
@@ -18,12 +14,6 @@ logger = get_module_logger()
 class DocumentsModel(BaseModel):
     """
     Model for storing documents.
-
-    Args:
-        BaseModel (_type_): _description_
-
-    Returns:
-        _type_: _description_
     """
 
     class Meta:
@@ -43,6 +33,18 @@ class DocumentsModel(BaseModel):
         document_type: str,
         memo: Optional[str] = None,
     ) -> "DocumentsModel":
+        """
+        Initialize a new DocumentsModel instance.
+
+        Args:
+            user_id (str): The user ID.
+            document_id (str): The document ID.
+            document_type (str): The document type.
+            memo (str, optional): The document memo. Defaults to None.
+
+        Returns:
+            DocumentsModel: The initialized DocumentsModel instance.
+        """
         document = DocumentsModel(
             user_id=user_id,
             document_id=document_id,
@@ -54,15 +56,26 @@ class DocumentsModel(BaseModel):
         return document
 
     async def save(self, condition: Optional[Condition] = None) -> Dict[str, Any]:
-        """Save the document to DynamoDB."""
+        """
+        Save the document to DynamoDB.
+
+        Args:
+            condition (Condition, optional): The condition for saving the document. Defaults to None.
+
+        Returns:
+            Dict[str, Any]: The saved document as a dictionary.
+        """
         return super().save(condition=condition, add_version_condition=True)
 
     async def __eq__(self, other: Any) -> bool:
-        """Return True if two records have the same attributes.
+        """
+        Compare two DocumentsModel instances for equality.
 
-        We exclude created_datetime because serializing and
-        deserializing the datetime object causes them to be
-        no longer equal.
+        Args:
+            other (Any): The other instance to compare.
+
+        Returns:
+            bool: True if the two instances have the same attributes, False otherwise.
         """
         if not isinstance(other, type(self)):
             return False
@@ -70,7 +83,12 @@ class DocumentsModel(BaseModel):
         return self.user_id == other.user_id and self.document_id == other.document_id
 
     async def to_serializable_dict(self) -> dict:
-        """Return the document as a serializable dict."""
+        """
+        Convert the document to a serializable dictionary.
+
+        Returns:
+            dict: The document as a serializable dictionary.
+        """
         return {
             "user_id": self.user_id,
             "document_id": self.document_id,
@@ -80,6 +98,10 @@ class DocumentsModel(BaseModel):
         }
 
     async def to_json(self) -> str:
-        """Return the document as a json string."""
+        """
+        Convert the document to a JSON string.
 
+        Returns:
+            str: The document as a JSON string.
+        """
         return json.dumps(await self.to_serializable_dict())

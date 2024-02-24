@@ -45,6 +45,10 @@ class AuthorizedApiHandler:
         *args: Any,
         **kwargs: Any,
     ) -> Any:
+        """
+        This method is called when an instance of the class is called as a function.
+        It initializes the necessary dependencies and returns a decorator function.
+        """
         self.dependencies["logger"].debug(
             f"Initializing Dynamo Tables: {models_to_initialize}"
         )
@@ -60,6 +64,10 @@ class AuthorizedApiHandler:
             raise e
 
         def decorator(func: Any) -> Any:
+            """
+            This decorator function wraps the route function and handles exceptions.
+            """
+
             @wraps(func)
             async def wrapper(*args: Any, **kwargs: Any) -> Any:
                 try:

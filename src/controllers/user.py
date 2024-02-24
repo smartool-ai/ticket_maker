@@ -7,11 +7,9 @@ from src.lib.token_authentication import TokenAuthentication
 
 from src.services.user import (
     get_user_management_by_email,
-    get_portfolio_by_email,
     delete_user_metadata,
     delete_user_management,
     delete_auth0_user,
-    delete_reserve_orders_by_email,
 )
 
 router = APIRouter()
@@ -24,15 +22,27 @@ granted_user = token_authentication.require_user_with_permission("manage:users")
 async def get_user(
     email: str, response: Response, user: Dict = Depends(granted_user)
 ) -> Dict:
+    """
+    Get user information by email.
+
+    Args:
+        email (str): The email of the user.
+        response (Response): The FastAPI response object.
+        user (Dict): The user information obtained from the token.
+
+    Returns:
+        Dict: The user information.
+
+    Raises:
+        HTTPException: If the user is not found.
+    """
     user_management = get_user_management_by_email(email)
 
     if user_management is None:
         response.status_code = 404
         return {"error": "User not found"}
 
-    portfolio = get_portfolio_by_email(email)
     user = user_management.to_dict()
-    user["has_portfolio"] = len(portfolio) > 0
 
     return user
 
@@ -41,21 +51,28 @@ async def get_user(
 async def delete_user(
     email: str, response: Response, user: Dict = Depends(granted_user)
 ) -> Dict:
+    """
+    Delete a user by email.
+
+    Args:
+        email (str): The email of the user.
+        response (Response): The FastAPI response object.
+        user (Dict): The user information obtained from the token.
+
+    Returns:
+        Dict: The status of the deletion.
+
+    Raises:
+        HTTPException: If the user is not found.
+    """
     user_management = get_user_management_by_email(email)
 
     if user_management is None:
         response.status_code = 404
         return {"error": "User not found"}
 
-    portfolio = get_portfolio_by_email(email)
-
-    if len(portfolio) > 0:
-        response.status_code = 422
-        return {"error": "User has portfolio entries"}
-
     delete_user_management(user_management.user_id)
     delete_user_metadata(user_management.email)
-    delete_reserve_orders_by_email(user_management.email)
     delete_auth0_user(user_management.user_id)
 
     return {"status": "ok"}

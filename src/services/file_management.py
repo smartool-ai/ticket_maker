@@ -16,6 +16,18 @@ bucket = s3.Bucket(os.environ.get("ARTIST_IMAGES_BUCKET", "transcriptions-ai"))
 
 
 def upload_file_to_s3(file_object: UploadFile) -> dict:
+    """
+    Uploads a file to an S3 bucket.
+
+    Args:
+        file_object (UploadFile): The file object to be uploaded.
+
+    Returns:
+        dict: A dictionary containing the details of the uploaded file.
+
+    Raises:
+        Exception: If the file fails to upload to the S3 bucket.
+    """
     try:
         # Append current datetime to the filename before the file extension
         file_name, file_extension = os.path.splitext(file_object.filename)
@@ -23,7 +35,7 @@ def upload_file_to_s3(file_object: UploadFile) -> dict:
 
         bucket.put_object(Key=filename, Body=file_object.file)
         print(
-            f"Successfully uploaded file to S3 bucket  with key {file_object.filename}"
+            f"Successfully uploaded file to S3 bucket with key {file_object.filename}"
         )
         return {
             "bucket": bucket.name,
@@ -37,11 +49,23 @@ def upload_file_to_s3(file_object: UploadFile) -> dict:
             },
         }
     except Exception as e:
-        print(f"Failed to upload file to S3 bucket : {str(e)}")
+        print(f"Failed to upload file to S3 bucket: {str(e)}")
         raise
 
 
 def get_file_details_from_s3(s3_key):
+    """
+    Retrieves the details of a file from an S3 bucket.
+
+    Args:
+        s3_key (str): The S3 key of the file.
+
+    Returns:
+        dict: A dictionary containing the details of the file.
+
+    Raises:
+        botocore.exceptions.ClientError: If the file is not found in the S3 bucket.
+    """
     try:
         obj = s3.Object(bucket.name, s3_key)
         logger.info("Loading file...")
@@ -60,13 +84,17 @@ def get_file_details_from_s3(s3_key):
 
 
 def download_file_from_s3(s3_key) -> Optional[str]:
-    """Download file and return its contents
+    """
+    Downloads a file from an S3 bucket and returns its contents.
 
     Args:
-        s3_key (str): The S3 key of the file to download
+        s3_key (str): The S3 key of the file to download.
 
     Returns:
-        str: The contents of the file
+        str: The contents of the file, or None if the file is not found.
+
+    Raises:
+        botocore.exceptions.ClientError: If the file is not found in the S3 bucket.
     """
     try:
         obj = s3.Object(bucket.name, s3_key)

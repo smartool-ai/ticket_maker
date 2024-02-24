@@ -2,7 +2,15 @@ from src.models.dynamo.user_metadata import UserMetadataModel
 
 
 async def add_or_update_user_metadata(user_id: str, **kwargs) -> UserMetadataModel:
-    """Add or update a user metadata record."""
+    """Add or update a user metadata record.
+
+    Args:
+        user_id (str): The ID of the user.
+        **kwargs: Additional keyword arguments representing the metadata fields and their values.
+
+    Returns:
+        UserMetadataModel: The updated user metadata record.
+    """
     # Check if the user metadata record already exists
     metadata: dict = kwargs
     try:

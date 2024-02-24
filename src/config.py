@@ -20,6 +20,9 @@ class Config:
     LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG")
 
     def __repr__(self) -> str:
+        """
+        Returns a string representation of the Config object
+        """
         rep = {
             "ARTIST_IMAGES_BUCKET": self.ARTIST_IMAGES_BUCKET,
             "LOGGER": self.LOGGER.level,

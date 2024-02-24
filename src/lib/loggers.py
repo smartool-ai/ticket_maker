@@ -20,7 +20,6 @@ def _setup_logger(
     log_level is usually something like logging.DEBUG but these different log levels are
     defined as integers.
     """
-
     logger.setLevel(log_level)
     formatter = logging.Formatter(LOGGING_FORMAT)
     formatter.converter = gmtime
@@ -41,7 +40,17 @@ def _setup_logger(
 def setup_service_logger(
     service_name: str, log_level: int, to_file: bool = False
 ) -> logging.LoggerAdapter:
-    """Set up and return a logger for this service."""
+    """Set up and return a logger for this service.
+
+    Args:
+        service_name: The name of the service.
+        log_level: The log level for the logger.
+        to_file: Whether to log to a file.
+
+    Returns:
+        A LoggerAdapter object.
+
+    """
     logger = logging.getLogger(PACKAGE_NAME)
     file_name = service_name if to_file else None
     _setup_logger(logger, log_level, file_name)

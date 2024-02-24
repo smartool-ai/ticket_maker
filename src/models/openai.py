@@ -21,6 +21,11 @@ class OpenAIClient(OpenAI):
     )
 
     def __init__(self):
+        """
+        Initialize the OpenAIClient object.
+
+        It inherits from the OpenAI class and sets the API key.
+        """
         super().__init__(api_key=os.getenv("OPENAI_API_KEY", "test"))
 
     def create_tickets(
@@ -30,6 +35,17 @@ class OpenAIClient(OpenAI):
         platform: Optional[PlatformEnum] = PlatformEnum.JIRA,
         **kwargs
     ) -> ChatCompletionMessage:
+        """
+        Create tickets based on the given prompt.
+
+        Args:
+            prompt (str): The prompt for creating the tickets.
+            number_of_tickets (int, optional): The number of tickets to create. Defaults to 10.
+            platform (PlatformEnum, optional): The platform to create the tickets on. Defaults to PlatformEnum.JIRA.
+
+        Returns:
+            ChatCompletionMessage: The completion message containing the created tickets.
+        """
         ticket_prompt: str = (
             self.ticket_prompt_prefix.format(
                 n=number_of_tickets, platform=platform.value

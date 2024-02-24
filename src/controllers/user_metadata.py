@@ -26,16 +26,19 @@ async def put_user_metadata(
     Add or update user metadata
 
     Args:
-        user_metadata (dict): The user metadata to add or update.
-        user (Dict, optional): _description_. Defaults to Depends(granted_user).
+        user_metadata (UserMetadataSchema): The user metadata to add or update.
+        user (Dict, optional): The user dictionary obtained from the token. Defaults to Depends(granted_user).
 
     Returns:
         Dict: The updated user metadata.
     """
+    # Extract the user ID from the token
     user_id = user.get("sub").split("|")[1]
 
+    # Add or update the user metadata in the database
     user_metadata_model: UserMetadataModel = await add_or_update_user_metadata(
         user_id, **user_metadata.model_dump()
     )
 
+    # Convert the user metadata model to a serializable dictionary
     return await user_metadata_model.to_serializable_dict()

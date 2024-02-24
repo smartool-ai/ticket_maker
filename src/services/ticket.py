@@ -15,6 +15,15 @@ logger = get_module_logger()
 
 
 def modify_keys(data: dict) -> dict:
+    """
+    Recursively modifies the keys of a dictionary to be lowercase and remove spaces.
+
+    Args:
+        data (dict): The dictionary to modify.
+
+    Returns:
+        dict: The modified dictionary.
+    """
     if isinstance(data, dict):
         return {
             key.lower().replace(" ", ""): modify_keys(value)
@@ -27,7 +36,8 @@ def modify_keys(data: dict) -> dict:
 
 
 def generate_tickets(prompt: str, number_of_tickets: int, platform: str) -> dict:
-    """Given a transcript prompt generate a number of tickets for a given platform
+    """
+    Given a transcript prompt, generate a number of tickets for a given platform.
 
     Args:
         prompt (str): The transcript prompt as a string.
@@ -35,7 +45,7 @@ def generate_tickets(prompt: str, number_of_tickets: int, platform: str) -> dict
         platform (str): The platform to generate the tickets for.
 
     Returns:
-        Union[dict, ChatCompletionMessage]: The generated tickets or an error message as a dictionary.
+        dict: The generated tickets or an error message as a dictionary.
     """
     client = OpenAIClient()
     try:
@@ -59,7 +69,15 @@ async def invoke_ticket_generation_lambda(
     number_of_tickets: Optional[int] = 10,
     platform: Optional[PlatformEnum] = PlatformEnum.JIRA,
 ) -> None:
-    """Invoke the ticket generation lambda function."""
+    """
+    Invoke the ticket generation lambda function.
+
+    Args:
+        document_id (str): The ID of the document.
+        user_id (str): The ID of the user.
+        number_of_tickets (int, optional): The number of tickets to generate. Defaults to 10.
+        platform (PlatformEnum, optional): The platform to generate the tickets for. Defaults to PlatformEnum.JIRA.
+    """
     try:
         lambda_client = boto3.client(
             "lambda", region_name=os.getenv("AWS_REGION", "us-west-2")
@@ -88,7 +106,16 @@ async def invoke_ticket_generation_lambda(
 async def get_tickets(
     document_id: str, generation_datetime: str
 ) -> Optional[TicketModel]:
-    """Get the generated tickets from the database."""
+    """
+    Get the generated tickets from the database.
+
+    Args:
+        document_id (str): The ID of the document.
+        generation_datetime (str): The datetime when the tickets were generated.
+
+    Returns:
+        Optional[TicketModel]: The generated tickets or None if not found.
+    """
     try:
         ticket = TicketModel.get(hash_key=document_id, range_key=generation_datetime)
 

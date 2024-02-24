@@ -21,6 +21,16 @@ granted_user = token_authentication.require_user_with_permission(
 async def upload_file(
     file: UploadFile = File(...), user: Dict = Depends(granted_user)
 ) -> Dict:
+    """
+    Uploads a file to S3 and saves the file details to DynamoDB.
+
+    Args:
+        file (UploadFile): The file to be uploaded.
+        user (Dict): The user details.
+
+    Returns:
+        Dict: The response containing the uploaded file details.
+    """
     resp: dict = upload_file_to_s3(file)
     user_id: str = user.get("sub").split("|")[1]
 
@@ -41,7 +51,15 @@ async def upload_file(
 @router.get("/file/{file_name}")
 @authorized_api_handler()
 async def get_file(file_name: str, _: Dict = Depends(granted_user)) -> Response:
-    """Get file from S3"""
+    """
+    Retrieves a file from S3.
+
+    Args:
+        file_name (str): The name of the file to retrieve.
+
+    Returns:
+        Response: The response containing the file content or error message.
+    """
     logger.info(f"Getting file from S3: {file_name}")
     resp: dict = get_file_details_from_s3(file_name)
     return (

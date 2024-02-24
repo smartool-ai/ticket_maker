@@ -40,6 +40,7 @@ async def invoke_ticket_generation(
     Returns:
         TicketGenerationSchema: The datetime when the lambda was invoked.
     """
+    # Invoke the ticket generation lambda function
     ticket_generation_datetime: str = await invoke_ticket_generation_lambda(
         document_id=file_name,
         user_id=user.get("sub"),
@@ -69,6 +70,7 @@ async def get_tickets_by_generation_time(
     Returns:
         TicketList: The list of tickets generated from the transcript.
     """
+    # Get the tickets generated at the specified datetime
     ticket: Optional[TicketModel] = await get_tickets(
         document_id=file_name, generation_datetime=generation_datetime
     )
@@ -76,6 +78,7 @@ async def get_tickets_by_generation_time(
     if not ticket:
         return {"tickets": []}
 
+    # Convert the ticket object to a serializable dictionary
     ticket_dict: dict = await ticket.to_serializable_dict()
 
     return {"tickets": ticket_dict.get("tickets")}

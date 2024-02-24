@@ -2,29 +2,22 @@ import json
 from src.lib.loggers import get_module_logger
 from typing import Any, Callable, Dict, Optional, Tuple, Type, TypedDict
 
-
 logger = get_module_logger()
-
 
 class HTTP_Response(TypedDict):
     """HTTP_Response that lambdas should return to get processed by the API Gateway.
-
     The API Gateway expects each response to have exactly these four keys. See
     https://aws.amazon.com/premiumsupport/knowledge-center/malformed-502-api-gateway/
     """
-
     statusCode: int
     headers: Dict[str, str]
     isBase64Encoded: bool
     body: str
 
-
 class _HTTPError(Exception):
     """Base class for HTTP errors.
-
     Each HTTPError requires a status code and error message to generate an HTTP response.
     """
-
     status_code: int
 
     def generate_http_response(self) -> HTTP_Response:
@@ -43,38 +36,28 @@ class _HTTPError(Exception):
     def error_message(self) -> str:  # type: ignore
         ...
 
-
 class _400RangeHTTPError(_HTTPError):
     """Base class for all 400 range HTTP errors.
-
-    All of these errors include user mistakes during input and require a descriptive
-    error message.
+    All of these errors include user mistakes during input and require a descriptive error message.
     """
-
     @property
     def error_message(self) -> str:
         return str(self)
-
 
 class BaseException(Exception):
     """
     Base exception class that we created so that we can just extend this whenever
     we want to make a custom exception.
-
     If you add the argument 'message' you may pass a string with
     placeholder brackets that can be filled with given args.
-
     Example:
         raise ExtraArgument("Invalid usage")
-
     This will create the string: SampleSet Some arg 2
-
     You can add more arguments and more placeholders to produce
     a more detailed message as well, just remember that the messages
     is formatted in the order resource_name, resource_identifier, kwargs[0],
     kwargs[1], etc..
     """
-
     def __init__(self, message: Optional[str] = None, **kwargs: Any):
         self._message = message
         self._kwargs = kwargs
@@ -103,31 +86,24 @@ class BaseException(Exception):
     def __str__(self) -> str:
         return self.create_message()
 
-
 class MissingRequiredData(BaseException):
     """
     Custom class for when add/updating row and some data that is required is missing
     """
-
     pass
-
 
 class GeneralMissingDataError(BaseException):
     pass
 
-
 class ObjectDoesNotExist(BaseException):
     pass
-
 
 class InvalidInput(BaseException):
     """
     This exception is raised when the input that the api receives from the client
     is not the proper datatype
     """
-
     pass
-
 
 class ResourceNotFoundException(BaseException):
     def __init__(
@@ -156,36 +132,27 @@ class ResourceNotFoundException(BaseException):
     def resource_identifier(self) -> str:
         return str(self._resource_identifier)
 
-
 class InsufficientFunds(BaseException):
     """Raised when funds are insufficient to perform an action."""
-
 
 class RedisCacheException(BaseException):
     """Raise when a read from or write to redis failed."""
 
-
 class InvalidAddress(BaseException):
     """Raise when trying to store an invalid address."""
 
-
 class UnprocessableEntity422(_400RangeHTTPError):
     """HTTP 422 Error"""
-
     status_code = 422
-
 
 class ConflictError(BaseException):
     """Base conflict error."""
 
-
 class ServerFailureError(BaseException):
     """Error when an integrated service fails."""
 
-
 class IncompleteOnboardingError(BaseException):
     """Error when a user has not completed onboarding."""
-
 
 async def allow_exceptions(
     callable: Callable,
@@ -195,7 +162,6 @@ async def allow_exceptions(
 ) -> Optional[str]:
     """
     Wrapper method that catches specific exceptions, logs them, and returns None
-
     Args:
         callable (function)
         excpetions (List)
@@ -206,7 +172,6 @@ async def allow_exceptions(
     except exceptions as err:
         logger.error(err)
         return None
-
 
 async def allow_not_found(
     callable: Callable, *args: Any, **kwargs: Any

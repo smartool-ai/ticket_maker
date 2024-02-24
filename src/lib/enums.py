@@ -57,6 +57,8 @@ class LambdaLogLevel(str, enum.Enum):
 
 
 class Currency(str, enum.Enum):
+    """Enum representing currencies."""
+
     USD = "USD"
 
 
@@ -69,7 +71,15 @@ class Country:
     name: str
 
     async def get_code(self) -> str:
-        """Convert a country to a 2 digit representation of country code."""
+        """
+        Convert a country name to a 2-digit representation of country code.
+
+        Returns:
+            str: The 2-digit country code.
+        
+        Raises:
+            ValueError: If the country name is not found or the spelling is incorrect.
+        """
         if self.name is None:
             return None
 
@@ -94,7 +104,15 @@ class Province:
     name: str
 
     async def get_code(self) -> str:
-        """Convert a province to a 2 digit representation of province code."""
+        """
+        Convert a province name to a 2-digit representation of province code.
+
+        Returns:
+            str: The 2-digit province code.
+        
+        Raises:
+            ValueError: If the province name is not found or the spelling is incorrect.
+        """
         if self.name is None:
             return None
 

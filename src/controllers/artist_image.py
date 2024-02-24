@@ -22,11 +22,31 @@ image_sizes = {"small": 0.158, "medium": 0.41728, "large": 0.66667}
 
 
 def upload_image(filename, file_obj):
+    """
+    Uploads an image file to the S3 bucket.
+
+    Args:
+        filename (str): The name of the file.
+        file_obj (file-like object): The file object to be uploaded.
+
+    Returns:
+        str: The filename of the uploaded image.
+    """
     bucket.put_object(Key=filename, Body=file_obj)
     return filename
 
 
 def resize_image(file_obj, ratio):
+    """
+    Resizes an image file.
+
+    Args:
+        file_obj (file-like object): The file object to be resized.
+        ratio (float): The ratio by which the image should be resized.
+
+    Returns:
+        file-like object: The resized image file object.
+    """
     file_obj.seek(0)
     image = Image.open(file_obj)
     height, width = image.size
@@ -48,6 +68,17 @@ def resize_image(file_obj, ratio):
 async def get_artist_image(
     filename: str, response: Response, user: Dict = Depends(granted_user)
 ) -> Dict:
+    """
+    Retrieves the details of an artist image.
+
+    Args:
+        filename (str): The name of the image file.
+        response (Response): The HTTP response object.
+        user (Dict): The user details.
+
+    Returns:
+        Dict: The details of the artist image.
+    """
     try:
         obj = s3.Object(bucket.name, filename)
         obj.load()
@@ -68,6 +99,16 @@ async def get_artist_image(
 async def upload_artist_image(
     upload: UploadFile, user: Dict = Depends(granted_user)
 ) -> Dict:
+    """
+    Uploads an artist image.
+
+    Args:
+        upload (UploadFile): The uploaded image file.
+        user (Dict): The user details.
+
+    Returns:
+        Dict: The details of the uploaded artist image.
+    """
     uploaded_files = {}
 
     # Upload original image

@@ -15,6 +15,9 @@ flake8-lint:
 mypy-lint:
 	poetry run mypy --no-namespace-packages .
 
+make docs:
+	pdoc --html ./src --output-dir docs
+
 build:
 	sam build
 

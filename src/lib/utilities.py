@@ -40,6 +40,7 @@ def only_run_in_lambda_env(func: Callable) -> Callable:
 
 
 async def deep_merge(original: dict, body: dict):
+    """Recursively merge two dictionaries."""
     for key, value in body.items():
         if isinstance(value, dict):
             node = original.get(key)
@@ -68,7 +69,14 @@ class BotoConnector:
 
     @classmethod
     def get_client(cls, service: AWSService) -> botocore.client.BaseClient:
-        """Return a boto3 client to the requested service."""
+        """Return a boto3 client to the requested service.
+
+        Args:
+            service: The AWS service to connect to.
+
+        Returns:
+            A boto3 client to the requested service.
+        """
 
         if not cls.aws_connections[service]:
             cls.initialize_client(service=service)
@@ -76,7 +84,11 @@ class BotoConnector:
 
     @classmethod
     def initialize_client(cls, service: AWSService) -> None:
-        """Initialize a connection to the passed service with boto3."""
+        """Initialize a connection to the passed service with boto3.
+
+        Args:
+            service: The AWS service to connect to.
+        """
         cls.aws_connections[service]: Session.client = boto3.client(
             service, region_name=os.getenv("AWS_REGION")
         )
