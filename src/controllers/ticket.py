@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import Dict, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends
 
@@ -7,6 +7,7 @@ from src.lib.enums import PlatformEnum
 from src.lib.authorized_api_handler import authorized_api_handler
 from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.ticket import TicketModel
+from src.models.dynamo.user_metadata import UserMetadataModel
 from src.schemas.ticket import TicketGenerationSchema, TicketList
 from src.services.ticket import get_tickets, invoke_ticket_generation_lambda
 
@@ -24,7 +25,7 @@ async def invoke_ticket_generation(
     file_name: str,
     number_of_tickets: Optional[int] = 10,
     platform: Optional[PlatformEnum] = PlatformEnum.JIRA,
-    user: Dict = Depends(granted_user),
+    user: UserMetadataModel = Depends(granted_user),
 ) -> TicketGenerationSchema:
     """
     This endpoint is for generating tickets from a transcript. It invokes a long
@@ -42,7 +43,7 @@ async def invoke_ticket_generation(
     """
     ticket_generation_datetime: str = await invoke_ticket_generation_lambda(
         document_id=file_name,
-        user_id=user.get("sub"),
+        user_id=user.user_id,
         number_of_tickets=number_of_tickets,
         platform=platform,
     )
@@ -55,7 +56,7 @@ async def invoke_ticket_generation(
 async def get_tickets_by_generation_time(
     file_name: str,
     generation_datetime: str,
-    _: Dict = Depends(granted_user),
+    _: UserMetadataModel = Depends(granted_user),
 ) -> TicketList:
     """
     This endpoint is for retrieving tickets generated from a transcript using the

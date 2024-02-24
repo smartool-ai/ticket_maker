@@ -1,43 +1,9 @@
-from src.lib.constants import JIRA_BASE_URL
+from typing import Any
+from jira.resources import Resource
 
-import requests
-from requests.auth import HTTPBasicAuth
+from jira import JIRA
 
 
-class JiraClient:
-    def __init__(self, email, api_key):
-        self.auth = HTTPBasicAuth(email, api_key)
-        self.headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
-
-    def get_issue(self, issue_key: str):
-        """
-        Get an issue from Jira
-
-        Args:
-            issue_key (str): The issue key
-
-        Raises:
-            Exception: _description_
-
-        Returns:
-            _type_: _description_
-        """
-        url = f"{JIRA_BASE_URL}/issue/{issue_key}"
-        response = requests.get(url, auth=self.auth)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise Exception(f"Failed to get issue: {response.text}")
-
-    def create_issue(self, issue_data: dict):
-        url = f"{JIRA_BASE_URL}/issue"
-        response = requests.post(
-            url, json=issue_data, headers=self.headers, auth=self.auth
-        )
-        if response.status_code == 201:
-            return response.json()
-        else:
-            raise Exception(f"Failed to create issue: {response.text}")
+class JiraClient(JIRA):
+    async def __init__(self, server: str = None, options: dict[str, str | bool | Any] = None, basic_auth: tuple[str, str] | None = None, token_auth: str | None = None, oauth: dict[str, Any] = None, jwt: dict[str, Any] = None, kerberos=False, kerberos_options: dict[str, Any] = None, validate=False, get_server_info: bool = True, async_: bool = False, async_workers: int = 5, logging: bool = True, max_retries: int = 3, proxies: Any = None, timeout: float | tuple[float, float] | tuple[float, None] | None = None, auth: tuple[str, str] = None, default_batch_sizes: dict[type[Resource], int | None] | None = None):
+        super().__init__(server, options, basic_auth, token_auth, oauth, jwt, kerberos, kerberos_options, validate, get_server_info, async_, async_workers, logging, max_retries, proxies, timeout, auth, default_batch_sizes)

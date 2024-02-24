@@ -6,6 +6,7 @@ from src.lib.authorized_api_handler import authorized_api_handler
 
 from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.documents import DocumentsModel
+from src.models.dynamo.user_metadata import UserMetadataModel
 from src.services.file_management import upload_file_to_s3, get_file_details_from_s3
 
 router = APIRouter()
@@ -19,10 +20,10 @@ granted_user = token_authentication.require_user_with_permission(
 @router.post("/upload")
 @authorized_api_handler(initialize_dynamo_tables=[DocumentsModel])
 async def upload_file(
-    file: UploadFile = File(...), user: Dict = Depends(granted_user)
+    file: UploadFile = File(...), user: UserMetadataModel = Depends(granted_user)
 ) -> Dict:
     resp: dict = upload_file_to_s3(file)
-    user_id: str = user.get("sub").split("|")[1]
+    user_id: str = user.user_id
 
     for k, item in resp.get("files").items():
         logger.info(f"item: {item}")
@@ -40,7 +41,7 @@ async def upload_file(
 
 @router.get("/file/{file_name}")
 @authorized_api_handler()
-async def get_file(file_name: str, _: Dict = Depends(granted_user)) -> Response:
+async def get_file(file_name: str, _: UserMetadataModel = Depends(granted_user)) -> Response:
     """Get file from S3"""
     logger.info(f"Getting file from S3: {file_name}")
     resp: dict = get_file_details_from_s3(file_name)
