@@ -31,6 +31,7 @@ class UserMetadataModel(BaseModel):
     email = UnicodeAttribute(null=True)
     jira_api_key = UnicodeAttribute(null=True)
     jira_email = UnicodeAttribute(null=True)
+    jira_domain = UnicodeAttribute(null=True)
 
     @classmethod
     async def initialize(
@@ -39,6 +40,7 @@ class UserMetadataModel(BaseModel):
         email: Optional[str] = None,
         jira_api_key: Optional[str] = None,
         jira_email: Optional[str] = None,
+        jira_domain: Optional[str] = None,
     ) -> "UserMetadataModel":
         """Initialize a UserMetadataModel."""
         user_metadata = UserMetadataModel(
@@ -46,6 +48,28 @@ class UserMetadataModel(BaseModel):
             email=email,
             jira_api_key=jira_api_key,
             jira_email=jira_email,
+            jira_domain=jira_domain,
+            created_datetime=datetime.datetime.now(),
+        )
+
+        return user_metadata
+
+    @classmethod
+    def synchronous_initialize(
+        cls,
+        user_id: str,
+        email: Optional[str] = None,
+        jira_api_key: Optional[str] = None,
+        jira_email: Optional[str] = None,
+        jira_domain: Optional[str] = None,
+    ) -> "UserMetadataModel":
+        """Initialize a UserMetadataModel synchronously."""
+        user_metadata = UserMetadataModel(
+            user_id=user_id,
+            email=email,
+            jira_api_key=jira_api_key,
+            jira_email=jira_email,
+            jira_domain=jira_domain,
             created_datetime=datetime.datetime.now(),
         )
 
@@ -53,6 +77,10 @@ class UserMetadataModel(BaseModel):
 
     async def save(self, condition: Optional[Condition] = None) -> Dict[str, Any]:
         """Save the user metadata to DynamoDB."""
+        return super().save(condition)
+
+    def synchronous_save(self, condition: Optional[Condition] = None) -> Dict[str, Any]:
+        """Save the user metadata to DynamoDB synchronously."""
         return super().save(condition)
 
     async def __eq__(self, other: Any) -> bool:
@@ -66,6 +94,7 @@ class UserMetadataModel(BaseModel):
             "email": self.email,
             "jira_api_key": self.jira_api_key,
             "jira_email": self.jira_email,
+            "jira_domain": self.jira_domain,
         }
 
     async def to_json(self) -> str:

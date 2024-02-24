@@ -7,10 +7,24 @@ from auth0.management import Auth0
 from pynamodb.exceptions import DoesNotExist
 
 from src.lib.loggers import get_module_logger
-from src.models.dynamo.user import UserManagementModel
 from src.models.dynamo.user_metadata import UserMetadataModel
 
 logger = get_module_logger()
+
+
+def get_user_metadata(user_id: str) -> Optional[UserMetadataModel]:
+    """Gets user from User Metadata DynamoDB.
+
+    Args:
+        user_id (str): auth0 id of user
+    Returns:
+        UserMetadataModel or None
+    """
+    try:
+        user_metadata = UserMetadataModel.get(user_id)
+    except (DoesNotExist, TypeError):
+        return None
+    return user_metadata
 
 
 def get_user_metadata_by_email(email: str) -> Optional[UserMetadataModel]:
@@ -29,48 +43,6 @@ def get_user_metadata_by_email(email: str) -> Optional[UserMetadataModel]:
     except (DoesNotExist, TypeError):
         return None
     return user_metadata
-
-
-def get_user_management(user_id: str) -> Optional[UserManagementModel]:
-    """Gets user from User Management DynamoDB.
-
-    Args:
-        user_id (str): auth0 id of user
-    Returns:
-        UserManagementModel or None
-    """
-    try:
-        user_management = UserManagementModel.get(user_id)
-    except (DoesNotExist, TypeError):
-        return None
-    return user_management
-
-
-def get_user_management_by_email(email: str) -> Optional[UserManagementModel]:
-    """Gets user from User Management DynamoDB.
-
-    Args:
-        user_id (str): auth0 id of user
-    Returns:
-        UserManagementModel or None
-    """
-    user_management = UserManagementModel.email_index.query(email)
-    return next(user_management, None)
-
-
-def delete_user_management(user_id: str) -> bool:
-    """Deletes user from User Management DynamoDB.
-
-    Args:
-        user_id (str): auth0 id of user
-    Returns:
-        bool
-    """
-    user_management = get_user_management(user_id)
-    if user_management is None:
-        return False
-    user_management.delete()
-    return True
 
 
 def delete_user_metadata(email: str) -> bool:
@@ -117,8 +89,3 @@ def delete_auth0_user(id: str) -> bool:
     except Exception as e:
         logger.error(e)
         return False
-
-
-# TODO: Add necessary imports and class definitions
-
-# TODO: Implement other functions and classes

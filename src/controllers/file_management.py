@@ -6,6 +6,7 @@ from src.lib.authorized_api_handler import authorized_api_handler
 
 from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.documents import DocumentsModel
+from src.models.dynamo.user_metadata import UserMetadataModel
 from src.services.file_management import upload_file_to_s3, get_file_details_from_s3
 
 router = APIRouter()
@@ -19,7 +20,7 @@ granted_user = token_authentication.require_user_with_permission(
 @router.post("/upload")
 @authorized_api_handler(initialize_dynamo_tables=[DocumentsModel])
 async def upload_file(
-    file: UploadFile = File(...), user: Dict = Depends(granted_user)
+    file: UploadFile = File(...), user: UserMetadataModel = Depends(granted_user)
 ) -> Dict:
     """
     Uploads a file to S3 and saves the file details to DynamoDB.
@@ -32,7 +33,7 @@ async def upload_file(
         Dict: The response containing the uploaded file details.
     """
     resp: dict = upload_file_to_s3(file)
-    user_id: str = user.get("sub").split("|")[1]
+    user_id: str = user.user_id
 
     for k, item in resp.get("files").items():
         logger.info(f"item: {item}")

@@ -3,10 +3,15 @@ from typing import Optional, Dict
 from logging import getLogger
 
 import jwt
-
+from auth0.authentication import GetToken
+from auth0.management import Auth0
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.status import HTTP_401_UNAUTHORIZED
+from src.models.dynamo.user_metadata import UserMetadataModel
+
+from src.services.user import get_user_metadata
+
 
 logger = getLogger(__name__)
 token_auth_scheme = HTTPBearer()
@@ -103,6 +108,26 @@ class TokenAuthentication:
 
         return payload
 
+    def get_user_details(self, user_id: str) -> dict:
+        """Get the user details from the auth0."""
+        get_token = GetToken(
+            domain,
+            client_id=os.getenv("AUTH0_CLIENT_ID", "test"),
+            client_secret=os.getenv("AUTH0_CLIENT_SECRET", "test"),
+        )
+
+        token = get_token.client_credentials("https://{}/api/v2/".format(domain))
+        api_token = token["access_token"]
+
+        auth0 = Auth0(domain, api_token)
+
+        try:
+            user = auth0.users.get(user_id)
+            return user
+        except Exception as e:
+            logger.error(f"Error getting user details with user id: {user_id} \n{e}")
+            return {}
+
     def require_user_with_permission(self, permission: str) -> Dict:
         """
         Require the request to contain a valid Bearer token with a specific Auth0 permission.
@@ -127,6 +152,18 @@ class TokenAuthentication:
                 logger.error("User not authorized (permission check)")
                 raise unauthorized_error
 
-            return payload
+            # Check if user metadata is in our db, if not add it
+            user_metadata: Optional[UserMetadataModel] = get_user_metadata(payload.get("sub"))
+
+            if not user_metadata:
+                user_details = self.get_user_details(payload.get("sub"))
+
+                user_metadata = UserMetadataModel.initialize(
+                    user_id=payload.get("sub"),
+                    email=user_details.get("email")
+                )
+                user_metadata.synchronous_save()
+
+            return user_metadata
 
         return _require_user_with_permission

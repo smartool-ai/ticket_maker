@@ -28,3 +28,11 @@ async def add_or_update_user_metadata(user_id: str, **kwargs) -> UserMetadataMod
     await user_metadata.save()
 
     return user_metadata
+
+
+async def link_jira(user: UserMetadataModel, jira_domain: str, jira_api_key: str) -> UserMetadataModel:
+    """Link a Jira account to a user."""
+    user.jira_domain = jira_domain
+    user.jira_api_key = jira_api_key
+    await user.save()
+    return user
