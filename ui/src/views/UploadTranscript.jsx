@@ -122,8 +122,20 @@ export default function UploadTranscript() {
         }
     };
 
-    const saveTicket = async (fileName, subject, body, estimationPoints) => {
+    const saveTickets = async (key, subject, body, estimationPoints) => {
+        console.log(key, subject, body, estimationPoints);
+        const ticketParams = {"name": subject, "description": body, "estimate": estimationPoints}
+        const submitResponse = await apiRequest(`/ticket?platform=${document.getElementById(key).value}`, {
+            method: "post",
+            body: ticketParams
+        });
 
+        if (submitResponse == 201) {
+            document.getElementById(`button${key}`).value = "Ticket Uploaded";
+        } else {
+            alert("An error occurred while saving your ticket.");
+            console.log(submitResponse.text);
+        }
     };
 
     const uploadButton = (
@@ -155,7 +167,7 @@ export default function UploadTranscript() {
                     isPolling={isPolling}
                 />
                 {uploadButton}
-                {ticketsResponse && <TicketTable ticketsResponse={ticketsResponse} isPolling={isPolling} />}
+                {ticketsResponse && <TicketTable saveTickets={saveTickets} ticketsResponse={ticketsResponse} isPolling={isPolling} />}
             </div>
         ) : (
             <div className={styles.transcriptContainer_tw}>
@@ -232,18 +244,27 @@ const FileTable = ({ generateTickets, response, ticketsResponse, isPolling }) =>
     );
 };
 
-const TicketTable = ({ ticketsResponse, isPolling }) => {
-    const ticketRowItem = (subject, body, estimationPoints) => (
-        <tr key={subject}>
+const TicketTable = ({ saveTickets, ticketsResponse, isPolling }) => {
+    const ticketRowItem = (key, subject, body, estimationPoints) => (
+        <tr>
             <td className="py-3 text-sm text-white pr-3 w-[25%]">{subject}</td>
             <td className="py-3 text-sm text-gray-500 pr-3 w-[55%]">{body}</td>
             <td className="py-3 text-sm text-gray-500 pr-3 text-center">{estimationPoints}</td>
             <td className="w-[10%]">
+                <select id={key}>
+                    <option value="">Select an option</option>
+                    <option value="JIRA">Jira</option>
+                    <option value="SHORTCUT">Shortcut</option>
+                    <option value="ASANA">Asana</option>
+                </select>
+            </td>
+            <td className="w-[10%]">
                 <button
+                    id={`button${key}`}
                     className={styles.saveTicketButton_tw}
-                    onClick={() => saveTicket({ subject, body, estimationPoints })}
+                    onClick={() => saveTickets(key, subject, body, estimationPoints)}
                 >
-                    Save Ticket
+                    Upload Ticket
                 </button>
             </td>
         </tr>
@@ -268,7 +289,7 @@ const TicketTable = ({ ticketsResponse, isPolling }) => {
                     </thead>
                     <tbody className={styles.tableBodyContainer_tw}>
                         {ticketsResponse && ticketsResponse.tickets && Object.entries(ticketsResponse.tickets).map(
-                            ([key, { subject, body, estimationpoints }]) => ticketRowItem(subject, body, estimationpoints)
+                            ([key, { subject, body, estimationpoints }]) => ticketRowItem(key, subject, body, estimationpoints)
                         )}
                     </tbody>
                 </>

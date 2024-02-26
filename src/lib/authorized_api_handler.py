@@ -11,6 +11,7 @@ from src.lib.custom_exceptions import (
     InvalidInput,
     MissingRequiredData,
     ObjectDoesNotExist,
+    PlatformLinkError,
     ServerFailureError,
 )
 from src.lib.dynamo_connector import initialize_dynamo_tables
@@ -26,6 +27,7 @@ BAD_REQUEST_ERRORS = (
     InvalidInput,
     MissingRequiredData,
     ObjectDoesNotExist,
+    PlatformLinkError
 )
 SERVICE_UNAVAILABLE_ERRORS = ServerFailureError
 

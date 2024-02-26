@@ -8,7 +8,7 @@ from src.lib.authorized_api_handler import authorized_api_handler
 from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.ticket import TicketModel
 from src.models.dynamo.user_metadata import UserMetadataModel
-from src.schemas.ticket import TicketGenerationSchema, TicketList
+from src.schemas.ticket import TicketGenerationSchema, TicketList, TicketParamsSchema
 from src.services.ticket import get_tickets, invoke_ticket_generation_lambda
 
 router = APIRouter()
@@ -85,4 +85,28 @@ async def get_tickets_by_generation_time(
     return {"tickets": ticket_dict.get("tickets")}
 
 
-@router.post("")
+@router.post("/ticket")
+@authorized_api_handler()
+async def create_ticket(
+    platform: PlatformEnum,
+    body: TicketParamsSchema,
+    user: UserMetadataModel = Depends(granted_user),
+) -> dict:
+    """
+    This endpoint is for creating a ticket in a platform.
+
+    Args:
+        ticket_params (dict): The parameters for the ticket.
+        platform (PlatformEnum): The platform to create the ticket in.
+        user (Dict, optional): The user making the request. Defaults to Depends(granted_user).
+
+    Returns:
+        dict: The ticket that was created.
+    """
+    # Get the platform client for the user
+    platform_client = await user.get_platform_client(platform)
+
+    # Create the ticket in the specified platform
+    ticket: dict = await platform_client.create_story(**body.model_dump())
+
+    return ticket

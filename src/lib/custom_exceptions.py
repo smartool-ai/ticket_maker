@@ -154,6 +154,9 @@ class ServerFailureError(BaseException):
 class IncompleteOnboardingError(BaseException):
     """Error when a user has not completed onboarding."""
 
+class PlatformLinkError(BaseException):
+    """Error when a user has not linked a platform."""
+
 async def allow_exceptions(
     callable: Callable,
     exceptions: Tuple[Type[ResourceNotFoundException], Type[RedisCacheException]],

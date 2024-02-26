@@ -9,13 +9,41 @@ logger = get_module_logger()
 
 
 class Jira(JIRA):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        self.server = kwargs.get("server")
+        self.email = kwargs.get("email")
+        self.token_auth = kwargs.get("token_auth")
+        super().__init__(
+            server=self.server,
+            # token_auth=self.token_auth,
+            basic_auth=(self.email, self.token_auth),
+            # async_=True,
+            logging=False
+        )
 
     async def create_story(self: JIRA, ticket_params: dict) -> dict:
         """Create a ticket in Jira."""
         logger.info(f"Creating ticket in Jira: {ticket_params}")
-        return await self.create_issue(fields=ticket_params)
+        fields = {
+            "project": {
+                "key": "TRAN"
+            },
+            "summary": ticket_params["name"],
+            "timetracking": {
+                "originalEstimate": str(ticket_params['estimate'])
+            },
+            "issuetype": {
+                "id": "10005"
+            },
+            "description": str(ticket_params["description"]) if ticket_params["description"] else "",
+        }
+        try:
+            resp = await self.create_issue(fields=fields)
+        except Exception as e:
+            logger.error(f"Error creating ticket in Jira: {e}")
+            raise e
+
+        return resp
 
 
 class Shortcut:
@@ -107,16 +135,20 @@ class Shortcut:
 
 class PlatformClient:
     def __init__(self, platform: PlatformEnum, **kwargs):
-        match platform:
-            case PlatformEnum.JIRA:
-                self.platform = Jira(kwargs)
-            case PlatformEnum.SHORTCUT:
-                self.platform = Shortcut(kwargs)
-            case _:
-                raise ValueError(f"Invalid platform: {platform}. Must be one of {PlatformEnum.JIRA, PlatformEnum.SHORTCUT}")
-    
+        try:
+            match platform:
+                case PlatformEnum.JIRA:
+                    self.platform = Jira(**kwargs)
+                case PlatformEnum.SHORTCUT:
+                    self.platform = Shortcut(**kwargs)
+                case _:
+                    raise ValueError(f"Invalid platform: {platform}. Must be one of {PlatformEnum.JIRA, PlatformEnum.SHORTCUT}")
+        except Exception as e:
+            logger.error(f"Error initializing platform client: {e}")
+            raise e
+
     async def create_story(self, **kwargs):
-        return await self.platform.create_story(**kwargs)
+        return await self.platform.create_story(kwargs)
 
     async def get_story(self, *args, **kwargs):
         return await self.platform.get_story(*args, **kwargs)

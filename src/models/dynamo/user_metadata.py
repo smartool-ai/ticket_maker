@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 from typing import Any, Dict, Optional
+from src.lib.custom_exceptions import PlatformLinkError
 
 from src.lib.dynamo_utils import BaseModel
 from src.lib.enums import PlatformEnum
@@ -82,23 +83,24 @@ class UserMetadataModel(BaseModel):
         )
 
         return user_metadata
-    
+
     async def check_platform_linked(self, platform_name: str) -> bool:
         """Check if the user has linked a platform."""
         return getattr(self, f"{platform_name.lower()}_api_key") is not None
-    
+
     async def get_platform_client(self, platform: PlatformEnum) -> PlatformClient:
         """Get the platform client for the user."""
-        platform_linked = self.check_platform_linked(platform.value)
+        platform_linked = await self.check_platform_linked(platform.value)
 
         if not platform_linked:
-            raise ValueError(f"User does not have {platform.value} credentials. Please link your {platform.value} credentials.")
-        
+            raise PlatformLinkError(f"User does not have {platform.value} credentials. Please link your {platform.value} credentials.")
+
         init_params = dict()
         match platform:
             case PlatformEnum.JIRA:
                 init_params["server"] = self.jira_domain
                 init_params["token_auth"] = self.jira_api_key
+                init_params["email"] = self.jira_email
             case PlatformEnum.SHORTCUT:
                 init_params["api_token"] = self.shortcut_api_key
 

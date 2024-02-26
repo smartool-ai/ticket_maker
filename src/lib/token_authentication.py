@@ -112,8 +112,8 @@ class TokenAuthentication:
         """Get the user details from the auth0."""
         get_token = GetToken(
             domain,
-            client_id=os.getenv("AUTH0_CLIENT_ID", "test"),
-            client_secret=os.getenv("AUTH0_CLIENT_SECRET", "test"),
+            client_id=os.getenv("AUTH0_MANAGEMENT_CLIENT_ID", "test"),
+            client_secret=os.getenv("AUTH0_MANAGEMENT_CLIENT_SECRET", "test"),
         )
 
         token = get_token.client_credentials("https://{}/api/v2/".format(domain))
@@ -158,7 +158,7 @@ class TokenAuthentication:
             if not user_metadata:
                 user_details = self.get_user_details(payload.get("sub"))
 
-                user_metadata = UserMetadataModel.initialize(
+                user_metadata = UserMetadataModel.synchronous_initialize(
                     user_id=payload.get("sub"),
                     email=user_details.get("email")
                 )

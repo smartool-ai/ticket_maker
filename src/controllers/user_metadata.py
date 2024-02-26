@@ -67,7 +67,7 @@ async def link_ticket_service(
     match service:
         case PlatformEnum.JIRA:
             user_metadata: UserMetadataModel = await link_jira(
-                user, **service_params.params
+                user, **service_params.params.model_dump()
             )
         case _:
             raise ValueError(f"Service {service} not supported at this time.")
