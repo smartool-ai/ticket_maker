@@ -16,6 +16,7 @@ class PlatformEnum(str, enum.Enum):
     JIRA = "JIRA"
     GITHUB = "GITHUB"
     TRELLO = "TRELLO"
+    SHORTCUT = "SHORTCUT"
     ASANA = "ASANA"  # Add more platforms as needed
 
 

@@ -4,10 +4,13 @@ import os
 from typing import Any, Dict, Optional
 
 from src.lib.dynamo_utils import BaseModel
+from src.lib.enums import PlatformEnum
 from src.lib.loggers import get_module_logger
 
 from pynamodb.attributes import UnicodeAttribute
 from pynamodb.expressions.condition import Condition
+
+from src.services.clients import PlatformClient
 
 
 logger = get_module_logger()
@@ -32,6 +35,7 @@ class UserMetadataModel(BaseModel):
     jira_api_key = UnicodeAttribute(null=True)
     jira_email = UnicodeAttribute(null=True)
     jira_domain = UnicodeAttribute(null=True)
+    shortcut_api_key = UnicodeAttribute(null=True)
 
     @classmethod
     async def initialize(
@@ -41,6 +45,7 @@ class UserMetadataModel(BaseModel):
         jira_api_key: Optional[str] = None,
         jira_email: Optional[str] = None,
         jira_domain: Optional[str] = None,
+        shortcut_api_key: Optional[str] = None,
     ) -> "UserMetadataModel":
         """Initialize a UserMetadataModel."""
         user_metadata = UserMetadataModel(
@@ -49,6 +54,7 @@ class UserMetadataModel(BaseModel):
             jira_api_key=jira_api_key,
             jira_email=jira_email,
             jira_domain=jira_domain,
+            shortcut_api_key=shortcut_api_key,
             created_datetime=datetime.datetime.now(),
         )
 
@@ -62,6 +68,7 @@ class UserMetadataModel(BaseModel):
         jira_api_key: Optional[str] = None,
         jira_email: Optional[str] = None,
         jira_domain: Optional[str] = None,
+        shortcut_api_key: Optional[str] = None,
     ) -> "UserMetadataModel":
         """Initialize a UserMetadataModel synchronously."""
         user_metadata = UserMetadataModel(
@@ -70,10 +77,32 @@ class UserMetadataModel(BaseModel):
             jira_api_key=jira_api_key,
             jira_email=jira_email,
             jira_domain=jira_domain,
+            shortcut_api_key=shortcut_api_key,
             created_datetime=datetime.datetime.now(),
         )
 
         return user_metadata
+    
+    async def check_platform_linked(self, platform_name: str) -> bool:
+        """Check if the user has linked a platform."""
+        return getattr(self, f"{platform_name.lower()}_api_key") is not None
+    
+    async def get_platform_client(self, platform: PlatformEnum) -> PlatformClient:
+        """Get the platform client for the user."""
+        platform_linked = self.check_platform_linked(platform.value)
+
+        if not platform_linked:
+            raise ValueError(f"User does not have {platform.value} credentials. Please link your {platform.value} credentials.")
+        
+        init_params = dict()
+        match platform:
+            case PlatformEnum.JIRA:
+                init_params["server"] = self.jira_domain
+                init_params["token_auth"] = self.jira_api_key
+            case PlatformEnum.SHORTCUT:
+                init_params["api_token"] = self.shortcut_api_key
+
+        return PlatformClient(platform, **init_params)
 
     async def save(self, condition: Optional[Condition] = None) -> Dict[str, Any]:
         """Save the user metadata to DynamoDB."""
@@ -95,6 +124,7 @@ class UserMetadataModel(BaseModel):
             "jira_api_key": self.jira_api_key,
             "jira_email": self.jira_email,
             "jira_domain": self.jira_domain,
+            "shortcut_api_key": self.shortcut_api_key,
         }
 
     async def to_json(self) -> str:

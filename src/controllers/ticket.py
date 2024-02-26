@@ -83,3 +83,6 @@ async def get_tickets_by_generation_time(
     ticket_dict: dict = await ticket.to_serializable_dict()
 
     return {"tickets": ticket_dict.get("tickets")}
+
+
+@router.post("")
