@@ -10,7 +10,10 @@ from mangum import Mangum
 from src.config import config
 from src.bootstrap import bootstrap
 from src import Application
+from dotenv import load_dotenv
 
+
+load_dotenv()
 bootstrap()
 
 config.LOGGER = getLogger("base_logger")
