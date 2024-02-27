@@ -3,6 +3,7 @@ import { Fragment, useState } from 'react';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
   Bars3Icon,
+  CubeIcon,
   UserMinusIcon,
   XMarkIcon,
   FolderIcon
@@ -14,6 +15,7 @@ import * as styles from "./Layout.tailwind.js";
 const navigation = [
   { name: 'Upload Transcript', href: '/upload-transcript', icon: FolderIcon, permission: 'manage:upload_transcripts' },
   { name: 'Delete User', href: '/delete-user', icon: UserMinusIcon, permission: 'manage:users' },
+  { name: 'Link Platforms', href: '/link-platforms', icon: CubeIcon, permission: 'manage:platforms' },
 ];
 
 function classNames(...classes) {

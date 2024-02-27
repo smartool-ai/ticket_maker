@@ -1,5 +1,6 @@
 import requests
 from jira import JIRA
+from requests.auth import HTTPBasicAuth
 
 from src.lib.enums import PlatformEnum
 from src.lib.loggers import get_module_logger
@@ -8,45 +9,75 @@ from src.lib.loggers import get_module_logger
 logger = get_module_logger()
 
 
-class Jira(JIRA):
+class BaseClient:
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
+    auth = None
+    base_url = "test"
+
+    async def _url(self, path):
+        logger.debug(f"URL path: {self.base_url}{path}")
+        return f"{self.base_url}{path}"
+
+    async def _request(self, method, path, body, headers=None, auth=None):
+        logger.debug(f"[Shortcut] request path: {path}")
+        logger.debug(f"[Shortcut] request body: {body}")
+        logger.info(f"[Shortcut] sending request to {method} {path}...")
+
+        response = requests.request(
+            method,
+            await self._url(path),
+            headers=headers if headers else self.headers,
+            json=body,
+            auth=auth if auth else self.auth
+        )
+
+        logger.debug(f"[Shortcut] response status: {response.status_code}")
+        logger.debug(f"[Shortcut] response body: {response.content}")
+
+        response.raise_for_status()
+
+        return response
+
+
+class Jira(BaseClient):
     def __init__(self, **kwargs):
-        self.server = kwargs.get("server")
+        super().__init__()
+        self.base_url = f"{kwargs.get("server")}/rest/api/2/"
         self.email = kwargs.get("email")
         self.token_auth = kwargs.get("token_auth")
-        super().__init__(
-            server=self.server,
-            # token_auth=self.token_auth,
-            basic_auth=(self.email, self.token_auth),
-            # async_=True,
-            logging=False
-        )
+        self.auth = HTTPBasicAuth(self.email, self.token_auth)
 
     async def create_story(self: JIRA, ticket_params: dict) -> dict:
         """Create a ticket in Jira."""
         logger.info(f"Creating ticket in Jira: {ticket_params}")
         fields = {
-            "project": {
-                "key": "TRAN"
-            },
-            "summary": ticket_params["name"],
-            "timetracking": {
-                "originalEstimate": str(ticket_params['estimate'])
-            },
-            "issuetype": {
-                "id": "10005"
-            },
-            "description": str(ticket_params["description"]) if ticket_params["description"] else "",
+            "fields": {
+                "project": {
+                    "key": "TRAN"
+                },
+                "summary": ticket_params["name"],
+                "timetracking": {
+                    "originalEstimate": str(ticket_params['estimate'])
+                },
+                "issuetype": {
+                    "id": "10005"
+                },
+                "description": str(ticket_params["description"]) if ticket_params["description"] else "",
+            }
         }
         try:
-            resp = await self.create_issue(fields=fields)
+            resp = await self._request("POST", "issue", fields, auth=self.auth)
         except Exception as e:
             logger.error(f"Error creating ticket in Jira: {e}")
             raise e
 
-        return resp
+        return resp.json()
 
 
-class Shortcut:
+class Shortcut(BaseClient):
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
@@ -57,29 +88,6 @@ class Shortcut:
     def __init__(self, **kwargs):
         self.api_token = kwargs.get("api_token")
         self.headers["Authorization"] = {self.api_token}
-
-    async def _url(self, path):
-        logger.debug(f"URL path: {self.base_url}{path}")
-        return f"{self.base_url}{path}"
-
-    async def _request(self, method, path, body, headers=None):
-        logger.debug(f"[Shortcut] request path: {path}")
-        logger.debug(f"[Shortcut] request body: {body}")
-        logger.info(f"[Shortcut] sending request to {method} {path}...")
-
-        response = requests.request(
-            method,
-            await self._url(path),
-            headers=headers if headers else self.headers,
-            json=body,
-        )
-
-        logger.debug(f"[Shortcut] response status: {response.status_code}")
-        logger.debug(f"[Shortcut] response body: {response.content}")
-
-        response.raise_for_status()
-
-        return response
 
     async def create_story(self, **kwargs):
         """

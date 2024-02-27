@@ -123,18 +123,17 @@ export default function UploadTranscript() {
     };
 
     const saveTickets = async (key, subject, body, estimationPoints) => {
-        console.log(key, subject, body, estimationPoints);
         const ticketParams = {"name": subject, "description": body, "estimate": estimationPoints}
         const submitResponse = await apiRequest(`/ticket?platform=${document.getElementById(key).value}`, {
             method: "post",
             body: ticketParams
         });
 
-        if (submitResponse == 201) {
-            document.getElementById(`button${key}`).value = "Ticket Uploaded";
+        if (submitResponse.status == 200) {
+            document.getElementById(`button${key}`).innerHTML = "Ticket Uploaded";
         } else {
-            alert("An error occurred while saving your ticket.");
-            console.log(submitResponse.text);
+            alert(await submitResponse.text() || "An error occurred while saving your tickets.");
+            console.log(await submitResponse.text() || "An error occurred while saving your tickets.");
         }
     };
 

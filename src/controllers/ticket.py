@@ -109,4 +109,4 @@ async def create_ticket(
     # Create the ticket in the specified platform
     ticket: dict = await platform_client.create_story(**body.model_dump())
 
-    return ticket
+    return {"ticket": ticket}
