@@ -1,5 +1,4 @@
 import requests
-from jira import JIRA
 from requests.auth import HTTPBasicAuth
 
 from src.lib.enums import PlatformEnum
@@ -45,12 +44,12 @@ class BaseClient:
 class Jira(BaseClient):
     def __init__(self, **kwargs):
         super().__init__()
-        self.base_url = f"{kwargs.get("server")}/rest/api/2/"
+        self.base_url = f"{kwargs.get('server')}/rest/api/2/"
         self.email = kwargs.get("email")
         self.token_auth = kwargs.get("token_auth")
         self.auth = HTTPBasicAuth(self.email, self.token_auth)
 
-    async def create_story(self: JIRA, ticket_params: dict) -> dict:
+    async def create_story(self, ticket_params: dict) -> dict:
         """Create a ticket in Jira."""
         logger.info(f"Creating ticket in Jira: {ticket_params}")
         fields = {
