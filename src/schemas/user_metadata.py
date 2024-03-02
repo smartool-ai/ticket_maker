@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -10,17 +10,26 @@ class UserMetadataSchema(BaseModel):
     email: Optional[str] = None  # User's email address
     jira_email: Optional[str] = None  # User's Jira email address
     jira_api_key: Optional[str] = None  # User's Jira API key
+    jira_domain: Optional[str] = None  # User's Jira domain
+    shortcut_api_key: Optional[str] = None  # User's Shortcut API key
 
 
 class JiraParamsSchema(BaseModel):
-    jira_domain: str
-    jira_api_key: str
+    server: str
+    api_key: str
+    email: str
+
+
+class ShortcutParamsSchema(BaseModel):
+    api_key: str
 
 
 class AsanaParamsSchema(BaseModel):
-    asana_domain: str
     asana_api_key: str
 
 
-class ServiceParamsSchema(BaseModel):
-    params: Union[JiraParamsSchema, AsanaParamsSchema]
+class PlatformParamsSchema(BaseModel):
+    # params: Union[JiraParamsSchema, AsanaParamsSchema, ShortcutParamsSchema]
+    server: Optional[str]
+    api_key: Optional[str]
+    email: Optional[str]

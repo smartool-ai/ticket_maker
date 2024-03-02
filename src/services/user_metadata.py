@@ -30,9 +30,17 @@ async def add_or_update_user_metadata(user_id: str, **kwargs) -> UserMetadataMod
     return user_metadata
 
 
-async def link_jira(user: UserMetadataModel, jira_domain: str, jira_api_key: str) -> UserMetadataModel:
+async def link_jira(user: UserMetadataModel, email: str, server: str, api_key: str) -> UserMetadataModel:
     """Link a Jira account to a user."""
-    user.jira_domain = jira_domain
-    user.jira_api_key = jira_api_key
+    user.jira_email = email
+    user.jira_domain = server
+    user.jira_api_key = api_key
+    await user.save()
+    return user
+
+
+async def link_shortcut(user: UserMetadataModel, api_key: str) -> UserMetadataModel:
+    """Link a Shortcut account to a user."""
+    user.shortcut_api_key = api_key
     await user.save()
     return user
