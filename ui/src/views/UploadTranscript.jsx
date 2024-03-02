@@ -246,11 +246,11 @@ const FileTable = ({ generateTickets, response, ticketsResponse, isPolling }) =>
 
 const TicketTable = ({ saveTickets, ticketsResponse, isPolling }) => {
     const ticketRowItem = (key, subject, body, estimationPoints) => (
-        <tr>
-            <td className="py-3 text-sm text-white pr-3 w-[25%]">{subject}</td>
-            <td className="py-3 text-sm text-gray-500 pr-3 w-[55%]">{body}</td>
+        <tr key={key}>
+            <td className="py-3 text-sm text-white pr-3 w-[20%]">{subject}</td>
+            <td className="py-3 text-sm text-gray-500 pr-3 w-[40%]">{body}</td>
             <td className="py-3 text-sm text-gray-500 pr-3 text-center">{estimationPoints}</td>
-            <td className="w-[10%]">
+            <td className="w-[20%] text-center">
                 <select id={key}>
                     <option value="">Select an option</option>
                     <option value="JIRA">Jira</option>
@@ -285,6 +285,7 @@ const TicketTable = ({ saveTickets, ticketsResponse, isPolling }) => {
                             <th scope="col" className={styles.tableHeader_tw}>Subject</th>
                             <th scope="col" className={styles.tableHeader_tw}>Description</th>
                             <th scope="col" className={[styles.tableHeader_tw, "text-center"].join(" ")}>Story Points</th>
+                            <th scope="col" className={[styles.tableHeader_tw, "text-center"].join(" ")}>Upload To</th>
                         </tr>
                     </thead>
                     <tbody className={styles.tableBodyContainer_tw}>
