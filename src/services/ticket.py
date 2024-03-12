@@ -2,13 +2,14 @@ import datetime
 import json
 import os
 from typing import Optional
+import uuid
 
 import boto3
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
-from src.lib.enums import PlatformEnum
+from src.lib.enums import EventEnum, PlatformEnum
 
 from src.lib.loggers import get_module_logger
-from src.models.dynamo.ticket import TicketModel
+from src.models.dynamo.ticket import Ticket
 from src.models.openai import OpenAIClient
 
 logger = get_module_logger()
@@ -66,8 +67,11 @@ def generate_tickets(prompt: str, number_of_tickets: int, platform: str) -> dict
 async def invoke_ticket_generation_lambda(
     document_id: str,
     user_id: str,
+    event: EventEnum,
     number_of_tickets: Optional[int] = 10,
     platform: Optional[PlatformEnum] = PlatformEnum.JIRA,
+    generation_datetime: str = None,
+    ticket: dict = None,
 ) -> None:
     """
     Invoke the ticket generation lambda function.
@@ -79,25 +83,49 @@ async def invoke_ticket_generation_lambda(
         platform (PlatformEnum, optional): The platform to generate the tickets for. Defaults to PlatformEnum.JIRA.
     """
     try:
-        lambda_client = boto3.client(
-            "lambda", region_name=os.getenv("AWS_REGION", "us-west-2")
-        )
-        generation_datetime: str = datetime.datetime.now().isoformat()
+        payload = dict()
+        response_id = str()
 
-        lambda_client.invoke(
-            FunctionName=f'TRANSCRIBER-LAMBDA-{os.getenv("STAGE_NAME", "dev")}',
-            InvocationType="Event",
-            Payload=json.dumps(
-                {
+        if generation_datetime is None:
+            generation_datetime: str = datetime.datetime.now().isoformat()
+        match event:
+            case EventEnum.TICKET_GENERATION:
+                payload = {
                     "document_id": document_id,
                     "user_id": user_id,
                     "number_of_tickets": number_of_tickets,
                     "platform": platform.value,
                     "generation_datetime": generation_datetime,
+                    "event": event.value,
                 }
-            ),
+                response_id = generation_datetime
+            case EventEnum.TICKET_EXPANSION:
+                if ticket is None:
+                    raise ValueError("Ticket is required for ticket expansion.")
+
+                sub_ticket_id = str(uuid.uuid4())
+
+                payload = {
+                    "document_id": document_id,
+                    "user_id": user_id,
+                    "number_of_tickets": number_of_tickets,
+                    "generation_datetime": generation_datetime,
+                    "event": event.value,
+                    "ticket": ticket,
+                    "sub_ticket_id": sub_ticket_id,
+                }
+                response_id = sub_ticket_id
+
+        lambda_client = boto3.client(
+            "lambda", region_name=os.getenv("AWS_REGION", "us-west-2")
         )
-        return generation_datetime
+
+        lambda_client.invoke(
+            FunctionName=f'TRANSCRIBER-LAMBDA-{os.getenv("STAGE_NAME", "dev")}',
+            InvocationType="Event",
+            Payload=json.dumps(payload),
+        )
+        return response_id
     except Exception as e:
         logger.error(e)
         raise e("Error invoking ticket generation lambda function. Please try again.")
@@ -105,7 +133,7 @@ async def invoke_ticket_generation_lambda(
 
 async def get_tickets(
     document_id: str, generation_datetime: str
-) -> Optional[TicketModel]:
+) -> Optional[Ticket]:
     """
     Get the generated tickets from the database.
 
@@ -117,12 +145,12 @@ async def get_tickets(
         Optional[TicketModel]: The generated tickets or None if not found.
     """
     try:
-        ticket = TicketModel.get(hash_key=document_id, range_key=generation_datetime)
+        ticket = Ticket.get(hash_key=document_id, range_key=generation_datetime)
 
         if not ticket:
             return None
         return ticket
-    except TicketModel.DoesNotExist:
+    except Ticket.DoesNotExist:
         return None
     except Exception as e:
         logger.error(e)

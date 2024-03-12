@@ -3,12 +3,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends
 
-from src.lib.enums import PlatformEnum
+from src.lib.enums import EventEnum, PlatformEnum
 from src.lib.authorized_api_handler import authorized_api_handler
 from src.lib.token_authentication import TokenAuthentication
-from src.models.dynamo.ticket import TicketModel
+from src.models.dynamo.ticket import Ticket
 from src.models.dynamo.user_metadata import UserMetadataModel
-from src.schemas.ticket import TicketGenerationSchema, TicketList, TicketParamsSchema
+from src.schemas.ticket import SubTicketGenerationSchema, TicketGenerationSchema, TicketList, TicketParamsSchema
 from src.services.ticket import get_tickets, invoke_ticket_generation_lambda
 
 router = APIRouter()
@@ -45,6 +45,7 @@ async def invoke_ticket_generation(
     ticket_generation_datetime: str = await invoke_ticket_generation_lambda(
         document_id=file_name,
         user_id=user.user_id,
+        event=EventEnum.TICKET_GENERATION,
         number_of_tickets=number_of_tickets,
         platform=platform,
     )
@@ -53,7 +54,7 @@ async def invoke_ticket_generation(
 
 
 @router.get("/file/{file_name}/tickets")
-@authorized_api_handler(models_to_initialize=[TicketModel])
+@authorized_api_handler(models_to_initialize=[Ticket])
 async def get_tickets_by_generation_time(
     file_name: str,
     generation_datetime: str,
@@ -72,7 +73,7 @@ async def get_tickets_by_generation_time(
         TicketList: The list of tickets generated from the transcript.
     """
     # Get the tickets generated at the specified datetime
-    ticket: Optional[TicketModel] = await get_tickets(
+    ticket: Optional[Ticket] = await get_tickets(
         document_id=file_name, generation_datetime=generation_datetime
     )
 
@@ -83,6 +84,37 @@ async def get_tickets_by_generation_time(
     ticket_dict: dict = await ticket.to_serializable_dict()
 
     return {"tickets": ticket_dict.get("tickets")}
+
+
+@router.get("/file/{file_name}/tickets/expand")
+@authorized_api_handler(models_to_initialize=[Ticket])
+async def expand_ticket(
+    filename: str,
+    generation_datetime: str,
+    body: TicketParamsSchema,
+    user: UserMetadataModel = Depends(granted_user),
+) -> SubTicketGenerationSchema:
+    """
+    This endpoint is for expanding a ticket into a list of sub tickets.
+
+    Args:
+        filename (str): The name of the file to retrieve tickets from.
+        generation_datetime (str): The datetime when the lambda was invoked.
+        _: Dict, optional): The user making the request. Defaults to Depends(granted_user).
+
+    Returns:
+        TicketList: The list of sub tickets generated from the transcript.
+    """
+    sub_ticket_id: str = await invoke_ticket_generation_lambda(
+        document_id=filename,
+        user_id=user.user_id,
+        event=EventEnum.TICKET_EXPANSION,
+        number_of_tickets=3,  # TODO: Make this a query parameter
+        generation_datetime=generation_datetime,
+        ticket=body.model_dump(),
+    )
+
+    return {"sub_ticket_id": sub_ticket_id}
 
 
 @router.post("/ticket")
@@ -96,8 +128,8 @@ async def create_ticket(
     This endpoint is for creating a ticket in a platform.
 
     Args:
-        ticket_params (dict): The parameters for the ticket.
         platform (PlatformEnum): The platform to create the ticket in.
+        body (TicketParamsSchema): The ticket parameters.
         user (Dict, optional): The user making the request. Defaults to Depends(granted_user).
 
     Returns:

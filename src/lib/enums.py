@@ -1,13 +1,50 @@
 import enum
-from dataclasses import dataclass
-from typing import List
 
 from src.lib.loggers import get_module_logger
 
-from pycountry import countries, subdivisions
-from pycountry import db
 
 logger = get_module_logger()
+
+
+class EventEnum(str, enum.Enum):
+    """Enum representing the type of event."""
+
+    TICKET_GENERATION = "TICKET_GENERATION"
+    TICKET_EXPANSION = "TICKET_EXPANSION"
+    TICKET_UPDATE = "TICKET_UPDATE"
+    TICKET_DELETION = "TICKET_DELETION"
+    TICKET_RETRIEVAL = "TICKET_RETRIEVAL"
+    TICKET_CREATION = "TICKET_CREATION"
+    TICKET_ASSIGNMENT = "TICKET_ASSIGNMENT"
+    TICKET_COMMENT = "TICKET_COMMENT"
+    TICKET_STATUS_CHANGE = "TICKET_STATUS_CHANGE"
+    TICKET_PRIORITY_CHANGE = "TICKET_PRIORITY_CHANGE"
+    TICKET_RESOLUTION_CHANGE = "TICKET_RESOLUTION_CHANGE"
+    TICKET_TYPE_CHANGE = "TICKET_TYPE_CHANGE"
+    TICKET_LABEL_CHANGE = "TICKET_LABEL_CHANGE"
+    TICKET_EPIC_CHANGE = "TICKET_EPIC_CHANGE"
+    TICKET_SPRINT_CHANGE = "TICKET_SPRINT_CHANGE"
+    TICKET_COMPONENT_CHANGE = "TICKET_COMPONENT_CHANGE"
+    TICKET_FIX_VERSION_CHANGE = "TICKET_FIX_VERSION_CHANGE"
+    TICKET_AFFECTS_VERSION_CHANGE = "TICKET_AFFECTS_VERSION_CHANGE"
+    TICKET_DUE_DATE_CHANGE = "TICKET_DUE_DATE_CHANGE"
+    TICKET_ESTIMATION_POINTS_CHANGE = "TICKET_ESTIMATION_POINTS_CHANGE"
+    TICKET_REPORTER_CHANGE = "TICKET_REPORTER_CHANGE"
+    TICKET_ASSIGNEE_CHANGE = "TICKET_ASSIGNEE_CHANGE"
+    TICKET_WATCHER_CHANGE = "TICKET_WATCHER_CHANGE"
+    TICKET_LINK = "TICKET_LINK"
+    TICKET_ATTACHMENT = "TICKET_ATTACHMENT"
+    TICKET_SUBTASK = "TICKET_SUBTASK"
+    TICKET_EPIC = "TICKET_EPIC"
+    TICKET_SPRINT = "TICKET_SPRINT"
+    TICKET_COMPONENT = "TICKET_COMPONENT"
+    TICKET_FIX_VERSION = "TICKET_FIX_VERSION"
+    TICKET_AFFECTS_VERSION = "TICKET_AFFECTS_VERSION"
+    TICKET_DUE_DATE = "TICKET_DUE_DATE"
+    TICKET_ESTIMATION_POINTS = "TICKET_ESTIMATION_POINTS"
+    TICKET_REPORTER = "TICKET_REPORTER"
+    TICKET_ASSIGNEE = "TICKET_ASSIGNEE"
+    TICKET_WATCHER = "TICKET_WATCHER"
 
 
 class PlatformEnum(str, enum.Enum):
@@ -61,70 +98,3 @@ class Currency(str, enum.Enum):
     """Enum representing currencies."""
 
     USD = "USD"
-
-
-@dataclass
-class Country:
-    """
-    Country is a dataclass that represents a country through a fuzzy search map.
-    """
-
-    name: str
-
-    async def get_code(self) -> str:
-        """
-        Convert a country name to a 2-digit representation of country code.
-
-        Returns:
-            str: The 2-digit country code.
-        
-        Raises:
-            ValueError: If the country name is not found or the spelling is incorrect.
-        """
-        if self.name is None:
-            return None
-
-        name_lower = self.name.lower()
-        try:
-            code: List[db.Country] = countries.search_fuzzy(name_lower)
-        except LookupError as err:
-            logger.info(f"LookupError: {err}")
-            raise ValueError(
-                f"Country {self.name} not found. Please enter country code or check spelling."
-            )
-
-        return code[0].alpha_2
-
-
-@dataclass
-class Province:
-    """
-    Province is a dataclass that represents a province through a fuzzy search map.
-    """
-
-    name: str
-
-    async def get_code(self) -> str:
-        """
-        Convert a province name to a 2-digit representation of province code.
-
-        Returns:
-            str: The 2-digit province code.
-        
-        Raises:
-            ValueError: If the province name is not found or the spelling is incorrect.
-        """
-        if self.name is None:
-            return None
-
-        name_lower = self.name.lower()
-        try:
-            code: List[db.Subdivision] = subdivisions.search_fuzzy(name_lower)
-        except LookupError as err:
-            logger.info(f"LookupError: {err}")
-            raise ValueError(
-                f"Province {self.name} not found. Please enter province code or check spelling."
-            )
-
-        # code is returned as CA-XX, ex. Canadian provinces, where XX is the two-letter country code so we get the last two digits
-        return code[0].code[-2:]

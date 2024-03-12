@@ -1,5 +1,11 @@
 from typing import List, Optional
+
+from src.lib.loggers import get_module_logger
+
 from pydantic import BaseModel, Field
+
+
+logger = get_module_logger()
 
 
 class Ticket(BaseModel):
@@ -23,6 +29,13 @@ class TicketGenerationSchema(BaseModel):
     Represents the schema for ticket generation.
     """
     ticket_generation_datetime: str
+
+
+class SubTicketGenerationSchema(BaseModel):
+    """
+    Represents the schema for ticket generation.
+    """
+    sub_ticket_id: str
 
 
 class TicketParamsSchema(BaseModel):
