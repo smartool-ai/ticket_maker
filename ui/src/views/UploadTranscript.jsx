@@ -155,6 +155,17 @@ export default function UploadTranscript() {
         </label>
     );
 
+    const handleClearAll = () => {
+        setTicketsResponse(null);
+        setUploadResponse(null);
+    };
+
+    const clearButton = (handleOnClick, buttonLabel) => (
+        <button className={styles.uploadButton_tw} onClick={handleOnClick}>
+            {buttonLabel}
+        </button>
+    );
+
     return (
         uploadResponse ? (
             <div className={styles.transcriptContainer_tw}>
@@ -165,7 +176,12 @@ export default function UploadTranscript() {
                     ticketsResponse={ticketsResponse}
                     isPolling={isPolling}
                 />
-                {uploadButton}
+                <div className="flex gap-3">
+                    {uploadButton}
+                    {!ticketsResponse && uploadResponse && clearButton(() => setUploadResponse(null), "Clear uploaded files")}
+                    {ticketsResponse && clearButton(() => setTicketsResponse(null), "Clear generated tickets")}
+                    {ticketsResponse && clearButton(handleClearAll, "Clear All")}
+                </div>
                 {ticketsResponse && <TicketTable saveTickets={saveTickets} ticketsResponse={ticketsResponse} isPolling={isPolling} />}
             </div>
         ) : (
