@@ -1,12 +1,13 @@
 import datetime
 import os
-from typing import Optional
+from typing import List, Optional
 
 import boto3
 import botocore
 from fastapi import UploadFile
 
 from src.lib.loggers import get_module_logger
+from src.models.dynamo.documents import DocumentsModel
 
 logger = get_module_logger()
 
@@ -107,6 +108,25 @@ def download_file_from_s3(s3_key) -> Optional[str]:
             return None
         else:
             raise
+
+
+async def get_all_files_from_documents(user_id: str) -> List[DocumentsModel]:
+    """
+    Retrieves all the files uploaded by a user.
+
+    Args:
+        user_id (str): The user ID.
+
+    Returns:
+        List[DocumentsModel]: A list of DocumentsModel objects representing the user's uploaded files.
+    """
+    try:
+        documents = DocumentsModel.query(hash_key=user_id)
+    except Exception as e:
+        logger.error(f"Failed to retrieve files from DynamoDB: {str(e)}")
+        raise e
+    
+    return [document for document in documents]
 
 
 if __name__ == "__main__":

@@ -7,7 +7,8 @@ from src.lib.authorized_api_handler import authorized_api_handler
 from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.documents import DocumentsModel
 from src.models.dynamo.user_metadata import UserMetadataModel
-from src.services.file_management import upload_file_to_s3, get_file_details_from_s3
+from src.schemas.file import FileListSchema
+from src.services.file_management import upload_file_to_s3, get_file_details_from_s3, get_all_files_from_documents
 
 router = APIRouter()
 logger = getLogger(__name__)
@@ -68,3 +69,20 @@ async def get_file(file_name: str, _: Dict = Depends(granted_user)) -> Response:
         if not resp.get("error")
         else Response(status_code=resp.get("status_code"), content=resp.get("error"))
     )
+
+
+@router.get("/file")
+@authorized_api_handler()
+async def get_all_user_uploads(user: UserMetadataModel = Depends(granted_user)) -> FileListSchema:
+    """
+    Retrieves all the files uploaded by a user.
+
+    Args:
+        user (Dict): The user details.
+
+    Returns:
+        Dict: The response containing the user's uploaded files.
+    """
+    user_id: str = user.user_id
+    documents: list = await get_all_files_from_documents(user_id)
+    return {"documents": documents}
