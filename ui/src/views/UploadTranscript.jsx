@@ -1,18 +1,19 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useContext } from 'react';
 import useRequest from '../hooks/useRequest';
 import Spinner from '../components/Spinner';
 import Notice from '../components/Notice';
-import ButtonSpinner from '../components/ButtonSpinner';
+import TicketTable from '../components/tables/TicketsTable';
+import UploadedFilesTable from '../components/tables/UploadedFilesTable';
 import * as styles from "./UploadTranscript.tailwind";
+import { UploadTranscriptContext } from '../context/UploadTranscriptContext';
 
 export default function UploadTranscript() {
     const fileInput = useRef(null);
     const [isUploading, setIsUploading] = useState(false);
     const [isPolling, setIsPolling] = useState(false);
-    const [response, setResponse] = useState(null);
-    const [ticketsResponse, setTicketsResponse] = useState(null);
+    const { ticketsResponse, setTicketsResponse, uploadResponse, setUploadResponse } = useContext(UploadTranscriptContext);
     const apiRequest = useRequest();
-
+    
     if (isUploading) {
         return <Spinner />;
     }
@@ -25,17 +26,17 @@ export default function UploadTranscript() {
 
         const uploadHandler = async () => {
             try {
-                const uploadResponse = await apiRequest('/upload', {
+                const apiUploadResponse = await apiRequest('/upload', {
                     method: "post",
                     body: formData,
                 });
 
-                if (!uploadResponse.ok) {
+                if (!apiUploadResponse.ok) {
                     throw new Error('Upload failed');
                 }
 
                 setIsUploading(false);
-                setResponse(await uploadResponse.json());
+                setUploadResponse(await apiUploadResponse.json());
             } catch (error) {
                 setIsUploading(false);
                 alert(error.message || "An error occurred while uploading your file.");
@@ -57,7 +58,7 @@ export default function UploadTranscript() {
                 uploadHandler();
             } else {
                 setIsUploading(false);
-                setResponse(null);
+                setUploadResponse(null);
             }
         } else if (res.status === 404) {
             uploadHandler();
@@ -142,7 +143,7 @@ export default function UploadTranscript() {
             htmlFor="upload"
             className={styles.uploadButton_tw}
         >
-            <span>{response ? "Upload another transcript" : "Upload transcript"}</span>
+            <span>{uploadResponse ? "Upload another transcript" : "Upload transcript"}</span>
             <input
                 type="file"
                 id="upload"
@@ -154,18 +155,33 @@ export default function UploadTranscript() {
         </label>
     );
 
+    const handleClearAll = () => {
+        setTicketsResponse(null);
+        setUploadResponse(null);
+    };
+
+    const clearButton = (handleOnClick, buttonLabel) => (
+        <button className={styles.uploadButton_tw} onClick={handleOnClick}>
+            {buttonLabel}
+        </button>
+    );
+
     return (
-        response ? (
+        uploadResponse ? (
             <div className={styles.transcriptContainer_tw}>
                 <Notice>Your transcript has been uploaded!</Notice>
-                <BucketTable response={response} />
-                <FileTable
+                <UploadedFilesTable
                     generateTickets={generateTickets}
-                    response={response}
+                    response={uploadResponse}
                     ticketsResponse={ticketsResponse}
                     isPolling={isPolling}
                 />
-                {uploadButton}
+                <div className="flex gap-3">
+                    {uploadButton}
+                    {!ticketsResponse && uploadResponse && clearButton(() => setUploadResponse(null), "Clear uploaded files")}
+                    {ticketsResponse && clearButton(() => setTicketsResponse(null), "Clear generated tickets")}
+                    {ticketsResponse && clearButton(handleClearAll, "Clear All")}
+                </div>
                 {ticketsResponse && <TicketTable saveTickets={saveTickets} ticketsResponse={ticketsResponse} isPolling={isPolling} />}
             </div>
         ) : (
@@ -176,123 +192,5 @@ export default function UploadTranscript() {
                 {uploadButton}
             </div>
         )
-    );
-};
-
-const BucketTable = ({ response }) => (
-    <table className={styles.bucketTableContainer_tw}>
-        <thead>
-            <tr>
-                <th scope="col" className={styles.tableHeader_tw}>Bucket</th>
-            </tr>
-        </thead>
-        <tbody className={styles.tableBodyContainer_tw}>
-            <tr>
-                <td className="py-4 text-sm text-gray-500">{response.bucket}</td>
-            </tr>
-        </tbody>
-    </table>
-);
-
-const FileTable = ({ generateTickets, response, ticketsResponse, isPolling }) => {
-    const generateTicketsButton = (name) => (
-        <td>
-            <button
-                className={styles.generateTicketsButton_tw}
-                onClick={() => generateTickets(name)}
-            >
-                {isPolling ? (
-                    <span className="flex items-center gap-x-2">
-                        <ButtonSpinner />
-                        <p>Generating Tickets</p>
-                    </span>
-                    ) : <span>{ticketsResponse ? "Regenerate Tickets" : "Generate Tickets"}</span>
-                }
-            </button>
-        </td>
-    );
-
-    return (
-        <table className={styles.fileTableContainer_tw}>
-            <caption className="text-left text-white font-semibold pb-3">File</caption>
-            <thead>
-                <tr>
-                    <th scope="col" className={styles.tableHeader_tw}>Size</th>
-                    <th scope="col" className={styles.tableHeader_tw}>File Name and URL</th>
-                </tr>
-            </thead>
-            <tbody className={styles.tableBodyContainer_tw}>
-                {Object.entries(response.files).map(([index, { name, url, size }]) => (
-                    <tr key={index}>
-                        <td className="py-3 text-sm text-white pr-3">{size + " KB"}</td>
-                        <td className="py-3 text-sm text-gray-500">
-                            <p className="font-medium">{name}</p>
-                            <a
-                                className={styles.fileTableUrl_tw}
-                                href={url}
-                                target="_blank"
-                            >
-                                {url}
-                            </a>
-                        </td>
-                        {generateTicketsButton(name)}
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    );
-};
-
-const TicketTable = ({ saveTickets, ticketsResponse, isPolling }) => {
-    const ticketRowItem = (key, subject, body, estimationPoints) => (
-        <tr>
-            <td className="py-3 text-sm text-white pr-3 w-[25%]">{subject}</td>
-            <td className="py-3 text-sm text-gray-500 pr-3 w-[55%]">{body}</td>
-            <td className="py-3 text-sm text-gray-500 pr-3 text-center">{estimationPoints}</td>
-            <td className="w-[10%]">
-                <select id={key}>
-                    <option value="">Select an option</option>
-                    <option value="JIRA">Jira</option>
-                    <option value="SHORTCUT">Shortcut</option>
-                    <option value="ASANA">Asana</option>
-                </select>
-            </td>
-            <td className="w-[10%]">
-                <button
-                    id={`button${key}`}
-                    className={styles.saveTicketButton_tw}
-                    onClick={() => saveTickets(key, subject, body, estimationPoints)}
-                >
-                    Upload Ticket
-                </button>
-            </td>
-        </tr>
-    );
-
-    return (
-        <table className={styles.ticketsTableContainer_tw}>
-            <caption className="text-left text-white font-semibold pb-3">Tickets</caption>
-            {isPolling ? (
-                <caption className="p-10 flex justify-center items-center gap-x-2 text-white">
-                    <ButtonSpinner />
-                    Loading tickets...
-                </caption>
-            ) : (
-                <>
-                    <thead>
-                        <tr>
-                            <th scope="col" className={styles.tableHeader_tw}>Subject</th>
-                            <th scope="col" className={styles.tableHeader_tw}>Description</th>
-                            <th scope="col" className={[styles.tableHeader_tw, "text-center"].join(" ")}>Story Points</th>
-                        </tr>
-                    </thead>
-                    <tbody className={styles.tableBodyContainer_tw}>
-                        {ticketsResponse && ticketsResponse.tickets && Object.entries(ticketsResponse.tickets).map(
-                            ([key, { subject, body, estimationpoints }]) => ticketRowItem(key, subject, body, estimationpoints)
-                        )}
-                    </tbody>
-                </>
-            )}
-        </table>
     );
 };
