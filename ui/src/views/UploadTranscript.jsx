@@ -3,7 +3,7 @@ import useRequest from '../hooks/useRequest';
 import Spinner from '../components/Spinner';
 import Notice from '../components/Notice';
 import TicketTable from '../components/tables/TicketsTable';
-import FilesTable from '../components/tables/FilesTable';
+import UploadedFilesTable from '../components/tables/UploadedFilesTable';
 import * as styles from "./UploadTranscript.tailwind";
 import { UploadTranscriptContext } from '../context/UploadTranscriptContext';
 
@@ -159,7 +159,7 @@ export default function UploadTranscript() {
         uploadResponse ? (
             <div className={styles.transcriptContainer_tw}>
                 <Notice>Your transcript has been uploaded!</Notice>
-                <FilesTable
+                <UploadedFilesTable
                     generateTickets={generateTickets}
                     response={uploadResponse}
                     ticketsResponse={ticketsResponse}
