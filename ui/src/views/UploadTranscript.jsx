@@ -159,7 +159,6 @@ export default function UploadTranscript() {
         uploadResponse ? (
             <div className={styles.transcriptContainer_tw}>
                 <Notice>Your transcript has been uploaded!</Notice>
-                <BucketTable response={uploadResponse} />
                 <FilesTable
                     generateTickets={generateTickets}
                     response={uploadResponse}
@@ -179,18 +178,3 @@ export default function UploadTranscript() {
         )
     );
 };
-
-const BucketTable = ({ response }) => (
-    <table className={styles.bucketTableContainer_tw}>
-        <thead>
-            <tr>
-                <th scope="col" className={styles.tableHeader_tw}>Bucket</th>
-            </tr>
-        </thead>
-        <tbody className={styles.tableBodyContainer_tw}>
-            <tr>
-                <td className="py-4 text-sm text-gray-500">{response.bucket}</td>
-            </tr>
-        </tbody>
-    </table>
-);
