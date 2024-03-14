@@ -1,3 +1,4 @@
+from typing import Optional
 from src.models.dynamo.user_metadata import UserMetadataModel
 
 
@@ -44,3 +45,12 @@ async def link_shortcut(user: UserMetadataModel, api_key: str) -> UserMetadataMo
     user.shortcut_api_key = api_key
     await user.save()
     return user
+
+
+async def get_user_metadata_by_user_id(user_id: str) -> Optional[UserMetadataModel]:
+    """Get user metadata by user ID."""
+    try:
+        user_metadata = UserMetadataModel.get(hash_key=user_id)
+        return user_metadata
+    except UserMetadataModel.DoesNotExist:
+        return None

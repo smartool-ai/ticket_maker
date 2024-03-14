@@ -1,9 +1,10 @@
 import os
 
-from logging import getLogger, Logger
+from logging import Logger
 from typing import TYPE_CHECKING
 
 from src.lib.constants import ORIGINS
+from src.lib.loggers import get_module_logger
 
 if TYPE_CHECKING:
     from src.config import Config
@@ -15,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 class Application:
     def __init__(self, config: "Config"):
-        self.logger: Logger = config.LOGGER if config.LOGGER else getLogger()
+        self.logger: Logger = config.LOGGER if config.LOGGER else get_module_logger()
         self.logger.setLevel(config.LOG_LEVEL)
         self._app = FastAPI(title="Ticket Transcriber API")
 

@@ -1,14 +1,16 @@
+import datetime
 from logging import getLogger
+import os
 from typing import Dict
 
 from fastapi import APIRouter, Depends
 
 from src.lib.authorized_api_handler import authorized_api_handler
-from src.lib.enums import PlatformEnum
+from src.lib.enums import PlatformEnum, SubscriptionTier
 from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.user_metadata import UserMetadataModel
 from src.schemas.user_metadata import PlatformParamsSchema, UserMetadataSchema
-from src.services.user_metadata import add_or_update_user_metadata, link_jira, link_shortcut
+from src.services.user_metadata import add_or_update_user_metadata, get_user_metadata_by_user_id, link_jira, link_shortcut
 
 router = APIRouter()
 logger = getLogger(__name__)
@@ -16,10 +18,12 @@ token_authentication = TokenAuthentication()
 granted_user = token_authentication.require_user_with_permission(
     "manage:upload_transcripts"
 )
+admin_user = token_authentication.require_user_with_permission("manage:admin")
+safe_endpoints = True if os.getenv("STAGE_NAME") != "prod" else False
 
 
 @router.put("/user-metadata")
-@authorized_api_handler()
+@authorized_api_handler(models_to_initialize=[UserMetadataModel])
 async def put_user_metadata(
     user_metadata: UserMetadataSchema, user: Dict = Depends(granted_user)
 ) -> Dict:
@@ -43,6 +47,23 @@ async def put_user_metadata(
 
     # Convert the user metadata model to a serializable dictionary
     return await user_metadata_model.to_serializable_dict()
+
+
+@router.get("/user-metadata")
+@authorized_api_handler(models_to_initialize=[UserMetadataModel])
+async def get_user_metadata(
+    user: UserMetadataModel = Depends(granted_user),
+) -> Dict:
+    """
+    Get user metadata
+
+    Args:
+        user (UserMetadataModel, optional): The user to get the metadata for. Defaults to Depends(granted_user).
+
+    Returns:
+        Dict: The user metadata.
+    """
+    return await user.to_serializable_dict()
 
 
 @router.put("/user-metadata/link")
@@ -77,3 +98,51 @@ async def link_ticket_service(
             raise ValueError(f"Service {platform} not supported at this time.")
 
     return await user_metadata.to_serializable_dict()
+
+
+@router.post("/user-metadata/subscribe", include_in_schema=safe_endpoints)
+@authorized_api_handler(models_to_initialize=[UserMetadataModel])
+async def subscribe_to_service(
+    tier: SubscriptionTier,
+    user_id: str,
+    _: UserMetadataModel = Depends(admin_user),
+) -> Dict:
+    """
+    Subscribe to a service
+
+    Args:
+        tier (SubscriptionTier): The subscription tier to subscribe to.
+        user (UserMetadataModel, optional): The user to subscribe. Defaults to Depends(admin_user).
+
+    Returns:
+        Dict: The updated user metadata.
+    """
+    user: UserMetadataModel = await get_user_metadata_by_user_id(user_id)
+
+    if not user:
+        raise ValueError(f"User with ID {user_id} not found.")
+
+    user.subscription_tier = tier
+    user.renew_datetime = datetime.datetime.now() + datetime.timedelta(days=30)
+    user.renew_datetime = user.renew_datetime.isoformat()
+
+    match tier:
+        case SubscriptionTier.FREE:
+            user.generations_count = 10
+            user.file_uploads_count = 3
+        case SubscriptionTier.BASIC:
+            user.generations_count = 150
+            user.file_uploads_count = 10
+        case SubscriptionTier.STANDARD:
+            user.generations_count = 500
+            user.file_uploads_count = 50
+        case SubscriptionTier.PRO:
+            user.generations_count = 1000
+            user.file_uploads_count = 100
+        case SubscriptionTier.ENTERPRISE:
+            user.generations_count = 1000000
+            user.file_uploads_count = 100000
+
+    await user.save()
+
+    return await user.to_serializable_dict()

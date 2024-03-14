@@ -125,7 +125,7 @@ async def get_all_files_from_documents(user_id: str) -> List[DocumentsModel]:
     except Exception as e:
         logger.error(f"Failed to retrieve files from DynamoDB: {str(e)}")
         raise e
-    
+
     return [document for document in documents]
 
 

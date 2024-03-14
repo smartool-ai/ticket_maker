@@ -91,7 +91,9 @@ sam-deploy-dev:
 		AccountId=${DEV_AWS_ACCOUNT_ID} \
 		Auth0Domain=${AUTH0_DOMAIN} \
 		Auth0ClientId=${AUTH0_CLIENT_ID} \
-		OpenaiApiKey=${OPENAI_API_KEY}
+		OpenaiApiKey=${OPENAI_API_KEY} \
+		Auth0MgmtClientId=${AUTH0_MGMT_CLIENT_ID} \
+		Auth0MgmtClientSecret=${AUTH0_MGMT_CLIENT_SECRET} \
 
 sam-deploy-staging:
 	make build

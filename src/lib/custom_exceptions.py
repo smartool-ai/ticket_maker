@@ -4,6 +4,7 @@ from typing import Any, Callable, Dict, Optional, Tuple, Type, TypedDict
 
 logger = get_module_logger()
 
+
 class HTTP_Response(TypedDict):
     """HTTP_Response that lambdas should return to get processed by the API Gateway.
     The API Gateway expects each response to have exactly these four keys. See
@@ -13,6 +14,7 @@ class HTTP_Response(TypedDict):
     headers: Dict[str, str]
     isBase64Encoded: bool
     body: str
+
 
 class _HTTPError(Exception):
     """Base class for HTTP errors.
@@ -36,6 +38,7 @@ class _HTTPError(Exception):
     def error_message(self) -> str:  # type: ignore
         ...
 
+
 class _400RangeHTTPError(_HTTPError):
     """Base class for all 400 range HTTP errors.
     All of these errors include user mistakes during input and require a descriptive error message.
@@ -43,6 +46,7 @@ class _400RangeHTTPError(_HTTPError):
     @property
     def error_message(self) -> str:
         return str(self)
+
 
 class BaseException(Exception):
     """
@@ -86,17 +90,21 @@ class BaseException(Exception):
     def __str__(self) -> str:
         return self.create_message()
 
+
 class MissingRequiredData(BaseException):
     """
     Custom class for when add/updating row and some data that is required is missing
     """
     pass
 
+
 class GeneralMissingDataError(BaseException):
     pass
 
+
 class ObjectDoesNotExist(BaseException):
     pass
+
 
 class InvalidInput(BaseException):
     """
@@ -104,6 +112,7 @@ class InvalidInput(BaseException):
     is not the proper datatype
     """
     pass
+
 
 class ResourceNotFoundException(BaseException):
     def __init__(
@@ -132,30 +141,47 @@ class ResourceNotFoundException(BaseException):
     def resource_identifier(self) -> str:
         return str(self._resource_identifier)
 
+
 class InsufficientFunds(BaseException):
     """Raised when funds are insufficient to perform an action."""
+
 
 class RedisCacheException(BaseException):
     """Raise when a read from or write to redis failed."""
 
+
 class InvalidAddress(BaseException):
     """Raise when trying to store an invalid address."""
+
 
 class UnprocessableEntity422(_400RangeHTTPError):
     """HTTP 422 Error"""
     status_code = 422
 
+
 class ConflictError(BaseException):
     """Base conflict error."""
+
 
 class ServerFailureError(BaseException):
     """Error when an integrated service fails."""
 
+
 class IncompleteOnboardingError(BaseException):
     """Error when a user has not completed onboarding."""
 
+
 class PlatformLinkError(BaseException):
     """Error when a user has not linked a platform."""
+
+
+class FileUploadLimitReachedError(BaseException):
+    """Error when a user has reached their file upload limit."""
+
+
+class TicketGenerationLimitReachedError(BaseException):
+    """Error when a user has reached their ticket generation limit."""
+
 
 async def allow_exceptions(
     callable: Callable,
@@ -175,6 +201,7 @@ async def allow_exceptions(
     except exceptions as err:
         logger.error(err)
         return None
+
 
 async def allow_not_found(
     callable: Callable, *args: Any, **kwargs: Any

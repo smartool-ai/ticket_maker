@@ -4,6 +4,7 @@ from typing import Dict
 from fastapi import APIRouter, Depends, File, UploadFile, Response
 from src.lib.authorized_api_handler import authorized_api_handler
 
+from src.lib.custom_exceptions import FileUploadLimitReachedError
 from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.documents import DocumentsModel
 from src.models.dynamo.user_metadata import UserMetadataModel
@@ -33,6 +34,11 @@ async def upload_file(
     Returns:
         Dict: The response containing the uploaded file details.
     """
+    logger.info(f"User has {user.file_uploads_count} file uploads remaining")
+    if user.file_uploads_count == 0:
+        logger.error("User has reached the maximum number of file uploads.")
+        raise FileUploadLimitReachedError(message="User has reached the maximum number of file uploads.")
+
     resp: dict = upload_file_to_s3(file)
     user_id: str = user.user_id
 
@@ -46,6 +52,12 @@ async def upload_file(
         )
 
         await document.save()
+
+    # Decrement the file uploads count for the user
+    logger.info("Decrementing the file uploads count for the user")
+    user.file_uploads_count -= 1
+    await user.save()
+    logger.info(f"User has {user.file_uploads_count} file uploads remaining")
 
     return resp
 

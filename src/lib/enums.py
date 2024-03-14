@@ -6,6 +6,16 @@ from src.lib.loggers import get_module_logger
 logger = get_module_logger()
 
 
+class SubscriptionTier(str, enum.Enum):
+    """Enum representing the subscription tier of the user."""
+
+    FREE = "FREE"
+    BASIC = "BASIC"
+    STANDARD = "STANDARD"
+    PRO = "PRO"
+    ENTERPRISE = "ENTERPRISE"
+
+
 class EventEnum(str, enum.Enum):
     """Enum representing the type of event."""
 

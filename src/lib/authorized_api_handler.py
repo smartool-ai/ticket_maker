@@ -6,6 +6,7 @@ from fastapi import Response, status
 
 from src.lib.custom_exceptions import (
     ConflictError,
+    FileUploadLimitReachedError,
     IncompleteOnboardingError,
     InsufficientFunds,
     InvalidInput,
@@ -13,6 +14,7 @@ from src.lib.custom_exceptions import (
     ObjectDoesNotExist,
     PlatformLinkError,
     ServerFailureError,
+    TicketGenerationLimitReachedError
 )
 from src.lib.dynamo_connector import initialize_dynamo_tables
 from src.lib.dynamo_utils import BaseModel
@@ -22,12 +24,14 @@ from src.lib.loggers import get_module_logger
 
 BAD_REQUEST_ERRORS = (
     ConflictError,
+    FileUploadLimitReachedError,
     IncompleteOnboardingError,
     InsufficientFunds,
     InvalidInput,
     MissingRequiredData,
     ObjectDoesNotExist,
-    PlatformLinkError
+    PlatformLinkError,
+    TicketGenerationLimitReachedError,
 )
 SERVICE_UNAVAILABLE_ERRORS = ServerFailureError
 

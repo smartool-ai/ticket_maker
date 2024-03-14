@@ -112,8 +112,8 @@ class TokenAuthentication:
         """Get the user details from the auth0."""
         get_token = GetToken(
             domain,
-            client_id=os.getenv("AUTH0_MANAGEMENT_CLIENT_ID", "test"),
-            client_secret=os.getenv("AUTH0_MANAGEMENT_CLIENT_SECRET", "test"),
+            client_id=os.getenv("AUTH0_MGMT_CLIENT_ID", "test"),
+            client_secret=os.getenv("AUTH0_MGMT_CLIENT_SECRET", "test"),
         )
 
         token = get_token.client_credentials("https://{}/api/v2/".format(domain))
@@ -153,13 +153,13 @@ class TokenAuthentication:
                 raise unauthorized_error
 
             # Check if user metadata is in our db, if not add it
-            user_metadata: Optional[UserMetadataModel] = get_user_metadata(payload.get("sub"))
+            user_metadata: Optional[UserMetadataModel] = get_user_metadata(payload.get("sub", "").split("|")[1])
 
             if not user_metadata:
                 user_details = self.get_user_details(payload.get("sub"))
 
                 user_metadata = UserMetadataModel.synchronous_initialize(
-                    user_id=payload.get("sub"),
+                    user_id=payload.get("sub", "").split("|")[1],
                     email=user_details.get("email")
                 )
                 user_metadata.synchronous_save()

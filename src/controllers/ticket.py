@@ -3,6 +3,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends
 
+from src.lib.custom_exceptions import TicketGenerationLimitReachedError
 from src.lib.enums import EventEnum, PlatformEnum
 from src.lib.authorized_api_handler import authorized_api_handler
 from src.lib.token_authentication import TokenAuthentication
@@ -41,6 +42,11 @@ async def invoke_ticket_generation(
     Returns:
         TicketGenerationSchema: The datetime when the lambda was invoked.
     """
+    logger.info(f"User has {user.generations_count} ticket generations remaining")
+    if user.generations_count == 0:
+        logger.error("User has reached the maximum number of ticket generations.")
+        raise TicketGenerationLimitReachedError(message="User has reached the maximum number of ticket generations.")
+
     # Invoke the ticket generation lambda function
     ticket_generation_datetime: str = await invoke_ticket_generation_lambda(
         document_id=file_name,
@@ -49,6 +55,10 @@ async def invoke_ticket_generation(
         number_of_tickets=number_of_tickets,
         platform=platform,
     )
+
+    # Decrement the generations count for the user
+    user.generations_count -= 1
+    await user.save()
 
     return {"ticket_generation_datetime": ticket_generation_datetime}
 
@@ -105,6 +115,11 @@ async def expand_ticket(
     Returns:
         TicketList: The list of sub tickets generated from the transcript.
     """
+    logger.info(f"User has {user.generations_count} ticket generations remaining")
+    if user.generations_count == 0:
+        logger.error("User has reached the maximum number of ticket generations.")
+        raise TicketGenerationLimitReachedError(message="User has reached the maximum number of ticket generations.")
+
     sub_ticket_id: str = await invoke_ticket_generation_lambda(
         document_id=filename,
         user_id=user.user_id,
@@ -113,6 +128,10 @@ async def expand_ticket(
         generation_datetime=generation_datetime,
         ticket=body.model_dump(),
     )
+
+    # Decrement the generations count for the user
+    user.generations_count -= 1
+    await user.save()
 
     return {"sub_ticket_id": sub_ticket_id}
 

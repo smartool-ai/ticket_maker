@@ -1,10 +1,6 @@
-import os
 import uvicorn
 from logging import getLogger
 
-from fastapi import Request, Response
-from starlette.background import BackgroundTask
-from starlette.types import Message
 from mangum import Mangum
 
 from src.config import config

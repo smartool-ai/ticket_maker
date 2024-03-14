@@ -64,7 +64,7 @@ export default function UploadTranscript() {
             uploadHandler();
         } else {
             setIsUploading(false);
-            alert("An error occurred while uploading your image.");
+            alert("An error occurred while uploading your file.");
         }
     };
 

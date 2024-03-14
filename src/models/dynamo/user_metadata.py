@@ -8,7 +8,7 @@ from src.lib.dynamo_utils import BaseModel
 from src.lib.enums import PlatformEnum
 from src.lib.loggers import get_module_logger
 
-from pynamodb.attributes import UnicodeAttribute
+from pynamodb.attributes import UnicodeAttribute, NumberAttribute
 from pynamodb.expressions.condition import Condition
 
 from src.services.clients import PlatformClient
@@ -25,6 +25,11 @@ class UserMetadataModel(BaseModel):
         email (str): Email address
         jira_api_key (str): Jira API key
         jira_email (str): Jira email address
+        jira_domain (str): Jira domain
+        shortcut_api_key (str): Shortcut API key
+        generations_count (int): Number of ticket generations remaining
+        file_uploads_count (int): Number of file uploads remaining
+        renew_datetime (str): Datetime when the user's credentials need to be renewed
     """
 
     class Meta:
@@ -37,6 +42,10 @@ class UserMetadataModel(BaseModel):
     jira_email = UnicodeAttribute(null=True)
     jira_domain = UnicodeAttribute(null=True)
     shortcut_api_key = UnicodeAttribute(null=True)
+    generations_count = NumberAttribute(null=True, default=10)
+    file_uploads_count = NumberAttribute(null=True, default=3)
+    renew_datetime = UnicodeAttribute(null=True)
+    subscription_tier = UnicodeAttribute(null=True, default="free")
 
     @classmethod
     async def initialize(
@@ -47,6 +56,10 @@ class UserMetadataModel(BaseModel):
         jira_email: Optional[str] = None,
         jira_domain: Optional[str] = None,
         shortcut_api_key: Optional[str] = None,
+        generations_count: Optional[int] = 10,
+        file_uploads_count: Optional[int] = 3,
+        renew_datetime: Optional[str] = None,
+        subscription_tier: Optional[str] = "free",
     ) -> "UserMetadataModel":
         """Initialize a UserMetadataModel."""
         user_metadata = UserMetadataModel(
@@ -56,7 +69,11 @@ class UserMetadataModel(BaseModel):
             jira_email=jira_email,
             jira_domain=jira_domain,
             shortcut_api_key=shortcut_api_key,
+            generations_count=generations_count,
+            file_uploads_count=file_uploads_count,
             created_datetime=datetime.datetime.now(),
+            renew_datetime=renew_datetime if renew_datetime else (datetime.datetime.now() + datetime.timedelta(days=30)).isoformat(),
+            subscription_tier=subscription_tier,
         )
 
         return user_metadata
@@ -70,6 +87,10 @@ class UserMetadataModel(BaseModel):
         jira_email: Optional[str] = None,
         jira_domain: Optional[str] = None,
         shortcut_api_key: Optional[str] = None,
+        generations_count: Optional[int] = 10,
+        file_uploads_count: Optional[int] = 3,
+        renew_datetime: Optional[str] = None,
+        subscription_tier: Optional[str] = "free",
     ) -> "UserMetadataModel":
         """Initialize a UserMetadataModel synchronously."""
         user_metadata = UserMetadataModel(
@@ -79,7 +100,11 @@ class UserMetadataModel(BaseModel):
             jira_email=jira_email,
             jira_domain=jira_domain,
             shortcut_api_key=shortcut_api_key,
+            generations_count=generations_count,
+            file_uploads_count=file_uploads_count,
             created_datetime=datetime.datetime.now(),
+            renew_datetime=renew_datetime if renew_datetime else (datetime.datetime.now() + datetime.timedelta(days=30)).isoformat(),
+            subscription_tier=subscription_tier,
         )
 
         return user_metadata
@@ -121,12 +146,10 @@ class UserMetadataModel(BaseModel):
     async def to_serializable_dict(self) -> dict:
         """Return a serializable dictionary representation of the UserMetadataModel."""
         return {
-            "user_id": self.user_id,
             "email": self.email,
-            "jira_api_key": self.jira_api_key,
-            "jira_email": self.jira_email,
-            "jira_domain": self.jira_domain,
-            "shortcut_api_key": self.shortcut_api_key,
+            "generations_count": self.generations_count,
+            "file_uploads_count": self.file_uploads_count,
+            "renew_datetime": self.renew_datetime
         }
 
     async def to_json(self) -> str:
