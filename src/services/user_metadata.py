@@ -40,9 +40,10 @@ async def link_jira(user: UserMetadataModel, email: str, server: str, api_key: s
     return user
 
 
-async def link_shortcut(user: UserMetadataModel, api_key: str) -> UserMetadataModel:
+async def link_shortcut(user: UserMetadataModel, api_key: str, project_id: str) -> UserMetadataModel:
     """Link a Shortcut account to a user."""
     user.shortcut_api_key = api_key
+    user.shortcut_project_id = project_id
     await user.save()
     return user
 

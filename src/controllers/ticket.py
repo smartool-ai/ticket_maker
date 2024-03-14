@@ -157,7 +157,9 @@ async def create_ticket(
     # Get the platform client for the user
     platform_client = await user.get_platform_client(platform)
 
+    ticket_params: dict = body.model_dump()
+
     # Create the ticket in the specified platform
-    ticket: dict = await platform_client.create_story(**body.model_dump())
+    ticket: dict = await platform_client.create_story(**ticket_params)
 
     return {"ticket": ticket}

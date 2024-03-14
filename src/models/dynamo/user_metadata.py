@@ -42,6 +42,7 @@ class UserMetadataModel(BaseModel):
     jira_email = UnicodeAttribute(null=True)
     jira_domain = UnicodeAttribute(null=True)
     shortcut_api_key = UnicodeAttribute(null=True)
+    shortcut_project_id = UnicodeAttribute(null=True)
     generations_count = NumberAttribute(null=True, default=10)
     file_uploads_count = NumberAttribute(null=True, default=3)
     renew_datetime = UnicodeAttribute(null=True)
@@ -56,6 +57,7 @@ class UserMetadataModel(BaseModel):
         jira_email: Optional[str] = None,
         jira_domain: Optional[str] = None,
         shortcut_api_key: Optional[str] = None,
+        shortcut_project_id: Optional[str] = None,
         generations_count: Optional[int] = 10,
         file_uploads_count: Optional[int] = 3,
         renew_datetime: Optional[str] = None,
@@ -69,6 +71,7 @@ class UserMetadataModel(BaseModel):
             jira_email=jira_email,
             jira_domain=jira_domain,
             shortcut_api_key=shortcut_api_key,
+            shortcut_project_id=shortcut_project_id,
             generations_count=generations_count,
             file_uploads_count=file_uploads_count,
             created_datetime=datetime.datetime.now(),
@@ -87,6 +90,7 @@ class UserMetadataModel(BaseModel):
         jira_email: Optional[str] = None,
         jira_domain: Optional[str] = None,
         shortcut_api_key: Optional[str] = None,
+        shortcut_project_id: Optional[str] = None,
         generations_count: Optional[int] = 10,
         file_uploads_count: Optional[int] = 3,
         renew_datetime: Optional[str] = None,
@@ -100,6 +104,7 @@ class UserMetadataModel(BaseModel):
             jira_email=jira_email,
             jira_domain=jira_domain,
             shortcut_api_key=shortcut_api_key,
+            shortcut_project_id=shortcut_project_id,
             generations_count=generations_count,
             file_uploads_count=file_uploads_count,
             created_datetime=datetime.datetime.now(),

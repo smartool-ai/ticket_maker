@@ -32,3 +32,4 @@ class PlatformParamsSchema(BaseModel):
     server: Optional[str]
     api_key: Optional[str]
     email: Optional[str]
+    project_id: Optional[str]

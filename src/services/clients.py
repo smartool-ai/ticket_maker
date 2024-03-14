@@ -16,14 +16,17 @@ class BaseClient:
     auth = None
     base_url = "test"
 
+    def __init__(self, client: str = None) -> None:
+        self.client = client
+
     async def _url(self, path):
         logger.debug(f"URL path: {self.base_url}{path}")
         return f"{self.base_url}{path}"
 
     async def _request(self, method, path, body, headers=None, auth=None):
-        logger.debug(f"[Shortcut] request path: {path}")
-        logger.debug(f"[Shortcut] request body: {body}")
-        logger.info(f"[Shortcut] sending request to {method} {path}...")
+        logger.debug(f"[{self.client}] request path: {path}")
+        logger.debug(f"[{self.client}] request body: {body}")
+        logger.info(f"[{self.client}] sending request to {method} {path}...")
 
         response = requests.request(
             method,
@@ -33,8 +36,8 @@ class BaseClient:
             auth=auth if auth else self.auth
         )
 
-        logger.debug(f"[Shortcut] response status: {response.status_code}")
-        logger.debug(f"[Shortcut] response body: {response.content}")
+        logger.debug(f"[{self.client}] response status: {response.status_code}")
+        logger.debug(f"[{self.client}] response body: {response.content}")
 
         response.raise_for_status()
 
@@ -44,6 +47,7 @@ class BaseClient:
 class Jira(BaseClient):
     def __init__(self, **kwargs):
         super().__init__()
+        self.client = "Jira"
         self.base_url = f"{kwargs.get('server')}/rest/api/2/"
         self.email = kwargs.get("email")
         self.token_auth = kwargs.get("token_auth")
@@ -80,22 +84,23 @@ class Shortcut(BaseClient):
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": ""
+        "Shortcut-Token": ""
     }
     base_url = "https://api.app.shortcut.com/api/v3/"
 
     def __init__(self, **kwargs):
+        self.client = "Shortcut"
         self.api_token = kwargs.get("api_token")
-        self.headers["Authorization"] = {self.api_token}
+        self.headers["Shortcut-Token"] = self.api_token
 
-    async def create_story(self, **kwargs):
+    async def create_story(self, ticket_params: dict):
         """
         Create a ticket in Shortcut.
 
         Kwargs:
             - name (str): Required. The name of the story.
-            - workflow_state_id (int): The ID of the workflow state the story will be in.
             - description (str): The description of the story.
+            - workflow_state_id (int): The ID of the workflow state the story will be in.
             - requested_by_id (UUID): The ID of the member that requested the story.
             - story_type (Enum[bug, chore, feature]): The type of story (feature, bug, chore).
             - archived (bool): Controls the story's archived state.
@@ -123,7 +128,7 @@ class Shortcut(BaseClient):
             - tasks (List[CreateTaskParams]): An array of tasks connected to the story.
             - updated_at (Date): The time/date the Story was updated.
         """
-        create_story_resp = await self._request("POST", "stories", kwargs)
+        create_story_resp = await self._request("POST", "stories", ticket_params)
 
         return create_story_resp.json()
 
