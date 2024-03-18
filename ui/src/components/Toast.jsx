@@ -19,7 +19,7 @@ export default function Toast({ label, onClose, type = "info" }) {
 
 	const bgColor = {
 		error: "bg-red-600",
-		info: "bg-blue-400",
+		info: "bg-[#60a5fa]", // converted to hex, bg-blue-400 doesn't work
 		success: "bg-green-600",
 		warning: "bg-orange-400",
 	};
