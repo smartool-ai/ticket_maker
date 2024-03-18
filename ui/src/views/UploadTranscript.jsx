@@ -1,7 +1,7 @@
 import { useState, useRef, useContext } from 'react';
 import useRequest from '../hooks/useRequest';
 import Spinner from '../components/Spinner';
-import Notice from '../components/Notice';
+import Toast from '../components/Toast';
 import TicketTable from '../components/tables/TicketsTable';
 import UploadedFilesTable from '../components/tables/UploadedFilesTable';
 import * as styles from "./UploadTranscript.tailwind";
@@ -11,6 +11,11 @@ export default function UploadTranscript() {
     const fileInput = useRef(null);
     const [isUploading, setIsUploading] = useState(false);
     const [isPolling, setIsPolling] = useState(false);
+    const [toast, setToast] = useState({
+        showToast: true,
+        label: "Please note that currently only .txt files are supported.",
+        type: "info"
+    });
     const { ticketsResponse, setTicketsResponse, uploadResponse, setUploadResponse } = useContext(UploadTranscriptContext);
     const apiRequest = useRequest();
     
@@ -37,9 +42,18 @@ export default function UploadTranscript() {
 
                 setIsUploading(false);
                 setUploadResponse(await apiUploadResponse.json());
+                setToast({
+                    type: "success",
+                    label: "Your transcript has been uploaded!",
+                    showToast: true,
+                });
             } catch (error) {
                 setIsUploading(false);
-                alert(error.message || "An error occurred while uploading your file.");
+                setToast({
+                    type: "error",
+                    label: "An error occurred while uploading your file.",
+                    showToast: true,
+                });
             }
         };
 
@@ -64,7 +78,11 @@ export default function UploadTranscript() {
             uploadHandler();
         } else {
             setIsUploading(false);
-            alert("An error occurred while uploading your file.");
+            setToast({
+                type: "error",
+                label: "An error occurred while uploading your file.",
+                showToast: true,
+            });
         }
     };
 
@@ -112,14 +130,22 @@ export default function UploadTranscript() {
 
                 if (!response) {
                     setIsPolling(false);
-                    alert("Ticket generation timed out.");
+                    setToast({
+                        type: "error",
+                        label: "Ticket generation timed out.",
+                        showToast: true,
+                    });
                 }
             };
 
             pollTickets(fileName);
         } catch (error) {
             setIsPolling(false);
-            alert(error.message || "An error occurred while generating your tickets.");
+            setToast({
+                type: "error",
+                label: error.message || "An error occurred while generating your tickets.",
+                showToast: true,
+            });
         }
     };
 
@@ -133,8 +159,11 @@ export default function UploadTranscript() {
         if (submitResponse.status == 200) {
             document.getElementById(`button${key}`).innerHTML = "Ticket Uploaded";
         } else {
-            alert(await submitResponse.text() || "An error occurred while saving your tickets.");
-            console.log(await submitResponse.text() || "An error occurred while saving your tickets.");
+            setToast({
+                type: "error",
+                label: await submitResponse.text() || "An error occurred while saving your tickets.",
+                showToast: true,
+            });
         }
     };
 
@@ -167,30 +196,32 @@ export default function UploadTranscript() {
     );
 
     return (
-        uploadResponse ? (
-            <div className={styles.transcriptContainer_tw}>
-                <Notice>Your transcript has been uploaded!</Notice>
-                <UploadedFilesTable
-                    generateTickets={generateTickets}
-                    response={uploadResponse}
-                    ticketsResponse={ticketsResponse}
-                    isPolling={isPolling}
-                />
-                <div className="flex gap-3">
-                    {uploadButton}
-                    {!ticketsResponse && uploadResponse && clearButton(() => setUploadResponse(null), "Clear uploaded files")}
-                    {ticketsResponse && clearButton(() => setTicketsResponse(null), "Clear generated tickets")}
-                    {ticketsResponse && clearButton(handleClearAll, "Clear All")}
+        <>
+            {toast.showToast && <Toast type={toast.type} label={toast.label} onClose={() => setToast(previous => ({...previous, showToast: false}))}/>}
+            {uploadResponse ? (
+                <div className={styles.transcriptContainer_tw}>
+                    <UploadedFilesTable
+                        generateTickets={generateTickets}
+                        response={uploadResponse}
+                        ticketsResponse={ticketsResponse}
+                        isPolling={isPolling}
+                    />
+                    <div className="flex gap-3">
+                        {uploadButton}
+                        {!ticketsResponse && uploadResponse && clearButton(() => setUploadResponse(null), "Clear uploaded files")}
+                        {ticketsResponse && clearButton(() => setTicketsResponse(null), "Clear generated tickets")}
+                        {ticketsResponse && clearButton(handleClearAll, "Clear All")}
+                    </div>
+                    {ticketsResponse && <TicketTable saveTickets={saveTickets} ticketsResponse={ticketsResponse} isPolling={isPolling} />}
                 </div>
-                {ticketsResponse && <TicketTable saveTickets={saveTickets} ticketsResponse={ticketsResponse} isPolling={isPolling} />}
-            </div>
-        ) : (
-            <div className={styles.transcriptContainer_tw}>
-                <Notice>
-                    <p>Please note that currently only .txt files are supported</p>
-                </Notice>
-                {uploadButton}
-            </div>
-        )
+            ) : (
+                <div className={styles.transcriptContainer_tw}>
+                    <div className="text-gray-400 border-gray-900 border-4 rounded-md p-4">
+                        Drag and Drop here
+                    </div>
+                    {uploadButton}
+                </div>
+            )}
+        </>
     );
 };
