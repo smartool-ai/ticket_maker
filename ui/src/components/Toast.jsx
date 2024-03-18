@@ -5,7 +5,6 @@ import {
     InformationCircleIcon,
     ExclamationTriangleIcon,
     ExclamationCircleIcon,
-    XMarkIcon,
     XCircleIcon
 } from '@heroicons/react/20/solid';
 
@@ -39,7 +38,6 @@ export default function Toast({ label, onClose, type = "info" }) {
                         {label}
                     </div>
                     <div className="h-5 w-5 text-gray-700 hover:text-[#4654A3] ml-1" onClick={onClose}>
-                    {/* <div className="h-5 w-5 hover:rounded-full hover:bg-gray-300 ml-1" onClick={onClose}> */}
                         <XCircleIcon />
                     </div>
                 </div>
