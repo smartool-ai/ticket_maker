@@ -19,7 +19,7 @@ export default function Toast({ label, onClose, type = "info" }) {
 
 	const bgColor = {
 		error: "bg-red-600",
-		info: "bg-[#60a5fa]", // converted to hex, bg-blue-400 doesn't work
+		info: "bg-blue-400",
 		success: "bg-green-600",
 		warning: "bg-orange-400",
 	};
@@ -34,7 +34,7 @@ export default function Toast({ label, onClose, type = "info" }) {
 				enterTo="translate-y-0 opacity-100 sm:translate-x-0"
 				show
 			>
-				<div className={["bg-gray-100 rounded-md p-4 flex gap-2 max-w-fit absolute z-10 right-0", bgColor[type]].join(" ")}>
+				<div className={["rounded-md p-4 flex gap-2 max-w-fit absolute z-10 right-0", bgColor[type]].join(" ")}>
 					<div className="h-5 w-5 text-white" aria-hidden="true">
 						{alertType[type]}
 					</div>
