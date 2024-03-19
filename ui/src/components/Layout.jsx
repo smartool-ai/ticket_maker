@@ -6,7 +6,8 @@ import {
   CubeIcon,
   UserMinusIcon,
   XMarkIcon,
-  FolderIcon
+  FolderIcon,
+  CogIcon
 } from '@heroicons/react/24/outline';
 import { Link } from "wouter";
 import Logo from './Logo';
@@ -191,6 +192,20 @@ const NavItem = ({
               </Link>
             </li>
           ))}
+            <li>
+              <Link
+                href="/user-settings"
+                className={classNames(
+                  currentNavigation && currentNavigation.href === "/user-settings"
+                    ? "bg-gray-800 text-white"
+                    : "text-gray-400 hover:text-white hover:bg-gray-800",
+                  styles.navItem_tw
+                )}
+              >
+                <CogIcon className="h-6 w-6 shrink-0" aria-hidden="true" />
+                Settings
+              </Link>
+            </li>
         </ul>
       </nav>
       <div className={styles.profileAndSignOutContainer_tw}>
