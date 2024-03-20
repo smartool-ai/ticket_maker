@@ -147,9 +147,9 @@ class UserMetadataModel(BaseModel):
         """Get the platform client for the user."""
         platform_linked = await self.check_platform_linked()
 
-        for platform_name, linked in platform_linked.items():
-            if not linked:
-                raise PlatformLinkError(f"User does not have {platform_name} credentials. Please link your {platform_name} credentials.")
+
+        if not platform_linked.get(platform.name.lower(), False):
+            raise PlatformLinkError(f"User does not have {platform.name} credentials. Please link your {platform.name} credentials.")
 
         init_params = dict()
         match platform:

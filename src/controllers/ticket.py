@@ -1,5 +1,6 @@
 from logging import getLogger
 from typing import Optional
+import uuid
 
 from fastapi import APIRouter, Depends
 
@@ -92,6 +93,10 @@ async def get_tickets_by_generation_time(
 
     # Convert the ticket object to a serializable dictionary
     ticket_dict: dict = await ticket.to_serializable_dict()
+
+    # For each ticket create a uuid for the front end to use
+    for t in ticket_dict.get("tickets"):
+        t["id"] = uuid.uuid4().hex
 
     return {"tickets": ticket_dict.get("tickets")}
 

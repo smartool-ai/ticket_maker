@@ -12,6 +12,7 @@ class Ticket(BaseModel):
     """
     Represents a ticket with subject, body, and estimation points.
     """
+    id: str
     subject: str
     body: str
     estimation_points: int = Field(..., alias="estimationpoints")
