@@ -89,6 +89,7 @@ class Shortcut(BaseClient):
     base_url = "https://api.app.shortcut.com/api/v3/"
 
     def __init__(self, **kwargs):
+        super().__init__()
         self.client = "Shortcut"
         self.api_token = kwargs.get("api_token")
         self.headers["Shortcut-Token"] = self.api_token
@@ -145,6 +146,43 @@ class Shortcut(BaseClient):
         pass
 
 
+class Asana(BaseClient):
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": ""
+    }
+    base_url = "https://app.asana.com/api/1.0/"
+
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.client = "Asana"
+        self.personal_access_token = kwargs.get("personal_access_token")
+        self.headers["Authorization"] = f"Bearer {self.personal_access_token}"
+        self.workspace_id = kwargs.get("workspace_id")
+        self.project_id = kwargs.get("project_id")
+    
+    async def create_story(self, ticket_params: dict):
+        """
+        Create a task in Asana.
+
+        Kwargs:
+            - name (str): Required. The name of the task.
+            - description (str): The description of the task.
+            - estimate (int): The estimate of the task.
+        """
+        req_body = {
+            "data": {
+                "workspace": self.workspace_id,
+                "projects": [self.project_id],
+                "name": ticket_params["name"],
+                "notes": ticket_params["description"]
+            }
+        }
+        create_story_resp = await self._request("POST", "tasks", req_body)
+
+        return create_story_resp.json()
+
 class PlatformClient:
     def __init__(self, platform: PlatformEnum, **kwargs):
         try:
@@ -153,8 +191,10 @@ class PlatformClient:
                     self.platform = Jira(**kwargs)
                 case PlatformEnum.SHORTCUT:
                     self.platform = Shortcut(**kwargs)
+                case PlatformEnum.ASANA:
+                    self.platform = Asana(**kwargs)
                 case _:
-                    raise ValueError(f"Invalid platform: {platform}. Must be one of {PlatformEnum.JIRA, PlatformEnum.SHORTCUT}")
+                    raise ValueError(f"Invalid platform: {platform}. Must be one of {PlatformEnum.JIRA, PlatformEnum.SHORTCUT, PlatformEnum.ASANA}")
         except Exception as e:
             logger.error(f"Error initializing platform client: {e}")
             raise e

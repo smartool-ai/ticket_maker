@@ -33,3 +33,5 @@ class PlatformParamsSchema(BaseModel):
     api_key: Optional[str]
     email: Optional[str]
     project_id: Optional[str]
+    personal_access_token: Optional[str]
+    workspace_id: Optional[str]
