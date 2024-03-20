@@ -94,6 +94,8 @@ sam-deploy-dev:
 		OpenaiApiKey=${OPENAI_API_KEY} \
 		Auth0MgmtClientId=${AUTH0_MGMT_CLIENT_ID} \
 		Auth0MgmtClientSecret=${AUTH0_MGMT_CLIENT_SECRET} \
+		StripeSecretKey=${STRIPE_SECRET_KEY} \
+		StripePublishableKey=${STRIPE_PUBLISHABLE_KEY}
 
 sam-deploy-staging:
 	make build

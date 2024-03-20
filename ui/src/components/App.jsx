@@ -10,6 +10,7 @@ import DeleteUser from '../views/DeleteUser';
 import WelcomePage from './WelcomePage';
 import HomePage from './HomePage';
 import AddPlatformKeys from '../views/AddPlatformKeys';
+import UserSettings from '../views/UserSettings';
 
 export default function App() {
   const {
@@ -43,6 +44,8 @@ export default function App() {
           <Route path="/upload-transcript" component={UploadTranscript} />
           <Route path="/delete-user" component={DeleteUser} />
           <Route path="/link-platforms" component={AddPlatformKeys} />
+          <Route path="/link-platforms" component={AddPlatformKeys} />
+          <Route path="/user-settings" component={UserSettings} />
         </Layout>
       </Router>
     )

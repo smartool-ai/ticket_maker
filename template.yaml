@@ -46,6 +46,12 @@ Parameters:
   Auth0MgmtClientSecret:
     Type: String
     Default: testId
+  StripeSecretKey:
+    Type: String
+    Default: testId
+  StripePublishableKey:
+    Type: String
+    Default: testId
 
 Mappings:
   EnvMappings:
@@ -137,6 +143,8 @@ Resources:
           STAGE_NAME: !Ref StageName
           AUTH0_MGMT_CLIENT_ID: !Ref Auth0MgmtClientId
           AUTH0_MGMT_CLIENT_SECRET: !Ref Auth0MgmtClientSecret
+          REACT_APP_STRIPE_PUBLIC_KEY: !Ref StripePublishableKey
+          REACT_APP_STRIPE_CLIENT_SECRET: !Ref StripeSecretKey
       Events:
         CatchAll:
           Type: Api

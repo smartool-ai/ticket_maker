@@ -12,7 +12,7 @@ export const logo_tw = "flex items-center hover:cursor-pointer";
 
 export const logoName_tw = "text-white ml-1 hover:cursor-pointer";
 
-export const navContainer_tw = "flex flex-1 flex-col";
+export const navContainer_tw = "flex flex-1 flex-col h-full";
 
 export const navItem_tw = "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold";
 

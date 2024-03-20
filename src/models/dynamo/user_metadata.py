@@ -43,6 +43,9 @@ class UserMetadataModel(BaseModel):
     jira_domain = UnicodeAttribute(null=True)
     shortcut_api_key = UnicodeAttribute(null=True)
     shortcut_project_id = UnicodeAttribute(null=True)
+    asana_workspace_id = UnicodeAttribute(null=True)
+    asana_personal_access_token = UnicodeAttribute(null=True)
+    asana_project_id = UnicodeAttribute(null=True)
     generations_count = NumberAttribute(null=True, default=10)
     file_uploads_count = NumberAttribute(null=True, default=3)
     renew_datetime = UnicodeAttribute(null=True)
@@ -58,6 +61,9 @@ class UserMetadataModel(BaseModel):
         jira_domain: Optional[str] = None,
         shortcut_api_key: Optional[str] = None,
         shortcut_project_id: Optional[str] = None,
+        asana_workspace_id: Optional[str] = None,
+        asana_personal_access_token: Optional[str] = None,
+        asana_project_id: Optional[str] = None,
         generations_count: Optional[int] = 10,
         file_uploads_count: Optional[int] = 3,
         renew_datetime: Optional[str] = None,
@@ -72,6 +78,9 @@ class UserMetadataModel(BaseModel):
             jira_domain=jira_domain,
             shortcut_api_key=shortcut_api_key,
             shortcut_project_id=shortcut_project_id,
+            asana_workspace_id=asana_workspace_id,
+            asana_personal_access_token=asana_personal_access_token,
+            asana_project_id=asana_project_id,
             generations_count=generations_count,
             file_uploads_count=file_uploads_count,
             created_datetime=datetime.datetime.now(),
@@ -91,6 +100,9 @@ class UserMetadataModel(BaseModel):
         jira_domain: Optional[str] = None,
         shortcut_api_key: Optional[str] = None,
         shortcut_project_id: Optional[str] = None,
+        asana_workspace_id: Optional[str] = None,
+        asana_personal_access_token: Optional[str] = None,
+        asana_project_id: Optional[str] = None,
         generations_count: Optional[int] = 10,
         file_uploads_count: Optional[int] = 3,
         renew_datetime: Optional[str] = None,
@@ -105,6 +117,9 @@ class UserMetadataModel(BaseModel):
             jira_domain=jira_domain,
             shortcut_api_key=shortcut_api_key,
             shortcut_project_id=shortcut_project_id,
+            asana_workspace_id=asana_workspace_id,
+            asana_personal_access_token=asana_personal_access_token,
+            asana_project_id=asana_project_id,
             generations_count=generations_count,
             file_uploads_count=file_uploads_count,
             created_datetime=datetime.datetime.now(),
@@ -114,16 +129,27 @@ class UserMetadataModel(BaseModel):
 
         return user_metadata
 
-    async def check_platform_linked(self, platform_name: str) -> bool:
+    async def check_platform_linked(self) -> dict:
         """Check if the user has linked a platform."""
-        return getattr(self, f"{platform_name.lower()}_api_key") is not None
+        jira: bool = getattr(self, "jira_api_key") is not None
+        shortcut: bool = getattr(self, "shortcut_api_key") is not None
+        asana: bool = getattr(self, "asana_workspace_id") is not None
+
+        platforms_linked = {
+            "jira": jira,
+            "shortcut": shortcut,
+            "asana": asana
+        }
+
+        return platforms_linked
 
     async def get_platform_client(self, platform: PlatformEnum) -> PlatformClient:
         """Get the platform client for the user."""
-        platform_linked = await self.check_platform_linked(platform.value)
+        platform_linked = await self.check_platform_linked()
 
-        if not platform_linked:
-            raise PlatformLinkError(f"User does not have {platform.value} credentials. Please link your {platform.value} credentials.")
+        for platform_name, linked in platform_linked.items():
+            if not linked:
+                raise PlatformLinkError(f"User does not have {platform_name} credentials. Please link your {platform_name} credentials.")
 
         init_params = dict()
         match platform:
@@ -133,6 +159,10 @@ class UserMetadataModel(BaseModel):
                 init_params["email"] = self.jira_email
             case PlatformEnum.SHORTCUT:
                 init_params["api_token"] = self.shortcut_api_key
+            case PlatformEnum.ASANA:
+                init_params["workspace_id"] = self.asana_workspace_id
+                init_params["personal_access_token"] = self.asana_personal_access_token
+                init_params["project_id"] = self.asana_project_id
 
         return PlatformClient(platform, **init_params)
 
@@ -152,6 +182,7 @@ class UserMetadataModel(BaseModel):
         """Return a serializable dictionary representation of the UserMetadataModel."""
         return {
             "email": self.email,
+            "platforms_linked": await self.check_platform_linked(),
             "generations_count": self.generations_count,
             "file_uploads_count": self.file_uploads_count,
             "renew_datetime": self.renew_datetime

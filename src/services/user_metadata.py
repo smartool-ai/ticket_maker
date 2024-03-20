@@ -48,6 +48,15 @@ async def link_shortcut(user: UserMetadataModel, api_key: str, project_id: str) 
     return user
 
 
+async def link_asana(user: UserMetadataModel, personal_access_token: str, workspace_id: str, project_id: str) -> UserMetadataModel:
+    """Link a Asana account to a user."""
+    user.asana_personal_access_token = personal_access_token
+    user.asana_workspace_id = workspace_id
+    user.asana_project_id = project_id
+    await user.save()
+    return user
+
+
 async def get_user_metadata_by_user_id(user_id: str) -> Optional[UserMetadataModel]:
     """Get user metadata by user ID."""
     try:
