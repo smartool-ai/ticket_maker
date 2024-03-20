@@ -8,10 +8,10 @@ from src.lib.custom_exceptions import TicketGenerationLimitReachedError
 from src.lib.enums import EventEnum, PlatformEnum
 from src.lib.authorized_api_handler import authorized_api_handler
 from src.lib.token_authentication import TokenAuthentication
-from src.models.dynamo.ticket import Ticket
+from src.models.dynamo.ticket import SubTicket, Ticket
 from src.models.dynamo.user_metadata import UserMetadataModel
 from src.schemas.ticket import SubTicketGenerationSchema, TicketGenerationSchema, TicketList, TicketParamsSchema
-from src.services.ticket import get_tickets, invoke_ticket_generation_lambda
+from src.services.ticket import get_subticket, get_tickets, invoke_ticket_generation_lambda
 
 router = APIRouter()
 logger = getLogger(__name__)
@@ -139,6 +139,25 @@ async def expand_ticket(
     await user.save()
 
     return {"sub_ticket_id": sub_ticket_id}
+
+
+@router.get("/ticket/sub/{sub_ticket_id}")
+@authorized_api_handler(models_to_initialize=[SubTicket])
+async def get_sub_ticket(
+    sub_ticket_id: str,
+    user: UserMetadataModel = Depends(granted_user),
+) -> SubTicket:
+    """
+    This endpoint is for retrieving a sub ticket by its ID.
+    """
+    sub_ticket: SubTicket = await get_subticket(sub_ticket_id, user.user_id)
+
+    sub_ticket_dict: dict = await sub_ticket.to_serializable_dict()
+
+    for t in sub_ticket_dict.get("tickets"):
+        t["id"] = uuid.uuid4().hex
+
+    return {"tickets": sub_ticket_dict.get("tickets")}
 
 
 @router.post("/ticket")

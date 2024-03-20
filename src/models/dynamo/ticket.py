@@ -50,7 +50,7 @@ class SubTicket(BaseModel):
     user_id = UnicodeAttribute(hash_key=True)
     sub_ticket_id = UnicodeAttribute(range_key=True)
     sub_ticket_prompt = UnicodeAttribute()
-    ticket = Ticket()
+    tickets = ListAttribute(of=Ticket)
 
     @classmethod
     async def initialize(
@@ -120,7 +120,11 @@ class SubTicket(BaseModel):
             "user_id": self.user_id,
             "sub_ticket_id": self.sub_ticket_id,
             "sub_ticket_prompt": self.sub_ticket_prompt,
-            "ticket": await self.ticket.to_serializable_dict(),
+            "tickets": (
+                [await ticket.to_serializable_dict() for ticket in self.tickets]
+                if self.tickets
+                else []
+            ),
         }
 
     async def to_json(self) -> str:

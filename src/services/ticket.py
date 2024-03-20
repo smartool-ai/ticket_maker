@@ -9,7 +9,7 @@ from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from src.lib.enums import EventEnum, PlatformEnum
 
 from src.lib.loggers import get_module_logger
-from src.models.dynamo.ticket import Ticket
+from src.models.dynamo.ticket import SubTicket, Ticket
 from src.models.openai import OpenAIClient
 
 logger = get_module_logger()
@@ -155,3 +155,28 @@ async def get_tickets(
     except Exception as e:
         logger.error(e)
         raise e("Error getting tickets from the database. Please try again.")
+
+
+async def get_subticket(
+        subticket_id: str, user_id: str
+) -> Optional[SubTicket]:
+    """
+    Get the generated sub tickets from the database.
+
+    Args:
+        subticket_id (str): The ID of the sub ticket.
+        user_id (str): The ID of the user.
+
+    Returns:
+        Optional[SubTicketModel]: The generated sub tickets or None if not found.
+    """
+    try:
+        logger.info(f"Getting sub ticket {subticket_id} for user {user_id}")
+        sub_ticket = SubTicket.get(hash_key=user_id, range_key=subticket_id)
+
+        if not sub_ticket:
+            return None
+        return sub_ticket
+    except SubTicket.DoesNotExist:
+        logger.error("Sub ticket not found")
+        return None
