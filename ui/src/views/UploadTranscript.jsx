@@ -212,7 +212,7 @@ export default function UploadTranscript() {
 						{ticketsResponse && clearButton(() => setTicketsResponse(null), "Clear generated tickets")}
 						{ticketsResponse && clearButton(handleClearAll, "Clear All")}
 					</div>
-					{ticketsResponse && <TicketTable saveTickets={saveTickets} ticketsResponse={ticketsResponse} isPolling={isPolling} />}
+					{ticketsResponse && <TicketTable saveTickets={saveTickets} isPolling={isPolling} />}
 				</div>
 			) : (
 				<div className={styles.transcriptContainer_tw}>
