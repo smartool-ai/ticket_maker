@@ -101,7 +101,7 @@ async def get_tickets_by_generation_time(
     return {"tickets": ticket_dict.get("tickets")}
 
 
-@router.get("/file/{file_name}/tickets/expand")
+@router.post("/file/{file_name}/tickets/expand")
 @authorized_api_handler(models_to_initialize=[Ticket])
 async def expand_ticket(
     filename: str,
@@ -146,7 +146,7 @@ async def expand_ticket(
 async def get_sub_ticket(
     sub_ticket_id: str,
     user: UserMetadataModel = Depends(granted_user),
-) -> SubTicket:
+) -> dict:
     """
     This endpoint is for retrieving a sub ticket by its ID.
     """
