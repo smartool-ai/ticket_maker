@@ -11,6 +11,7 @@ export default function UploadTranscript() {
 	const fileInput = useRef(null);
 	const [generationDatetime, setGenerationDatetime] = useState(null);
 	const [isUploading, setIsUploading] = useState(false);
+	const [isExpanding, setIsExpanding] = useState(false);
 	const [isPolling, setIsPolling] = useState(false);
 	const [toast, setToast] = useState({
 		showToast: true,
@@ -24,7 +25,7 @@ export default function UploadTranscript() {
 		return <Spinner />;
 	}
 
-	const doUpload = async () => {
+	const uploadTranscriptFile = async () => {
 		const fileName = fileInput.current.files[0].name;
 
 		const formData = new FormData();
@@ -91,7 +92,7 @@ export default function UploadTranscript() {
 		try {
 			setIsPolling(true);
 
-			const submitResponse = await apiRequest(`/file/${fileName}/tickets?number_of_tickets=3`, {
+			const submitResponse = await apiRequest(`/file/${fileName}/tickets?number_of_tickets=20`, {
 				method: "post"
 			});
 
@@ -151,7 +152,8 @@ export default function UploadTranscript() {
 		}
 	};
 
-	const expandTickets = async (key, subject, body, estimationPoints) => {
+	const expandTickets = async (id, subject, body, estimationPoints) => {
+		setIsExpanding(true);
 		const expandBody = { "name": subject, "description": body, "estimate": estimationPoints };
 		const fileName = uploadResponse.files[0].name; // HARDCODED 0 assuming we can only upload one file at a time
 		const expandResponse = await apiRequest(`/file/${fileName}/tickets/expand?generation_datetime=${generationDatetime}`, {
@@ -160,11 +162,15 @@ export default function UploadTranscript() {
 		});
 		
 		if (expandResponse.status == 200) {
-		console.log("fileName:", fileName);
 			const expandResponseJson = await expandResponse.json();
-			const subTicketId = expandResponseJson.sub_ticket_id;
-			console.log(subTicketId)
-			// CALL GET sub ticket id
+			const subTickets = await getSubTickets(id, expandResponseJson.sub_ticket_id);
+			const consolidatedTickets = consolidateAllTickets(id, subTickets);
+			setTicketsResponse({tickets: consolidatedTickets});
+			setToast({
+				type: "success",
+				label: `Ticket: ${subject} has been successfully expanded!`,
+				showToast: true,
+			});
 		} else {
 			setToast({
 				type: "error",
@@ -172,17 +178,44 @@ export default function UploadTranscript() {
 				showToast: true,
 			});
 		}
+		setIsExpanding(false);
 	};
 
-	const saveTickets = async (key, subject, body, estimationPoints) => {
+	const getSubTickets = async (id, subTicketId) => {
+		const getSubTicketResponse = await apiRequest(`/ticket/sub/${subTicketId}`, { method: "GET" });
+		
+		if (getSubTicketResponse.status == 200) {
+			const subTicketResponseJson = await getSubTicketResponse.json();
+
+			return subTicketResponseJson.tickets.map((ticket) => ({...ticket, subTicketOf: id}));
+		} else {
+			setToast({
+				type: "error",
+				label: await getSubTicketResponse.text() || "An error occurred while retrieving sub ticket.",
+				showToast: true,
+			});
+		}
+	};
+	
+	const consolidateAllTickets = (id, subTickets) => {
+		const mainTicketIndex = ticketsResponse.tickets.findIndex(ticket => ticket.id === id);
+		const sliceFirstHalf = ticketsResponse.tickets.slice(0, mainTicketIndex);
+		
+		// Add 'expanded' field to limit ticket expansion once
+		const expandedTicket = {...ticketsResponse.tickets[mainTicketIndex], expanded: true};
+
+		const sliceSecondHalf = ticketsResponse.tickets.slice(mainTicketIndex + 1);
+		return [...sliceFirstHalf, expandedTicket, ...subTickets, ...sliceSecondHalf];
+	};
+	const saveTickets = async (id, subject, body, estimationPoints) => {
 		const ticketParams = { "name": subject, "description": body, "estimate": estimationPoints };
-		const submitResponse = await apiRequest(`/ticket?platform=${document.getElementById(key).value}`, {
+		const submitResponse = await apiRequest(`/ticket?platform=${document.getElementById(id).value}`, {
 			method: "post",
 			body: ticketParams
 		});
 
 		if (submitResponse.status == 200) {
-			document.getElementById(`button${key}`).innerHTML = "Ticket Uploaded";
+			document.getElementById(`button${id}`).innerHTML = "Ticket Uploaded";
 		} else {
 			setToast({
 				type: "error",
@@ -203,7 +236,7 @@ export default function UploadTranscript() {
 				id="upload"
 				name="upload"
 				ref={fileInput}
-				onChange={doUpload}
+				onChange={uploadTranscriptFile}
 				className="sr-only"
 			/>
 		</label>
@@ -237,16 +270,24 @@ export default function UploadTranscript() {
 						{ticketsResponse && clearButton(() => setTicketsResponse(null), "Clear generated tickets")}
 						{ticketsResponse && clearButton(handleClearAll, "Clear All")}
 					</div>
-					{ticketsResponse && <TicketTable expandTickets={expandTickets} saveTickets={saveTickets} isPolling={isPolling} />}
+					{ticketsResponse && (
+						<TicketTable
+							expandTickets={expandTickets}
+							saveTickets={saveTickets}
+							isPolling={isPolling}
+							setToast={setToast}
+							isExpanding={isExpanding}
+						/>
+					)}
 				</div>
 			) : (
 				<div className={styles.transcriptContainer_tw}>
 					<div className="text-gray-400 border-gray-900 border-4 rounded-md p-4">
-						Drag and Drop here
+						Placeholder: Drag and Drop
 					</div>
 					{uploadButton}
 				</div>
 			)}
 		</>
 	);
-};
+}
