@@ -1,103 +1,41 @@
 import { useContext, useState } from 'react';
 import ButtonSpinner from '../ButtonSpinner';
+import { ArrowDownRightIcon } from '@heroicons/react/20/solid';
 import { UploadTranscriptContext } from '../../context/UploadTranscriptContext';
+import { strCombine, twConditional, twId } from '../../utils/tailwindUtils';
 import * as styles from './TicketsTable.tailwind';
-import { strCombine, twId } from '../../utils/tailwindUtils';
 
-export default function TicketTable({ expandTickets, saveTickets, isPolling }) {
+export default function TicketTable({ expandTickets, saveTickets, isPolling, setToast, isExpanding }) {
 	const { ticketsResponse, setTicketsResponse } = useContext(UploadTranscriptContext);
 	const [showEditInput, setShowEditInput] = useState(false);
 	const [editItemID, setEditItemID] = useState(null);
 
-	const handleEditItem = (key) => {
+	const handleEditItem = (id) => {
 		setShowEditInput(previous => !previous);
-		setEditItemID(key);
+		setEditItemID(id);
 	};
 
-	const handleUpdateItem = (key, subjectValue, bodyValue, pointsValue, platformValue) => {
+	const handleUpdateItem = (id, subjectValue, bodyValue, pointsValue) => {
+		const itemIndex = ticketsResponse.tickets.findIndex(ticket => ticket.id === id);
+		const newTickets = [...ticketsResponse.tickets];
+		
 		const updatedItem = {
+			id: id,
 			subject: subjectValue,
 			body: bodyValue,
 			estimationpoints: pointsValue,
-			// platform: platformValue,
+			subTicketOf: newTickets[itemIndex].subTicketOf,
+			expanded: newTickets[itemIndex].expanded,
 		};
-		const newTickets = [...ticketsResponse.tickets];
-		newTickets[key] = updatedItem;
-		setTicketsResponse(previous => ({...previous, tickets: [...newTickets]}));
+		
+		newTickets[itemIndex] = updatedItem;
+		setTicketsResponse(previous => ({ ...previous, tickets: [...newTickets] }));
 		setShowEditInput(previous => !previous);
-	}; 
-	
-	const ticketRowItem = (key, subject, body, estimationPoints) => {
-		const [subjectValue, setSubjectValue] = useState(subject);
-		const [bodyValue, setBodyValue] = useState(body);
-		const [pointsValue, setPointsValue] = useState(estimationPoints);
-		const [platformValue, setPlatformValue] = useState("");
-
-		return (
-			<tr key={key}>
-				<td className={strCombine(styles.tableRow_tw, "text-white w-[20%]")}>
-					{showEditInput && key === editItemID // check key and editItemId to only target the item clicked
-						? <textarea
-								className={styles.tableRowTextArea_tw}
-								onChange={(e) => setSubjectValue(e.target.value)}
-								value={subjectValue}
-							/>
-						: subjectValue
-					}
-				</td>
-				<td className={strCombine(styles.tableRow_tw, "text-gray-500 w-[45%]")}>
-					{showEditInput && key === editItemID
-						? <textarea
-								className={styles.tableRowTextArea_tw}
-								onChange={(e) => setBodyValue(e.target.value)}
-								value={bodyValue}
-							/>
-						: bodyValue
-					}
-				</td>
-				<td className={strCombine(styles.tableRow_tw, "text-gray-500 text-center w-[6%]")}>
-					{showEditInput && key === editItemID
-						? <input className={styles.tableRowInput_tw} onChange={(e) => setPointsValue(e.target.value)} value={pointsValue} />
-						: pointsValue
-					}
-				</td>
-				<td className={styles.tableDataSelect_tw}>
-					<select id={key} className={styles.tableRowSelect_tw} onChange={(e) => setPlatformValue(e.target.value)} value={platformValue} >
-						<option value="">Select an option</option>
-						<option value="JIRA">Jira</option>
-						<option value="SHORTCUT">Shortcut</option>
-						<option value="ASANA">Asana</option>
-					</select>
-				</td>
-				<td className={styles.tableDataButtons_tw}>
-					<button
-						id={`button${key}`}
-						className={styles.button_tw}
-						onClick={() => saveTickets(key, subject, body, estimationPoints)}
-					>
-						Create Ticket
-					</button>
-					<button
-						className={strCombine("mt-2", styles.button_tw)}
-						onClick={
-							showEditInput
-								? () => handleUpdateItem(key, subjectValue, bodyValue, pointsValue, platformValue)
-								: () => handleEditItem(key)
-						}
-					>
-						{showEditInput && key === editItemID ? "Save" : "Edit"}
-					</button>
-					{estimationPoints > 1 && (
-						<button
-							className={strCombine("mt-2", styles.button_tw)}
-							onClick={() => expandTickets(key, subject, body, estimationPoints)}
-						>
-							Expand
-						</button>
-					)}
-				</td>
-			</tr>
-		)
+		setToast({
+			type: "success",
+			label: `Your ticket has been updated.`,
+			showToast: true,
+		});
 	};
 
 	return (
@@ -121,11 +59,99 @@ export default function TicketTable({ expandTickets, saveTickets, isPolling }) {
 					</thead>
 					<tbody className={styles.tableBody_tw}>
 						{ticketsResponse && ticketsResponse.tickets && ticketsResponse.tickets.map(
-							({subject, body, estimationpoints}, key) => ticketRowItem(key, subject, body, estimationpoints)
+							(ticket) => (
+								<TicketRowItem
+									editItemID={editItemID}	
+									showEditInput={showEditInput}
+									handleEditItem={handleEditItem}
+									handleUpdateItem={handleUpdateItem}
+									key={ticket.id}
+									ticket={ticket}
+									saveTickets={saveTickets}
+									expandTickets={expandTickets}
+									isExpanding={isExpanding}
+								/>
+							)
 						)}
 					</tbody>
 				</>
 			)}
 		</table>
 	);
+}
+
+
+const TicketRowItem = ({ editItemID, showEditInput, handleEditItem, handleUpdateItem, ticket, saveTickets, expandTickets, isExpanding }) => {
+	const { id, subject, body, estimationpoints: estimationPoints, subTicketOf, expanded } = ticket;
+	const [subjectValue, setSubjectValue] = useState(subject);
+	const [bodyValue, setBodyValue] = useState(body);
+	const [pointsValue, setPointsValue] = useState(estimationPoints);
+	const [platformValue, setPlatformValue] = useState("");
+
+	return (
+		<tr key={id}>
+			<td className={strCombine(styles.tableRow_tw, "text-white w-[20%]", twConditional(subTicketOf, "pl-8"))}>
+				{showEditInput && id === editItemID // check id and editItemId to only target the item clicked
+					? <textarea
+						className={styles.tableRowTextArea_tw}
+						onChange={(e) => setSubjectValue(e.target.value)}
+						value={subjectValue}
+					/>
+					: subTicketOf ? <div className="flex items-center"><ArrowDownRightIcon className="h-6 w-6 mr-1"/>{subjectValue}</div> : subjectValue
+				}
+			</td>
+			<td className={strCombine(styles.tableRow_tw, "text-gray-500 w-[45%]", twConditional(subTicketOf, "pl-8"))}>
+				{showEditInput && id === editItemID
+					? <textarea
+						className={styles.tableRowTextArea_tw}
+						onChange={(e) => setBodyValue(e.target.value)}
+						value={bodyValue}
+					/>
+					: bodyValue
+				}
+			</td>
+			<td className={strCombine(styles.tableRow_tw, "text-gray-500 text-center w-[6%]")}>
+				{showEditInput && id === editItemID
+					? <input className={styles.tableRowInput_tw} onChange={(e) => setPointsValue(e.target.value)} value={pointsValue} />
+					: pointsValue
+				}
+			</td>
+			<td className={styles.tableDataSelect_tw}>
+				<select id={id} className={styles.tableRowSelect_tw} onChange={(e) => setPlatformValue(e.target.value)} value={platformValue} >
+					<option value="">Select an option</option>
+					<option value="JIRA">Jira</option>
+					<option value="SHORTCUT">Shortcut</option>
+					<option value="ASANA">Asana</option>
+				</select>
+			</td>
+			<td className={styles.tableDataButtons_tw}>
+				<button
+					id={`button${id}`}
+					className={styles.button_tw}
+					onClick={() => saveTickets(id, subject, body, estimationPoints)}
+				>
+					Create Ticket
+				</button>
+				<button
+					className={strCombine("mt-2", styles.button_tw)}
+					onClick={
+						showEditInput
+							? () => handleUpdateItem(id, subjectValue, bodyValue, pointsValue, platformValue)
+							: () => handleEditItem(id)
+					}
+				>
+					{showEditInput && id === editItemID ? "Save" : "Edit"}
+				</button>
+				{estimationPoints > 1 && (
+					<button
+						disabled={expanded}
+						className={strCombine("mt-2", styles.button_tw, twConditional(expanded, styles.expandedButton_tw))}
+						onClick={() => expandTickets(id, subject, body, estimationPoints)}
+					>
+						{isExpanding ? <div className={styles.expandButtonSpinner_tw}><ButtonSpinner size={"s"} />{"Expanding..."}</div> : "Expand"}
+					</button>
+				)}
+			</td>
+		</tr>
+	)
 };
