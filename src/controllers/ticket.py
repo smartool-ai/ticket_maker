@@ -146,18 +146,21 @@ async def expand_ticket(
 async def get_sub_ticket(
     sub_ticket_id: str,
     user: UserMetadataModel = Depends(granted_user),
-) -> dict:
+) -> Optional[TicketList]:
     """
     This endpoint is for retrieving a sub ticket by its ID.
     """
     sub_ticket: SubTicket = await get_subticket(sub_ticket_id, user.user_id)
 
-    sub_ticket_dict: dict = await sub_ticket.to_serializable_dict()
+    if sub_ticket:
+        sub_ticket_dict: dict = await sub_ticket.to_serializable_dict()
 
-    for t in sub_ticket_dict.get("tickets"):
-        t["id"] = uuid.uuid4().hex
+        for t in sub_ticket_dict.get("tickets"):
+            t["id"] = uuid.uuid4().hex
 
-    return {"tickets": sub_ticket_dict.get("tickets")}
+        return {"tickets": sub_ticket_dict.get("tickets")}
+    else:
+        return None
 
 
 @router.post("/ticket")
