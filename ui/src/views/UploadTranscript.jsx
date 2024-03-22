@@ -9,6 +9,7 @@ import { UploadTranscriptContext } from '../context/UploadTranscriptContext';
 
 export default function UploadTranscript() {
 	const fileInput = useRef(null);
+	const [generationDatetime, setGenerationDatetime] = useState(null);
 	const [isUploading, setIsUploading] = useState(false);
 	const [isPolling, setIsPolling] = useState(false);
 	const [toast, setToast] = useState({
@@ -90,7 +91,7 @@ export default function UploadTranscript() {
 		try {
 			setIsPolling(true);
 
-			const submitResponse = await apiRequest(`/file/${fileName}/tickets?number_of_tickets=20`, {
+			const submitResponse = await apiRequest(`/file/${fileName}/tickets?number_of_tickets=3`, {
 				method: "post"
 			});
 
@@ -99,6 +100,7 @@ export default function UploadTranscript() {
 			}
 
 			const submitedResponseJson = await submitResponse.json();
+			setGenerationDatetime(submitedResponseJson.ticket_generation_datetime);
 			console.log(submitedResponseJson);
 
 
@@ -107,7 +109,7 @@ export default function UploadTranscript() {
 				let count = 0;
 
 				while (!response && count < 24) {
-					const res = await apiRequest(`/file/${fileName}/tickets?generation_datetime=${submitedResponseJson.ticket_generation_datetime}`, {
+					const res = await apiRequest(`/file/${fileName}/tickets?generation_datetime=${generationDatetime}`, {
 						method: "get",
 					});
 
@@ -149,8 +151,31 @@ export default function UploadTranscript() {
 		}
 	};
 
+	const expandTickets = async (key, subject, body, estimationPoints) => {
+		const expandBody = { "name": subject, "description": body, "estimate": estimationPoints };
+		const fileName = uploadResponse.files[0].name; // HARDCODED 0 assuming we can only upload one file at a time
+		const expandResponse = await apiRequest(`/file/${fileName}/tickets/expand?generation_datetime=${generationDatetime}`, {
+			method: "POST",
+			body: expandBody,
+		});
+		
+		if (expandResponse.status == 200) {
+		console.log("fileName:", fileName);
+			const expandResponseJson = await expandResponse.json();
+			const subTicketId = expandResponseJson.sub_ticket_id;
+			console.log(subTicketId)
+			// CALL GET sub ticket id
+		} else {
+			setToast({
+				type: "error",
+				label: await expandResponse.text() || "An error occurred while expanding your ticket.",
+				showToast: true,
+			});
+		}
+	};
+
 	const saveTickets = async (key, subject, body, estimationPoints) => {
-		const ticketParams = { "name": subject, "description": body, "estimate": estimationPoints }
+		const ticketParams = { "name": subject, "description": body, "estimate": estimationPoints };
 		const submitResponse = await apiRequest(`/ticket?platform=${document.getElementById(key).value}`, {
 			method: "post",
 			body: ticketParams
@@ -212,7 +237,7 @@ export default function UploadTranscript() {
 						{ticketsResponse && clearButton(() => setTicketsResponse(null), "Clear generated tickets")}
 						{ticketsResponse && clearButton(handleClearAll, "Clear All")}
 					</div>
-					{ticketsResponse && <TicketTable saveTickets={saveTickets} isPolling={isPolling} />}
+					{ticketsResponse && <TicketTable expandTickets={expandTickets} saveTickets={saveTickets} isPolling={isPolling} />}
 				</div>
 			) : (
 				<div className={styles.transcriptContainer_tw}>

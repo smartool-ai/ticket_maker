@@ -4,10 +4,10 @@ import { UploadTranscriptContext } from '../../context/UploadTranscriptContext';
 import * as styles from './TicketsTable.tailwind';
 import { strCombine, twId } from '../../utils/tailwindUtils';
 
-export default function TicketTable({ saveTickets, isPolling }) {
+export default function TicketTable({ expandTickets, saveTickets, isPolling }) {
 	const { ticketsResponse, setTicketsResponse } = useContext(UploadTranscriptContext);
 	const [showEditInput, setShowEditInput] = useState(false);
-	const [editItemID, setEditItemID] = useState(false);
+	const [editItemID, setEditItemID] = useState(null);
 
 	const handleEditItem = (key) => {
 		setShowEditInput(previous => !previous);
@@ -37,19 +37,27 @@ export default function TicketTable({ saveTickets, isPolling }) {
 			<tr key={key}>
 				<td className={strCombine(styles.tableRow_tw, "text-white w-[20%]")}>
 					{showEditInput && key === editItemID // check key and editItemId to only target the item clicked
-						? <textarea required className={styles.tableRowTextArea_tw} onChange={(e) => setSubjectValue(e.target.value)} value={subjectValue} />
+						? <textarea
+								className={styles.tableRowTextArea_tw}
+								onChange={(e) => setSubjectValue(e.target.value)}
+								value={subjectValue}
+							/>
 						: subjectValue
 					}
 				</td>
 				<td className={strCombine(styles.tableRow_tw, "text-gray-500 w-[45%]")}>
 					{showEditInput && key === editItemID
-						? <textarea required type="text" className={styles.tableRowTextArea_tw} onChange={(e) => setBodyValue(e.target.value)} value={bodyValue} />
+						? <textarea
+								className={styles.tableRowTextArea_tw}
+								onChange={(e) => setBodyValue(e.target.value)}
+								value={bodyValue}
+							/>
 						: bodyValue
 					}
 				</td>
 				<td className={strCombine(styles.tableRow_tw, "text-gray-500 text-center w-[6%]")}>
 					{showEditInput && key === editItemID
-						? <input required className={styles.tableRowInput_tw} onChange={(e) => setPointsValue(e.target.value)} value={pointsValue} />
+						? <input className={styles.tableRowInput_tw} onChange={(e) => setPointsValue(e.target.value)} value={pointsValue} />
 						: pointsValue
 					}
 				</td>
@@ -79,6 +87,14 @@ export default function TicketTable({ saveTickets, isPolling }) {
 					>
 						{showEditInput && key === editItemID ? "Save" : "Edit"}
 					</button>
+					{estimationPoints > 1 && (
+						<button
+							className={strCombine("mt-2", styles.button_tw)}
+							onClick={() => expandTickets(key, subject, body, estimationPoints)}
+						>
+							Expand
+						</button>
+					)}
 				</td>
 			</tr>
 		)

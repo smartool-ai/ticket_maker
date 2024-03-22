@@ -101,10 +101,10 @@ async def get_tickets_by_generation_time(
     return {"tickets": ticket_dict.get("tickets")}
 
 
-@router.get("/file/{file_name}/tickets/expand")
+@router.post("/file/{file_name}/tickets/expand")
 @authorized_api_handler(models_to_initialize=[Ticket])
 async def expand_ticket(
-    filename: str,
+    file_name: str,
     generation_datetime: str,
     body: TicketParamsSchema,
     user: UserMetadataModel = Depends(granted_user),
@@ -113,7 +113,7 @@ async def expand_ticket(
     This endpoint is for expanding a ticket into a list of sub tickets.
 
     Args:
-        filename (str): The name of the file to retrieve tickets from.
+        file_name (str): The name of the file to retrieve tickets from.
         generation_datetime (str): The datetime when the lambda was invoked.
         _: Dict, optional): The user making the request. Defaults to Depends(granted_user).
 
@@ -126,7 +126,7 @@ async def expand_ticket(
         raise TicketGenerationLimitReachedError(message="User has reached the maximum number of ticket generations.")
 
     sub_ticket_id: str = await invoke_ticket_generation_lambda(
-        document_id=filename,
+        document_id=file_name,
         user_id=user.user_id,
         event=EventEnum.TICKET_EXPANSION,
         number_of_tickets=3,  # TODO: Make this a query parameter
@@ -146,18 +146,21 @@ async def expand_ticket(
 async def get_sub_ticket(
     sub_ticket_id: str,
     user: UserMetadataModel = Depends(granted_user),
-) -> SubTicket:
+) -> Optional[TicketList]:
     """
     This endpoint is for retrieving a sub ticket by its ID.
     """
     sub_ticket: SubTicket = await get_subticket(sub_ticket_id, user.user_id)
 
-    sub_ticket_dict: dict = await sub_ticket.to_serializable_dict()
+    if sub_ticket:
+        sub_ticket_dict: dict = await sub_ticket.to_serializable_dict()
 
-    for t in sub_ticket_dict.get("tickets"):
-        t["id"] = uuid.uuid4().hex
+        for t in sub_ticket_dict.get("tickets"):
+            t["id"] = uuid.uuid4().hex
 
-    return {"tickets": sub_ticket_dict.get("tickets")}
+        return {"tickets": sub_ticket_dict.get("tickets")}
+    else:
+        return None
 
 
 @router.post("/ticket")
