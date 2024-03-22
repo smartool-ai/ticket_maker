@@ -8,11 +8,11 @@ export default function UploadedFilesTable({ generateTickets, response, ticketsR
 				onClick={() => generateTickets(name)}
 			>
 				{isPolling ? (
-					<span className="flex items-center gap-x-2">
+					<div className="flex items-center gap-2">
 						<ButtonSpinner />
 						<p>Generating Tickets</p>
-					</span>
-				) : <span>{ticketsResponse ? "Regenerate Tickets" : "Generate Tickets"}</span>
+					</div>
+				) : (ticketsResponse ? "Regenerate Tickets" : "Generate Tickets")
 				}
 			</button>
 		</td>
