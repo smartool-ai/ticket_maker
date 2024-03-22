@@ -15,6 +15,11 @@ export default function TicketTable({ expandTickets, saveTickets, isPolling, set
 		setEditItemID(id);
 	};
 
+	const handleExpandItem = (id, subject, body, estimationPoints) => {
+		expandTickets(id, subject, body, estimationPoints);
+		setEditItemID(id);
+	};
+
 	const handleUpdateItem = (id, subjectValue, bodyValue, pointsValue) => {
 		const itemIndex = ticketsResponse.tickets.findIndex(ticket => ticket.id === id);
 		const newTickets = [...ticketsResponse.tickets];
@@ -68,8 +73,8 @@ export default function TicketTable({ expandTickets, saveTickets, isPolling, set
 									key={ticket.id}
 									ticket={ticket}
 									saveTickets={saveTickets}
-									expandTickets={expandTickets}
 									isExpanding={isExpanding}
+									handleExpandItem={handleExpandItem}
 								/>
 							)
 						)}
@@ -81,8 +86,24 @@ export default function TicketTable({ expandTickets, saveTickets, isPolling, set
 }
 
 
-const TicketRowItem = ({ editItemID, showEditInput, handleEditItem, handleUpdateItem, ticket, saveTickets, expandTickets, isExpanding }) => {
-	const { id, subject, body, estimationpoints: estimationPoints, subTicketOf, expanded } = ticket;
+const TicketRowItem = ({
+	editItemID,
+	showEditInput,
+	handleEditItem,
+	handleUpdateItem,
+	ticket,
+	saveTickets,
+	isExpanding,
+	handleExpandItem,
+}) => {
+	const {
+		id,
+		subject,
+		body,
+		estimationpoints: estimationPoints,
+		subTicketOf,
+		expanded,
+	} = ticket;
 	const [subjectValue, setSubjectValue] = useState(subject);
 	const [bodyValue, setBodyValue] = useState(body);
 	const [pointsValue, setPointsValue] = useState(estimationPoints);
@@ -142,13 +163,16 @@ const TicketRowItem = ({ editItemID, showEditInput, handleEditItem, handleUpdate
 				>
 					{showEditInput && id === editItemID ? "Save" : "Edit"}
 				</button>
-				{estimationPoints > 1 && (
+				{estimationPoints > 1  && (
 					<button
 						disabled={expanded}
 						className={strCombine("mt-2", styles.button_tw, twConditional(expanded, styles.expandedButton_tw))}
-						onClick={() => expandTickets(id, subject, body, estimationPoints)}
+						onClick={() => handleExpandItem(id, subject, body, estimationPoints)}
 					>
-						{isExpanding ? <div className={styles.expandButtonSpinner_tw}><ButtonSpinner size={"s"} />{"Expanding..."}</div> : "Expand"}
+						{isExpanding && id === editItemID
+							? <div className={styles.expandButtonSpinner_tw}><ButtonSpinner size={"s"} />{"Expanding"}</div>
+							: "Expand"
+						}
 					</button>
 				)}
 			</td>
