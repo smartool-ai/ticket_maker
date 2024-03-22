@@ -146,7 +146,7 @@ async def expand_ticket(
 async def get_sub_ticket(
     sub_ticket_id: str,
     user: UserMetadataModel = Depends(granted_user),
-) -> Optional[TicketList]:
+) -> TicketList:
     """
     This endpoint is for retrieving a sub ticket by its ID.
     """
