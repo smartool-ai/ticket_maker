@@ -9,10 +9,13 @@ export const UploadTranscriptContext = createContext({
 
 export function UploadTranscriptContextProvider({ children }) {
 	const [uploadResponse, setUploadResponse] = useState(null);
+	const [generationResponse, setGenerationResponse] = useState(null);
 	const [ticketsResponse, setTicketsResponse] = useState(null);
 
 	return (
 		<UploadTranscriptContext.Provider value={{
+			generationResponse,
+			setGenerationResponse,
 			ticketsResponse,
 			setTicketsResponse,
 			uploadResponse,
