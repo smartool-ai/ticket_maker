@@ -1,5 +1,3 @@
-import os
-
 from logging import Logger
 from typing import TYPE_CHECKING
 
@@ -10,7 +8,6 @@ if TYPE_CHECKING:
     from src.config import Config
 
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -32,12 +29,6 @@ class Application:
         # Connect routers to the application
         self._connect_routers()
 
-        # Fallback to the UI
-        if os.path.exists("/tmp/static"):
-            self._app.mount(
-                "/", StaticFiles(directory="/tmp/static", html=True), name="static"
-            )
-
     @property
     def app(self) -> FastAPI:
         return self._app
@@ -47,6 +38,7 @@ class Application:
 
         routers = [
             controllers.file_management.router,
+            controllers.health.router,
             controllers.ticket.router,
             controllers.user_metadata.router,
         ]

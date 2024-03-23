@@ -7,7 +7,7 @@ SHELL ["/bin/bash", "-c"]
 # RUN apt-get install curl \
 #     && apt-get install autoremove
 
-RUN dnf install -y python3.11 python3.11-pip nodejs
+RUN dnf install -y python3.11 python3.11-pip
 
 RUN pip3.11 install awslambdaric
 
@@ -28,9 +28,6 @@ WORKDIR ${LAMBDA_TASK_ROOT}
 RUN curl -sSL https://install.python-poetry.org | python3.11 -
 RUN cd /usr/local/bin && ln -s ${POETRY_PATH} && chmod +x ${POETRY_PATH}
 
-COPY ./ui/package.json ./ui/package-lock.json ./ui/
-RUN cd ./ui && npm install
-
 # copy the lock and toml files, install
 #
 # Do we have to install in ${LAMBDA_TASK_ROOT}?
@@ -41,10 +38,6 @@ RUN poetry config virtualenvs.create false \
 # copy code (we should be more selective here, even with .dockerignore)
 COPY . ${LAMBDA_TASK_ROOT}
 
-# build the frontend to /static and remove the source
-RUN cd ./ui && npm run build && rm -rf ./ui
-
 # ENV PYTHONPATH=${PYTHONPATH}:/${LAMBDA_TASK_ROOT}/application
 
-ENTRYPOINT [ "/usr/bin/python3.11", "-m", "awslambdaric" ]
 CMD [ "app.handler" ]

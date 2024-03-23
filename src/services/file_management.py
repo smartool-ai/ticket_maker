@@ -13,7 +13,7 @@ logger = get_module_logger()
 
 AWS_REGION = os.getenv("AWS_REGION", "us-west-2")
 s3 = boto3.resource("s3", region_name=AWS_REGION)
-bucket = s3.Bucket(os.environ.get("ARTIST_IMAGES_BUCKET", "transcriptions-ai"))
+bucket = s3.Bucket(os.environ.get("ARTIST_IMAGES_BUCKET", "dev-transcriptions-ai"))
 
 
 def upload_file_to_s3(file_object: UploadFile) -> dict:

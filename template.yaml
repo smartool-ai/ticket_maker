@@ -59,26 +59,25 @@ Mappings:
       tagenv: local
       env: local
       REGION: us-west-2
-      subnet1: subnet-074edb54ea8581430
-      subnet2: subnet-0cc91c934651ba357
-      vpcId: vpc-0deab6d1721ad511d
+      subnet1: subnet-0d4949bd0dabd0172
+      subnet2: subnet-0cece01f2d6f145fd
+      vpcId: vpc-0148cf94021c2fa5a
       logLevel: DEBUG
     dev:
       tagenv: development
       env: development
       REGION: us-west-2
-      subnet1: subnet-08bd34f49cb453b6e
-      # subnet2: subnet-0e65b1573ed6e8c7d
-      subnet2: subnet-0a39def94f6098c94
-      vpcId: vpc-0970b43a50e0a6038
+      subnet1: subnet-0d4949bd0dabd0172
+      subnet2: subnet-0cece01f2d6f145fd
+      vpcId: vpc-0148cf94021c2fa5a
       logLevel: DEBUG
     staging:
       tagenv: staging
       env: staging
       REGION: us-west-2
-      subnet1: subnet-0c5791f86563fb1ae
-      subnet2: subnet-0108fe429f7f4bcd6
-      vpcId: vpc-0810e2d41cc7d1eae
+      subnet1: subnet-0d4949bd0dabd0172
+      subnet2: subnet-0cece01f2d6f145fd
+      vpcId: vpc-0148cf94021c2fa5a
       logLevel: DEBUG
     prod:
       tagenv: production
@@ -175,7 +174,7 @@ Resources:
               Resource:
                 - Fn::Sub:
                   - "arn:aws:s3:::${Bucket}/*"
-                  - Bucket: !FindInMap [EnvMappings, !Ref StageName, transcriptions-ai]
+                  - Bucket: !FindInMap [EnvMappings, !Ref StageName, dev-transcriptions-ai]
     Metadata:
       DockerTag: latest
       DockerContext: ./

@@ -49,7 +49,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("local_file_path", help="Local file path")
     parser.add_argument("s3_key", help="S3 key")
-    parser.add_argument("--bucket", default="transcriptions-ai", help="S3 bucket name")
+    parser.add_argument("--bucket", default="dev-transcriptions-ai", help="S3 bucket name")
 
     args = parser.parse_args()
 
