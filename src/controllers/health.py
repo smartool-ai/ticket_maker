@@ -9,7 +9,7 @@ router = APIRouter()
 logger = getLogger(__name__)
 
 
-@router.post("/health")
+@router.get("/health")
 @authorized_api_handler()
 async def check_health(
 ) -> Dict:

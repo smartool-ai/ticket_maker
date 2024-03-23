@@ -151,12 +151,6 @@ Resources:
             Method: ANY
             Path: /{proxy+}
             RestApiId: !Ref Api
-        Root:
-          Type: Api
-          Properties:
-            Method: ANY
-            Path: /
-            RestApiId: !Ref Api
       Role: !Join
         - ""
         - - "arn:aws:iam::"

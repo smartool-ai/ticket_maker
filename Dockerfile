@@ -1,15 +1,7 @@
 # syntax=docker/dockerfile:1.2
-FROM public.ecr.aws/lambda/provided:al2023
-# FROM public.ecr.aws/lambda/nodejs:20
+FROM public.ecr.aws/lambda/python:3.11
 
 SHELL ["/bin/bash", "-c"]
-
-# RUN apt-get install curl \
-#     && apt-get install autoremove
-
-RUN dnf install -y python3.11 python3.11-pip
-
-RUN pip3.11 install awslambdaric
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -18,14 +10,14 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100 \
     POETRY_HOME="/etc/poetry" \
     POETRY_NO_INTERACTION=1 \
-    POETRY_VERSION=1.2.2
+    POETRY_VERSION=1.7.1
 
 ENV POETRY_PATH="${POETRY_HOME}/bin/poetry"
 
 WORKDIR ${LAMBDA_TASK_ROOT}
 
 # following https://python-poetry.org/docs/master/#installation
-RUN curl -sSL https://install.python-poetry.org | python3.11 -
+RUN curl -sSL https://install.python-poetry.org | python3 -
 RUN cd /usr/local/bin && ln -s ${POETRY_PATH} && chmod +x ${POETRY_PATH}
 
 # copy the lock and toml files, install

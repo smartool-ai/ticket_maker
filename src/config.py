@@ -15,7 +15,6 @@ class Config:
     """
 
     CONFIGURATION_NAME = ""
-    ARTIST_IMAGES_BUCKET = os.getenv("ARTIST_IMAGES_BUCKET")
     LOGGER: Logger = getLogger()
     LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG")
 
@@ -24,7 +23,6 @@ class Config:
         Returns a string representation of the Config object
         """
         rep = {
-            "ARTIST_IMAGES_BUCKET": self.ARTIST_IMAGES_BUCKET,
             "LOGGER": self.LOGGER.level,
         }
         return json.dumps(rep)
@@ -37,7 +35,6 @@ class DevelopmentConfig(Config):
 
     CONFIGURATION_NAME = "development"
     DEBUG = True
-    ARTIST_IMAGES_BUCKET = "artist-images-dev"
 
 
 class TestingConfig(Config):
@@ -48,7 +45,6 @@ class TestingConfig(Config):
     CONFIGURATION_NAME = "testing"
     DEBUG = True
     TESTING = True
-    ARTIST_IMAGES_BUCKET = "artist-images-testing"
 
 
 class DeployedConfig(Config):
@@ -67,7 +63,6 @@ class ProductionConfig(DeployedConfig):
 
     CONFIGURATION_NAME = "production"
     DEBUG = True
-    ARTIST_IMAGES_BUCKET = "artist-images"
 
 
 app_config = {
