@@ -24,6 +24,12 @@ RUN cd /usr/local/bin && ln -s ${POETRY_PATH} && chmod +x ${POETRY_PATH}
 #
 # Do we have to install in ${LAMBDA_TASK_ROOT}?
 COPY ./poetry.lock ./pyproject.toml ./
+# setup config to pull core package from gemfury
+ARG GEMFURY_TOKEN
+ENV GEMFURY_TOKEN=${GEMFURY_TOKEN}
+RUN echo "GEMFURY_TOKEN=${GEMFURY_TOKEN}"
+RUN poetry config http-basic.fury ${GEMFURY_TOKEN} NOPASS
+
 RUN poetry config virtualenvs.create false \
 	&& poetry install -vvv --no-interaction --no-ansi --no-root
 

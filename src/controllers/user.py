@@ -1,9 +1,10 @@
-from logging import getLogger
 from typing import Dict
 
 from fastapi import APIRouter, Depends, Response
-from pixelum_core.api.token_authentication import TokenAuthentication
+# from pixelum_core.api.authorized_api_handler import authorized_api_handler
+from pixelum_core.loggers.loggers import get_module_logger
 
+from src.lib.token_authentication import TokenAuthentication
 from src.services.user import (
     get_user_management_by_email,
     delete_user_metadata,
@@ -12,7 +13,7 @@ from src.services.user import (
 )
 
 router = APIRouter()
-logger = getLogger(__name__)
+logger = get_module_logger()
 token_authentication = TokenAuthentication()
 granted_user = token_authentication.require_user_with_permission("manage:users")
 

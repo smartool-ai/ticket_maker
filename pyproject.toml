@@ -27,7 +27,6 @@ mangum = "^0.17.0"
 python-multipart = "^0.0.9"
 python-dotenv = "^1.0.1"
 
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

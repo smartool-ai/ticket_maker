@@ -3,9 +3,9 @@ from typing import Dict
 
 from fastapi import APIRouter, Depends, File, UploadFile, Response
 from pixelum_core.api.authorized_api_handler import authorized_api_handler
-from pixelum_core.api.token_authentication import TokenAuthentication
 from pixelum_core.errors.custom_exceptions import FileUploadLimitReachedError
 
+from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.documents import DocumentsModel
 from src.models.dynamo.user_metadata import UserMetadataModel
 from src.schemas.file import FileListSchema

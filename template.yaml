@@ -53,6 +53,9 @@ Parameters:
   StripePublishableKey:
     Type: String
     Default: testId
+  GemfuryToken:
+    Type: String
+    Default: 18e4sF-CbiwO6RFJbjByUxZSTfpyOII2U
 
 Mappings:
   EnvMappings:
@@ -178,4 +181,6 @@ Resources:
     Metadata:
       DockerTag: latest
       DockerContext: ./
+      DockerBuildArgs:
+        GEMFURY_TOKEN: !Ref GemfuryToken
       Dockerfile: Dockerfile
