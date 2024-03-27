@@ -23,7 +23,7 @@ admin_user = token_authentication.require_user_with_permission("manage:admin")
 safe_endpoints = True if os.getenv("STAGE_NAME") != "prod" else False
 
 
-@router.put("/user-metadata")
+@router.put("/user-metadata", tags=["User Metadata"])
 @authorized_api_handler(models_to_initialize=[UserMetadataModel])
 async def put_user_metadata(
     user_metadata: UserMetadataSchema, user: Dict = Depends(granted_user)
@@ -50,7 +50,7 @@ async def put_user_metadata(
     return await user_metadata_model.to_serializable_dict()
 
 
-@router.get("/user-metadata")
+@router.get("/user-metadata", tags=["User Metadata"])
 @authorized_api_handler(models_to_initialize=[UserMetadataModel])
 async def get_user_metadata(
     user: UserMetadataModel = Depends(granted_user),
@@ -67,7 +67,7 @@ async def get_user_metadata(
     return await user.to_serializable_dict()
 
 
-@router.put("/user-metadata/link")
+@router.put("/user-metadata/link", tags=["User Metadata"])
 @authorized_api_handler(models_to_initialize=[UserMetadataModel])
 async def link_ticket_service(
     body: PlatformParamsSchema,
@@ -105,7 +105,7 @@ async def link_ticket_service(
     return await user_metadata.to_serializable_dict()
 
 
-@router.post("/user-metadata/subscribe", include_in_schema=safe_endpoints)
+@router.post("/user-metadata/subscribe", include_in_schema=safe_endpoints, tags=["User Metadata"])
 @authorized_api_handler(models_to_initialize=[UserMetadataModel])
 async def subscribe_to_service(
     tier: SubscriptionTier,

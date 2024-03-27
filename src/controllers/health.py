@@ -8,7 +8,7 @@ router = APIRouter()
 logger = getLogger(__name__)
 
 
-@router.get("/health")
+@router.get("/health", tags=["Health Check"])
 @authorized_api_handler()
 async def check_health(
 ) -> Dict:

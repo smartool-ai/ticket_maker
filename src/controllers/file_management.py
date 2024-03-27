@@ -23,7 +23,7 @@ granted_user = token_authentication.require_user_with_permission(
 )
 
 
-@router.post("/upload")
+@router.post("/upload", tags=["File Management"])
 @authorized_api_handler(initialize_dynamo_tables=[DocumentsModel])
 async def upload_file(
     file: UploadFile = File(...), user: UserMetadataModel = Depends(granted_user)
@@ -68,7 +68,7 @@ async def upload_file(
     return resp
 
 
-@router.get("/file/{file_name}")
+@router.get("/file/{file_name}", tags=["File Management"])
 @authorized_api_handler()
 async def get_file(file_name: str, _: Dict = Depends(granted_user)) -> dict:
     """
@@ -89,7 +89,7 @@ async def get_file(file_name: str, _: Dict = Depends(granted_user)) -> dict:
     )
 
 
-@router.get("/file/{file_name}/content")
+@router.get("/file/{file_name}/content", tags=["File Management"])
 @authorized_api_handler()
 async def get_file_content(file_name: str, _: Dict = Depends(granted_user)) -> Response:
     """
@@ -110,7 +110,7 @@ async def get_file_content(file_name: str, _: Dict = Depends(granted_user)) -> R
     )
 
 
-@router.get("/file")
+@router.get("/files", tags=["File Management"])
 @authorized_api_handler()
 async def get_all_user_uploads(
     user: UserMetadataModel = Depends(granted_user),

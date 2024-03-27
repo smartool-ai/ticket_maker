@@ -20,7 +20,7 @@ granted_user = token_authentication.require_user_with_permission(
 safe_endpoints = True if os.getenv("STAGE_NAME") != "prod" else False
 
 
-@router.post("/process-payment")
+@router.post("/process-payment", tags=["Stripe"])
 @authorized_api_handler(models_to_initialize=[UserMetadataModel])
 async def process_payment(
     amount: int,

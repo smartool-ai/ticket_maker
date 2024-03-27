@@ -21,7 +21,7 @@ granted_user = token_authentication.require_user_with_permission(
 )
 
 
-@router.post("/file/{file_name}/tickets")
+@router.post("/file/{file_name}/tickets", tags=["Ticket Management"])
 @authorized_api_handler()
 async def invoke_ticket_generation(
     file_name: str,
@@ -64,7 +64,7 @@ async def invoke_ticket_generation(
     return {"ticket_generation_datetime": ticket_generation_datetime}
 
 
-@router.get("/file/{file_name}/tickets")
+@router.get("/file/{file_name}/tickets", tags=["Ticket Management"])
 @authorized_api_handler(models_to_initialize=[Ticket])
 async def get_tickets_by_generation_time(
     file_name: str,
@@ -101,7 +101,7 @@ async def get_tickets_by_generation_time(
     return {"tickets": ticket_dict.get("tickets")}
 
 
-@router.post("/file/{file_name}/tickets/expand")
+@router.post("/file/{file_name}/tickets/expand", tags=["Ticket Management"])
 @authorized_api_handler(models_to_initialize=[Ticket])
 async def expand_ticket(
     file_name: str,
@@ -141,7 +141,7 @@ async def expand_ticket(
     return {"sub_ticket_id": sub_ticket_id}
 
 
-@router.get("/ticket/sub/{sub_ticket_id}")
+@router.get("/ticket/sub/{sub_ticket_id}", tags=["Ticket Management"])
 @authorized_api_handler(models_to_initialize=[SubTicket])
 async def get_sub_ticket(
     sub_ticket_id: str,
@@ -164,7 +164,7 @@ async def get_sub_ticket(
     return {"tickets": sub_ticket_dict.get("tickets")}
 
 
-@router.post("/ticket")
+@router.post("/ticket", tags=["Ticket Management"])
 @authorized_api_handler()
 async def create_ticket(
     platform: PlatformEnum,

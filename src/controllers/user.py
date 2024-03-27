@@ -18,7 +18,7 @@ token_authentication = TokenAuthentication()
 granted_user = token_authentication.require_user_with_permission("manage:users")
 
 
-@router.get("/user/{email}")
+@router.get("/user/{email}", tags=["User Management"])
 async def get_user(
     email: str, response: Response, user: Dict = Depends(granted_user)
 ) -> Dict:
@@ -47,7 +47,7 @@ async def get_user(
     return user
 
 
-@router.delete("/user/{email}")
+@router.delete("/user/{email}", tags=["User Management"])
 async def delete_user(
     email: str, response: Response, user: Dict = Depends(granted_user)
 ) -> Dict:
