@@ -2,8 +2,7 @@ from logging import getLogger
 from typing import Dict
 
 from fastapi import APIRouter, Depends, Response
-
-from src.lib.token_authentication import TokenAuthentication
+from pixelum_core.api.token_authentication import TokenAuthentication
 
 from src.services.user import (
     get_user_management_by_email,

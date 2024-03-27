@@ -2,7 +2,8 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 from src.lib.enums import PlatformEnum
-from src.lib.loggers import get_module_logger
+
+from pixelum_core.loggers.loggers import get_module_logger
 
 
 logger = get_module_logger()

@@ -4,10 +4,11 @@ import os
 from typing import Dict
 
 from fastapi import APIRouter, Depends
+from pixelum_core.api.authorized_api_handler import authorized_api_handler
+from pixelum_core.api.token_authentication import TokenAuthentication
+from pixelum_core.enums.enums import SubscriptionTier
 
-from src.lib.authorized_api_handler import authorized_api_handler
-from src.lib.enums import PlatformEnum, SubscriptionTier
-from src.lib.token_authentication import TokenAuthentication
+from src.lib.enums import PlatformEnum
 from src.models.dynamo.user_metadata import UserMetadataModel
 from src.schemas.user_metadata import PlatformParamsSchema, UserMetadataSchema
 from src.services.user_metadata import add_or_update_user_metadata, get_user_metadata_by_user_id, link_asana, link_jira, link_shortcut

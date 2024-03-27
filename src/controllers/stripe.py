@@ -5,9 +5,9 @@ from typing import Dict
 
 import stripe
 from fastapi import APIRouter, Depends
+from pixelum_core.api.authorized_api_handler import authorized_api_handler
+from pixelum_core.api.token_authentication import TokenAuthentication
 
-from src.lib.authorized_api_handler import authorized_api_handler
-from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.transaction import Transaction
 from src.models.dynamo.user_metadata import UserMetadataModel
 

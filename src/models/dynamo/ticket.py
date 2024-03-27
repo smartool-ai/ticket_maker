@@ -3,9 +3,8 @@ import json
 import os
 from typing import Any, Dict, Optional
 
-from src.lib.dynamo_utils import BaseModel
-from src.lib.loggers import get_module_logger
-
+from pixelum_core.dynamo.base_model import BaseModel
+from pixelum_core.loggers.loggers import get_module_logger
 from pynamodb.attributes import (
     ListAttribute,
     MapAttribute,

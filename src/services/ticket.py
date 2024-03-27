@@ -6,9 +6,9 @@ import uuid
 
 import boto3
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
-from src.lib.enums import EventEnum, PlatformEnum
+from pixelum_core.loggers.loggers import get_module_logger
 
-from src.lib.loggers import get_module_logger
+from src.lib.enums import EventEnum, PlatformEnum
 from src.models.dynamo.ticket import SubTicket, Ticket
 from src.models.openai import OpenAIClient
 

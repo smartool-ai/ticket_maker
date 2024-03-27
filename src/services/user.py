@@ -3,10 +3,9 @@ from typing import Optional
 
 from auth0.authentication import GetToken
 from auth0.management import Auth0
-
+from pixelum_core.loggers.loggers import get_module_logger
 from pynamodb.exceptions import DoesNotExist
 
-from src.lib.loggers import get_module_logger
 from src.models.dynamo.user_metadata import UserMetadataModel
 
 logger = get_module_logger()

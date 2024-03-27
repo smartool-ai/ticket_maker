@@ -1,13 +1,13 @@
+import uuid
 from logging import getLogger
 from typing import Optional
-import uuid
 
 from fastapi import APIRouter, Depends
+from pixelum_core.api.authorized_api_handler import authorized_api_handler
+from pixelum_core.api.token_authentication import TokenAuthentication
 
-from src.lib.custom_exceptions import TicketGenerationLimitReachedError
 from src.lib.enums import EventEnum, PlatformEnum
-from src.lib.authorized_api_handler import authorized_api_handler
-from src.lib.token_authentication import TokenAuthentication
+from src.lib.custom_exceptions import TicketGenerationLimitReachedError
 from src.models.dynamo.ticket import SubTicket, Ticket
 from src.models.dynamo.user_metadata import UserMetadataModel
 from src.schemas.ticket import SubTicketGenerationSchema, TicketGenerationSchema, TicketList, TicketParamsSchema
@@ -150,17 +150,18 @@ async def get_sub_ticket(
     """
     This endpoint is for retrieving a sub ticket by its ID.
     """
-    sub_ticket: SubTicket = await get_subticket(sub_ticket_id, user.user_id)
+    sub_ticket: Optional[SubTicket] = await get_subticket(sub_ticket_id, user.user_id)
 
-    if sub_ticket:
-        sub_ticket_dict: dict = await sub_ticket.to_serializable_dict()
+    if sub_ticket is None:
+        return {"tickets": []}
 
-        for t in sub_ticket_dict.get("tickets"):
-            t["id"] = uuid.uuid4().hex
 
-        return {"tickets": sub_ticket_dict.get("tickets")}
-    else:
-        return None
+    sub_ticket_dict: dict = await sub_ticket.to_serializable_dict()
+
+    for t in sub_ticket_dict.get("tickets"):
+        t["id"] = uuid.uuid4().hex
+
+    return {"tickets": sub_ticket_dict.get("tickets")}
 
 
 @router.post("/ticket")

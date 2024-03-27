@@ -5,7 +5,7 @@ from openai import OpenAI
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
 from src.lib.enums import PlatformEnum
-from src.lib.loggers import get_module_logger
+from pixelum_core.loggers.loggers import get_module_logger
 
 
 logger = get_module_logger()

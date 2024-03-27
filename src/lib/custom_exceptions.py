@@ -1,6 +1,7 @@
 import json
-from src.lib.loggers import get_module_logger
 from typing import Any, Callable, Dict, Optional, Tuple, Type, TypedDict
+
+from pixelum_core.loggers.loggers import get_module_logger
 
 logger = get_module_logger()
 

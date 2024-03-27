@@ -1,19 +1,9 @@
 import enum
 
-from src.lib.loggers import get_module_logger
+from pixelum_core.loggers.loggers import get_module_logger
 
 
 logger = get_module_logger()
-
-
-class SubscriptionTier(str, enum.Enum):
-    """Enum representing the subscription tier of the user."""
-
-    FREE = "FREE"
-    BASIC = "BASIC"
-    STANDARD = "STANDARD"
-    PRO = "PRO"
-    ENTERPRISE = "ENTERPRISE"
 
 
 class EventEnum(str, enum.Enum):
@@ -65,46 +55,3 @@ class PlatformEnum(str, enum.Enum):
     TRELLO = "TRELLO"
     SHORTCUT = "SHORTCUT"
     ASANA = "ASANA"  # Add more platforms as needed
-
-
-class Role(str, enum.Enum):
-    """Enum representing the role of the user."""
-
-    GENERAL_USER = "GENERAL_USER"
-    VALIDATED_USER = "VALIDATED_USER"
-    ADMIN = "ADMIN"
-
-
-class AWSService(str, enum.Enum):
-    """AWSService is used to initialize connections to AWS services with boto3."""
-
-    PARAM_STORE = "ssm"
-    SIMPLE_EMAIL_SERVICE = "ses"
-    STEP_FUNCTIONS = "stepfunctions"
-    COGNITO_IDP = "cognito-idp"
-    COGNITO_IDENTITY = "cognito-identity"
-    IAM = "iam"
-    SNS = "sns"
-    SQS = "sqs"
-    S3 = "s3"
-    SECRETS_MANAGER = "secretsmanager"
-    APP_CONFIG_DATA = "appconfigdata"
-    CLOUDWATCH = "cloudwatch"
-    KMS = "kms"
-
-
-class LambdaLogLevel(str, enum.Enum):
-    """Acceptable Log Levels"""
-
-    NOTSET = "NOTSET"
-    DEBUG = "DEBUG"
-    INFO = "INFO"
-    WARN = "WARN"
-    ERROR = "ERROR"
-    CRITICAL = "CRITICAL"
-
-
-class Currency(str, enum.Enum):
-    """Enum representing currencies."""
-
-    USD = "USD"

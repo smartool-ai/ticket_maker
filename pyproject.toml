@@ -5,27 +5,27 @@ description = ""
 authors = ["Jake Pifer"]
 readme = "README.md"
 
+[[tool.poetry.source]]
+name= "fury"
+url = "https://jake-pixelum.fury.site/pypi"
+priority = "supplemental"
+
 [tool.poetry.dependencies]
 python = "^3.11"
-fastapi = "^0.109.2"
-boto3 = "^1.34.34"
-pillow = "^10.2.0"
-uvicorn = "^0.27.1"
-mangum = "^0.17.0"
-pyjwt = "^2.8.0"
-auth0-python = "^4.7.0"
+pixelum-core = {version = "^0.1.1", source = "fury"}
+stripe = "^8.8.0"
+fastapi = "^0.110.0"
 requests = "^2.31.0"
-python-multipart = "^0.0.9"
-botocore-stubs = "^1.34.40"
-pydantic = "^2.6.1"
-pycountry = "^23.12.11"
-pynamodb = "^6.0.0"
-aioboto3 = "^12.3.0"
-python-dotenv = "^1.0.1"
-openai = "^1.12.0"
-black = "^24.2.0"
+boto3 = "^1.34.71"
+pillow = "^10.2.0"
+uvicorn = "^0.29.0"
+pyjwt = "^2.8.0"
+openai = "^1.14.3"
+black = "^24.3.0"
 pdoc3 = "^0.10.0"
-stripe = "^8.7.0"
+mangum = "^0.17.0"
+python-multipart = "^0.0.9"
+python-dotenv = "^1.0.1"
 
 
 [build-system]

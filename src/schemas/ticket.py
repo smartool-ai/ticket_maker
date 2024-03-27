@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from src.lib.loggers import get_module_logger
+from pixelum_core.loggers.loggers import get_module_logger
 
 from pydantic import BaseModel, Field
 

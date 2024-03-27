@@ -2,13 +2,13 @@ from logging import Logger
 from typing import TYPE_CHECKING
 
 from src.lib.constants import ORIGINS
-from src.lib.loggers import get_module_logger
 
 if TYPE_CHECKING:
     from src.config import Config
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pixelum_core.loggers.loggers import get_module_logger
 
 
 class Application:

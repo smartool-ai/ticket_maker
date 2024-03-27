@@ -2,8 +2,7 @@ from logging import getLogger
 from typing import Dict
 
 from fastapi import APIRouter
-
-from src.lib.authorized_api_handler import authorized_api_handler
+from pixelum_core.api.authorized_api_handler import authorized_api_handler
 
 router = APIRouter()
 logger = getLogger(__name__)

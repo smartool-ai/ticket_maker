@@ -5,8 +5,8 @@ from typing import List, Optional
 import boto3
 import botocore
 from fastapi import UploadFile
+from pixelum_core.loggers.loggers import get_module_logger
 
-from src.lib.loggers import get_module_logger
 from src.models.dynamo.documents import DocumentsModel
 
 logger = get_module_logger()
@@ -54,7 +54,7 @@ def upload_file_to_s3(file_object: UploadFile) -> dict:
         raise
 
 
-def get_file_details_from_s3(s3_key):
+def get_file_details_from_s3(s3_key, return_content: Optional[bool] = False):
     """
     Retrieves the details of a file from an S3 bucket.
 
@@ -72,11 +72,20 @@ def get_file_details_from_s3(s3_key):
         logger.info("Loading file...")
         obj.load()
         logger.info("File loaded")
-        return {
+        response: dict = {
             "bucket_name": bucket.name,
             "filename": obj.key,
             "url": f"https://{bucket.name}.s3.amazonaws.com/{obj.key}",
         }
+
+        if return_content:
+            # If content not larger then 1MB
+            if obj.content_length < 1000000:
+                response["content"] = obj.get()["Body"].read().decode("utf-8")
+            else:
+                response["content"] = "Content too large to display"
+
+        return response
     except botocore.exceptions.ClientError as e:
         if e.response["Error"]["Code"] == "404":
             return {"error": "File not found", "status_code": 404}

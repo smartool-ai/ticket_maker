@@ -13,6 +13,7 @@ Globals:
   Api:
     BinaryMediaTypes:
       - "multipart/form-data"
+      - "application/json"
 Parameters:
   StageName:
     Type: String
@@ -151,6 +152,11 @@ Resources:
             Method: ANY
             Path: /{proxy+}
             RestApiId: !Ref Api
+        # KeepWarm:
+        #   Type: Schedule
+        #   Properties:
+        #     Schedule: rate(5 minutes)
+        #     Enabled: true
       Role: !Join
         - ""
         - - "arn:aws:iam::"

@@ -1,8 +1,8 @@
 import os
 from typing import Dict
 
-from src.lib.dynamo_utils import BaseModel
-from src.lib.enums import Role
+from pixelum_core.dynamo.base_model import BaseModel
+from pixelum_core.enums.enums import Role
 
 from pynamodb.attributes import BooleanAttribute, UnicodeAttribute
 from pynamodb.indexes import GlobalSecondaryIndex, AllProjection
