@@ -1,6 +1,17 @@
 from typing import Optional
 from pydantic import BaseModel
 
+from pixelum_core.enums.enums import SubscriptionTier
+
+
+class PlatformsLinkedSchema(BaseModel):
+    """
+    Represents the schema for platforms linked to the user.
+    """
+    jira: Optional[bool] = None  # Jira platform linked
+    shortcut: Optional[bool] = None  # Shortcut platform linked
+    asana: Optional[bool] = None  # Asana platform linked
+
 
 class UserMetadataSchema(BaseModel):
     """
@@ -11,6 +22,23 @@ class UserMetadataSchema(BaseModel):
     jira_api_key: Optional[str] = None  # User's Jira API key
     jira_domain: Optional[str] = None  # User's Jira domain
     shortcut_api_key: Optional[str] = None  # User's Shortcut API key
+    shortcut_project_id: Optional[str] = None  # User's Shortcut project ID
+    asana_workspace_id: Optional[str] = None  # User's Asana workspace ID
+    asana_personal_access_token: Optional[str] = None  # User's Asana personal access token
+    asana_project_id: Optional[str] = None  # User's Asana project ID
+    renew_datetime: Optional[str] = None  # Renew datetime
+
+
+class UserMetadataReturnSchema(BaseModel):
+    """
+    Represents the data returned for user metadata on GET requests.
+    """
+    email: Optional[str] = None  # User's email address
+    platforms_linked: Optional[PlatformsLinkedSchema] = None  # List of platforms linked to the user
+    generations_count: Optional[int] = None  # Number of generations
+    file_uploads_count: Optional[int] = None  # Number of file uploads
+    renew_datetime: Optional[str] = None  # Renew datetime
+    subscription_tier: Optional[SubscriptionTier] = None  # Subscription tier
 
 
 class JiraParamsSchema(BaseModel):

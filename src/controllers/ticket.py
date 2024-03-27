@@ -155,7 +155,6 @@ async def get_sub_ticket(
     if sub_ticket is None:
         return {"tickets": []}
 
-
     sub_ticket_dict: dict = await sub_ticket.to_serializable_dict()
 
     for t in sub_ticket_dict.get("tickets"):

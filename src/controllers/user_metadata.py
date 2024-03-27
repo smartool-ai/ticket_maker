@@ -10,7 +10,7 @@ from pixelum_core.enums.enums import SubscriptionTier
 from src.lib.enums import PlatformEnum
 from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.user_metadata import UserMetadataModel
-from src.schemas.user_metadata import PlatformParamsSchema, UserMetadataSchema
+from src.schemas.user_metadata import PlatformParamsSchema, UserMetadataSchema, UserMetadataReturnSchema
 from src.services.user_metadata import add_or_update_user_metadata, get_user_metadata_by_user_id, link_asana, link_jira, link_shortcut
 
 router = APIRouter()
@@ -54,7 +54,7 @@ async def put_user_metadata(
 @authorized_api_handler(models_to_initialize=[UserMetadataModel])
 async def get_user_metadata(
     user: UserMetadataModel = Depends(granted_user),
-) -> Dict:
+) -> UserMetadataReturnSchema:
     """
     Get user metadata
 

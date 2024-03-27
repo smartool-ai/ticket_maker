@@ -6,7 +6,7 @@ from typing import Any, Dict, Optional
 from pixelum_core.errors.custom_exceptions import PlatformLinkError
 from pixelum_core.dynamo.base_model import BaseModel
 from pixelum_core.loggers.loggers import get_module_logger
-from pynamodb.attributes import UnicodeAttribute, NumberAttribute
+from pynamodb.attributes import ListAttribute, NumberAttribute, UnicodeAttribute
 from pynamodb.expressions.condition import Condition
 
 from src.lib.enums import PlatformEnum
@@ -37,6 +37,8 @@ class UserMetadataModel(BaseModel):
 
     user_id = UnicodeAttribute(hash_key=True)
     email = UnicodeAttribute(null=True)
+    signup_method = UnicodeAttribute(null=True)
+    permissions = ListAttribute(of=UnicodeAttribute, null=True)
     jira_api_key = UnicodeAttribute(null=True)
     jira_email = UnicodeAttribute(null=True)
     jira_domain = UnicodeAttribute(null=True)
@@ -55,6 +57,8 @@ class UserMetadataModel(BaseModel):
         cls,
         user_id: str,
         email: Optional[str] = None,
+        signup_method: Optional[str] = None,
+        permissions: Optional[list] = None,
         jira_api_key: Optional[str] = None,
         jira_email: Optional[str] = None,
         jira_domain: Optional[str] = None,
@@ -72,6 +76,8 @@ class UserMetadataModel(BaseModel):
         user_metadata = UserMetadataModel(
             user_id=user_id,
             email=email,
+            signup_method=signup_method,
+            permissions=permissions,
             jira_api_key=jira_api_key,
             jira_email=jira_email,
             jira_domain=jira_domain,
@@ -94,6 +100,8 @@ class UserMetadataModel(BaseModel):
         cls,
         user_id: str,
         email: Optional[str] = None,
+        signup_method: Optional[str] = None,
+        permissions: Optional[list] = None,
         jira_api_key: Optional[str] = None,
         jira_email: Optional[str] = None,
         jira_domain: Optional[str] = None,
@@ -111,6 +119,8 @@ class UserMetadataModel(BaseModel):
         user_metadata = UserMetadataModel(
             user_id=user_id,
             email=email,
+            signup_method=signup_method,
+            permissions=permissions,
             jira_api_key=jira_api_key,
             jira_email=jira_email,
             jira_domain=jira_domain,
@@ -127,6 +137,14 @@ class UserMetadataModel(BaseModel):
         )
 
         return user_metadata
+
+    async def find_subscription_tier(self) -> str:
+        """Find the subscription tier of the user from the permissions."""
+        for permission in self.permissions:
+            if "SUBSCRIPTION" in permission:
+                return permission.split(":")[1]
+
+        return "free"
 
     async def check_platform_linked(self) -> dict:
         """Check if the user has linked a platform."""
@@ -183,7 +201,8 @@ class UserMetadataModel(BaseModel):
             "platforms_linked": await self.check_platform_linked(),
             "generations_count": self.generations_count,
             "file_uploads_count": self.file_uploads_count,
-            "renew_datetime": self.renew_datetime
+            "renew_datetime": self.renew_datetime,
+            "subscription_tier": self.subscription_tier,
         }
 
     async def to_json(self) -> str:

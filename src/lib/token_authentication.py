@@ -160,7 +160,9 @@ class TokenAuthentication:
 
                 user_metadata = UserMetadataModel.synchronous_initialize(
                     user_id=payload.get("sub", "").split("|")[1],
-                    email=user_details.get("email")
+                    email=user_details.get("email"),
+                    signup_method=payload.get("sub", "").split("|")[0],
+                    permissions=payload.get("permissions", []),
                 )
                 user_metadata.synchronous_save()
 
