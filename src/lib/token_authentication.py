@@ -10,7 +10,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.status import HTTP_401_UNAUTHORIZED
 from src.models.dynamo.user_metadata import UserMetadataModel
 
-from src.services.user import get_user_metadata
+from src.services.user import syncronous_get_user_metadata
 
 
 logger = getLogger(__name__)
@@ -142,6 +142,7 @@ class TokenAuthentication:
             HTTPException: If the request does not contain a valid Bearer token, if the JWT cannot be decoded or verified,
                            or if the user does not have the required permission.
         """
+
         def _require_user_with_permission(
             token: Optional[HTTPAuthorizationCredentials] = Depends(token_auth_scheme),
         ) -> Dict:
@@ -153,7 +154,9 @@ class TokenAuthentication:
                 raise unauthorized_error
 
             # Check if user metadata is in our db, if not add it
-            user_metadata: Optional[UserMetadataModel] = get_user_metadata(payload.get("sub", "").split("|")[1])
+            user_metadata: Optional[UserMetadataModel] = syncronous_get_user_metadata(
+                payload.get("sub", "").split("|")[1]
+            )
 
             if not user_metadata:
                 user_details = self.get_user_details(payload.get("sub"))

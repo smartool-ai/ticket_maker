@@ -12,7 +12,7 @@ from src.models.dynamo.user_metadata import UserMetadataModel
 logger = get_module_logger()
 
 
-async def get_user_metadata(user_id: str) -> Optional[UserMetadataModel]:
+def syncronous_get_user_metadata(user_id: str) -> Optional[UserMetadataModel]:
     """Gets user from User Metadata DynamoDB.
 
     Args:
@@ -185,7 +185,9 @@ def delete_auth0_user(user: UserMetadataModel) -> bool:
         return False
 
 
-async def update_users_permissions(user: UserMetadataModel, permissions: List[str]) -> UserMetadataModel:
+async def update_users_permissions(
+    user: UserMetadataModel, permissions: List[str]
+) -> UserMetadataModel:
     """
     Updates the permissions of a user in Auth0.
 
@@ -214,7 +216,10 @@ async def update_users_permissions(user: UserMetadataModel, permissions: List[st
         auth0.users.add_permissions(f"{user.signup_method}|{user.user_id}", permissions)
 
         # Update in dynamodb
-        user.permissions = [permission.get("permission_name", "subscription:free").upper() for permission in permissions]
+        user.permissions = [
+            permission.get("permission_name", "subscription:free").upper()
+            for permission in permissions
+        ]
         user.subscription_tier = await user.find_subscription_tier()
         await user.save()
 

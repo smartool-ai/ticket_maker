@@ -13,11 +13,11 @@ from src.models.dynamo.user_metadata import UserMetadataModel
 from src.schemas.user_metadata import UserMetadataReturnSchema
 from src.services.user import (
     get_auth0_user_permissions,
-    get_user_metadata,
+    syncronous_get_user_metadata,
     delete_user_metadata,
     delete_auth0_user,
     remove_auth0_user_permissions,
-    update_users_permissions
+    update_users_permissions,
 )
 
 router = APIRouter()
@@ -29,7 +29,9 @@ granted_user = token_authentication.require_user_with_permission("manage:users")
 @router.put("/user/subscription", tags=["User Management"])
 @authorized_api_handler()
 async def update_user_subscription(
-    user_id: str, tier: SubscriptionTier, _: UserMetadataModel = Depends(granted_user),
+    user_id: str,
+    tier: SubscriptionTier,
+    _: UserMetadataModel = Depends(granted_user),
 ) -> UserMetadataReturnSchema:
     """
     Update the user subscription.
@@ -41,7 +43,7 @@ async def update_user_subscription(
     Returns:
         Dict: The updated user information.
     """
-    user: UserMetadataModel = await get_user_metadata(user_id)
+    user: UserMetadataModel = await syncronous_get_user_metadata(user_id)
     auth0_user_id: str = f"{user.signup_method}|{user.user_id}"
 
     # get the auth0 user
@@ -57,11 +59,15 @@ async def update_user_subscription(
     # Remove old subscription permission
     for permission in auth0_user_permissions:
         if "subscription" in permission.get("permission_name"):
-            await remove_auth0_user_permissions(auth0_user_id, permission.get("permission_name"))
+            await remove_auth0_user_permissions(
+                auth0_user_id, permission.get("permission_name")
+            )
             break
 
     # Append new permission
-    updated_user: UserMetadataModel = await update_users_permissions(user, [new_user_permission])
+    updated_user: UserMetadataModel = await update_users_permissions(
+        user, [new_user_permission]
+    )
 
     return await updated_user.to_serializable_dict()
 
@@ -98,9 +104,7 @@ async def update_user_subscription(
 
 @router.delete("/user", tags=["User Management"])
 @authorized_api_handler()
-async def delete_user(
-    user_id: str, _: Dict = Depends(granted_user)
-) -> Dict:
+async def delete_user(user_id: str, _: Dict = Depends(granted_user)) -> Dict:
     """
     Delete a user by email.
 
@@ -114,7 +118,7 @@ async def delete_user(
     Raises:
         HTTPException: If the user is not found.
     """
-    user: UserMetadataModel = await get_user_metadata(user_id)
+    user: UserMetadataModel = await syncronous_get_user_metadata(user_id)
 
     if user is None:
         raise ResourceNotFoundException(f"User with id {user_id} not found")
