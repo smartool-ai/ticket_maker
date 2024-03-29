@@ -12,7 +12,7 @@ priority = "supplemental"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-pixelum-core = {version = "^0.1.1", source = "fury"}
+pixelum-core = {version = "^0.1.2", source = "fury"}
 stripe = "^8.8.0"
 fastapi = "^0.110.0"
 requests = "^2.31.0"
