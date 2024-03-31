@@ -54,7 +54,7 @@ class TokenAuthentication:
 
     def require_any_user(
         self, token: Optional[HTTPAuthorizationCredentials] = Depends(token_auth_scheme)
-    ) -> Dict:
+    ) -> UserMetadataModel:
         """
         Require the request to contain a valid Bearer token.
 
@@ -62,7 +62,7 @@ class TokenAuthentication:
             token (Optional[HTTPAuthorizationCredentials], optional): The Bearer token. Defaults to Depends(token_auth_scheme).
 
         Returns:
-            Dict: The decoded JWT payload.
+            UserMetadataModel: The user metadata.
 
         Raises:
             HTTPException: If the request does not contain a valid Bearer token or if the JWT cannot be decoded or verified.
@@ -106,6 +106,9 @@ class TokenAuthentication:
             logger.error("User not authorized (sub prefix check)")
             raise unauthorized_error
 
+        user_id: str = payload.get("sub", "").split("|")[1]
+        signup_connection: str = payload.get("sub", "").split("|")[0]
+
         # Check if user metadata is in our db, if not add it
         user_metadata: Optional[UserMetadataModel] = syncronous_get_user_metadata(
             payload.get("sub", "").split("|")[1]
@@ -115,9 +118,9 @@ class TokenAuthentication:
             user_details = self.get_user_details(payload.get("sub"))
 
             user_metadata = UserMetadataModel.synchronous_initialize(
-                user_id=payload.get("sub", "").split("|")[1],
+                user_id=user_id,
                 email=user_details.get("email"),
-                signup_method=payload.get("sub", "").split("|")[0],
+                signup_method="Username-Password-Authentication" if signup_connection == "auth0" else signup_connection,
                 permissions=payload.get("permissions", []),
             )
             user_metadata.synchronous_save()
@@ -162,29 +165,13 @@ class TokenAuthentication:
         def _require_user_with_permission(
             token: Optional[HTTPAuthorizationCredentials] = Depends(token_auth_scheme),
         ) -> Dict:
-            payload = self.require_any_user(token)
+            payload: UserMetadataModel = self.require_any_user(token)
 
             logger.debug(f"Checking for permission: {permission}...")
-            if permission not in payload.get("permissions", []):
+            if permission not in payload.permissions:
                 logger.error("User not authorized (permission check)")
                 raise unauthorized_error
 
-            # Check if user metadata is in our db, if not add it
-            user_metadata: Optional[UserMetadataModel] = syncronous_get_user_metadata(
-                payload.get("sub", "").split("|")[1]
-            )
-
-            if not user_metadata:
-                user_details = self.get_user_details(payload.get("sub"))
-
-                user_metadata = UserMetadataModel.synchronous_initialize(
-                    user_id=payload.get("sub", "").split("|")[1],
-                    email=user_details.get("email"),
-                    signup_method=payload.get("sub", "").split("|")[0],
-                    permissions=payload.get("permissions", []),
-                )
-                user_metadata.synchronous_save()
-
-            return user_metadata
+            return payload
 
         return _require_user_with_permission

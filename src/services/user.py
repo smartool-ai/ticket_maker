@@ -44,7 +44,7 @@ def syncronous_get_user_metadata(user_id: str) -> Optional[UserMetadataModel]:
     return user_metadata
 
 
-def syncdronous_get_user_metadata(user_id: str) -> Optional[UserMetadataModel]:
+async def get_user_metadata(user_id: str) -> Optional[UserMetadataModel]:
     """Gets user from User Metadata DynamoDB.
 
     Args:

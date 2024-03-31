@@ -130,7 +130,7 @@ async def delete_user(user_id: str, _: Dict = Depends(granted_user)) -> Dict:
     return {"status": "ok"}
 
 
-@router.post("/user/password-reset", tags=["user"])
+@router.post("/user/password-reset", tags=["User Management"])
 @authorized_api_handler(models_to_initialize=[UserMetadataModel])
 async def password_reset(
     user: UserMetadataModel = Depends(token_authentication.require_any_user),
@@ -158,5 +158,8 @@ async def password_reset(
 
     response = requests.post(url, headers=headers, json=body)
     logger.info(f"Password reset response: {response.text}")
+
+    if response.status_code != 200:
+        return {"message": "Password reset email failed", "status_code": response.status_code}
 
     return {"message": "Password reset email sent", "status_code": response.status_code}
