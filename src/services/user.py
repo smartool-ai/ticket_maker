@@ -7,9 +7,26 @@ from pixelum_core.errors.custom_exceptions import ServerFailureError
 from pixelum_core.loggers.loggers import get_module_logger
 from pynamodb.exceptions import DoesNotExist
 
+from src.models.dynamo.user import UserManagementModel
 from src.models.dynamo.user_metadata import UserMetadataModel
 
 logger = get_module_logger()
+
+
+def check_user_exists(email: str) -> bool:
+    """Checks if a user account exists.
+
+    Args:
+        email (str)
+
+    Returns:
+        UserManagementModel
+    """
+    users = UserManagementModel.email_index.query(
+        hash_key=email, scan_index_forward=True, limit=5, last_evaluated_key=None
+    )
+    are_there_actually_users = len([user for user in users])
+    return True if are_there_actually_users > 0 else False
 
 
 def syncronous_get_user_metadata(user_id: str) -> Optional[UserMetadataModel]:

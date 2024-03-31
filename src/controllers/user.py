@@ -6,6 +6,7 @@ from pixelum_core.api.authorized_api_handler import authorized_api_handler
 from pixelum_core.enums.enums import SubscriptionTier
 from pixelum_core.errors.custom_exceptions import ResourceNotFoundException
 from pixelum_core.loggers.loggers import get_module_logger
+import requests
 
 from src.lib.constants import SUBSCRIPTION_TIER_MAP
 from src.lib.token_authentication import TokenAuthentication
@@ -127,3 +128,35 @@ async def delete_user(user_id: str, _: Dict = Depends(granted_user)) -> Dict:
     delete_auth0_user(user.user_id)
 
     return {"status": "ok"}
+
+
+@router.post("/user/password-reset", tags=["user"])
+@authorized_api_handler(models_to_initialize=[UserMetadataModel])
+async def password_reset(
+    user: UserMetadataModel = Depends(token_authentication.require_any_user),
+) -> dict:
+    """Endpoint for sending a new password reset email.
+
+    Args:
+        user (UserMetadataModel): Credentials of an authenticated user by default.
+
+    Returns:
+        Response: Success message
+    """
+    logger.info(f"Sending password reset email to user: {user.email}")
+
+    headers = {
+        "content-type": "application/json",
+    }
+    url = f"https://{os.getenv('AUTH0_DOMAIN', 'test')}/dbconnections/change_password"
+
+    body = {
+        "client_id": os.getenv("AUTH0_CLIENT_ID", "test"),
+        "email": user.email,
+        "connection": user.signup_method,
+    }
+
+    response = requests.post(url, headers=headers, json=body)
+    logger.info(f"Password reset response: {response.text}")
+
+    return {"message": "Password reset email sent", "status_code": response.status_code}

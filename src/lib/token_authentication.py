@@ -106,7 +106,23 @@ class TokenAuthentication:
             logger.error("User not authorized (sub prefix check)")
             raise unauthorized_error
 
-        return payload
+        # Check if user metadata is in our db, if not add it
+        user_metadata: Optional[UserMetadataModel] = syncronous_get_user_metadata(
+            payload.get("sub", "").split("|")[1]
+        )
+
+        if not user_metadata:
+            user_details = self.get_user_details(payload.get("sub"))
+
+            user_metadata = UserMetadataModel.synchronous_initialize(
+                user_id=payload.get("sub", "").split("|")[1],
+                email=user_details.get("email"),
+                signup_method=payload.get("sub", "").split("|")[0],
+                permissions=payload.get("permissions", []),
+            )
+            user_metadata.synchronous_save()
+
+        return user_metadata
 
     def get_user_details(self, user_id: str) -> dict:
         """Get the user details from the auth0."""

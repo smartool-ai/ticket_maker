@@ -22,13 +22,21 @@ class UserMetadataModel(BaseModel):
     fields:
         user_id (str, hash_key): Auth0 id
         email (str): Email address
+        signup_method (str): Signup method
+        permissions (list): List of permissions
         jira_api_key (str): Jira API key
         jira_email (str): Jira email address
         jira_domain (str): Jira domain
         shortcut_api_key (str): Shortcut API key
+        shortcut_project_id (str): Shortcut project id
+        asana_workspace_id (str): Asana workspace id
+        asana_personal_access_token (str): Asana personal access token
+        asana_project_id (str): Asana project id
         generations_count (int): Number of ticket generations remaining
         file_uploads_count (int): Number of file uploads remaining
         renew_datetime (str): Datetime when the user's credentials need to be renewed
+        subscription_tier (str): The user's subscription tier
+
     """
 
     class Meta:
