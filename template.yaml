@@ -66,7 +66,7 @@ Mappings:
       tagenv: local
       env: local
       REGION: us-west-2
-      subnet1: subnet-0d4949bd0dabd0172
+      subnet1: subnet-085adbd96bb46b4af
       subnet2: subnet-0cece01f2d6f145fd
       vpcId: vpc-0148cf94021c2fa5a
       logLevel: DEBUG
@@ -74,7 +74,7 @@ Mappings:
       tagenv: development
       env: development
       REGION: us-west-2
-      subnet1: subnet-0d4949bd0dabd0172
+      subnet1: subnet-085adbd96bb46b4af
       subnet2: subnet-0cece01f2d6f145fd
       vpcId: vpc-0148cf94021c2fa5a
       logLevel: DEBUG
@@ -82,7 +82,7 @@ Mappings:
       tagenv: staging
       env: staging
       REGION: us-west-2
-      subnet1: subnet-0d4949bd0dabd0172
+      subnet1: subnet-085adbd96bb46b4af
       subnet2: subnet-0cece01f2d6f145fd
       vpcId: vpc-0148cf94021c2fa5a
       logLevel: DEBUG
@@ -90,8 +90,8 @@ Mappings:
       tagenv: production
       env: prod
       REGION: us-west-2
-      subnet1: subnet-0149c6becff2735ce
-      subnet2: subnet-0bdc6a89ca07edc88
+      subnet1: subnet-085adbd96bb46b4af
+      subnet2: subnet-0cece01f2d6f145fd
       vpcId: vpc-0c561ddff33cdb10d
       logLevel: INFO
 
