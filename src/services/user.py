@@ -27,6 +27,21 @@ def syncronous_get_user_metadata(user_id: str) -> Optional[UserMetadataModel]:
     return user_metadata
 
 
+def syncdronous_get_user_metadata(user_id: str) -> Optional[UserMetadataModel]:
+    """Gets user from User Metadata DynamoDB.
+
+    Args:
+        user_id (str): auth0 id of user
+    Returns:
+        UserMetadataModel or None
+    """
+    try:
+        user_metadata = UserMetadataModel.get(user_id)
+    except (DoesNotExist, TypeError):
+        return None
+    return user_metadata
+
+
 def get_user_metadata_by_email(email: str) -> Optional[UserMetadataModel]:
     """Gets a list of user metadata by email. We have the table set up so that
     only one instance of a users metadata can exist for a given email so only

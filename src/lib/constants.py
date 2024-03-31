@@ -1,6 +1,7 @@
 ORIGINS = [
     "http://localhost",
     "http://localhost:5173",
+    "http://localhost:51758",
     "https://dev-app.smartool.ai",
     "https://app.smartool.ai",
 ]
