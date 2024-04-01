@@ -263,7 +263,7 @@ class UserMetadataModel(BaseModel):
             "generations_count": self.generations_count,
             "file_uploads_count": self.file_uploads_count,
             "renew_datetime": self.renew_datetime,
-            "subscription_tier": self.subscription_tier,
+            "subscription_tier": self.subscription_tier.upper(),
         }
 
     async def to_json(self) -> str:
