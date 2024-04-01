@@ -1,12 +1,10 @@
-import os
 from typing import List, Optional
 
-from auth0.authentication import GetToken
-from auth0.management import Auth0
 from pixelum_core.errors.custom_exceptions import ServerFailureError
 from pixelum_core.loggers.loggers import get_module_logger
 from pynamodb.exceptions import DoesNotExist
 
+from src.models.auth0 import auth0_client
 from src.models.dynamo.user import UserManagementModel
 from src.models.dynamo.user_metadata import UserMetadataModel
 
@@ -92,6 +90,42 @@ def delete_user_metadata(email: str) -> bool:
     return True
 
 
+async def create_auth0_user(email: str) -> dict:
+    """
+    Creates an Auth0 user with the specified email.
+
+    Args:
+        email (str): The email of the user.
+
+    Returns:
+        dict: The user data.
+    """
+    try:
+        return await auth0_client.create_user(email)
+    except Exception as e:
+        logger.error(e)
+        return {}
+
+
+async def send_new_sub_user_invite(user_id: str, inviter: UserMetadataModel) -> dict:
+    """
+    Sends an invitation to a new user to join the platform.
+
+    Args:
+        user_id (str): The user ID.
+        inviter (UserMetadataModel): The user sending the invitation.
+
+    Returns:
+        dict: The user data.
+    """
+    try:
+        logger.info(f"User: {inviter.email} is inviting user: {user_id} to join the platform.")
+        return await auth0_client.send_sub_user_invitation(user_id)
+    except Exception as e:
+        logger.error(e)
+        return {}
+
+
 async def get_auth0_user(user_id: str) -> dict:
     """
     Gets an Auth0 user with the specified ID.
@@ -102,28 +136,14 @@ async def get_auth0_user(user_id: str) -> dict:
     Returns:
         dict: The user data.
     """
-    domain = os.environ["AUTH0_DOMAIN"]
-
-    get_token = GetToken(
-        domain,
-        os.environ["AUTH0_MGMT_CLIENT_ID"],
-        client_secret=os.environ["AUTH0_MGMT_CLIENT_SECRET"],
-    )
-
-    token = get_token.client_credentials("https://{}/api/v2/".format(domain))
-    mgmt_api_token = token["access_token"]
-
-    auth0 = Auth0(domain, mgmt_api_token)
-
     try:
-        user = auth0.users.get(user_id)
-        return user
+        return await auth0_client.get_user(user_id)
     except Exception as e:
         logger.error(e)
         return {}
 
 
-async def get_auth0_user_permissions(user_id: str) -> list:
+async def get_auth0_user_permissions(user_id: str) -> List[str]:
     """
     Gets the permissions of an Auth0 user with the specified ID.
 
@@ -133,22 +153,8 @@ async def get_auth0_user_permissions(user_id: str) -> list:
     Returns:
         list: The user permissions.
     """
-    domain = os.environ["AUTH0_DOMAIN"]
-
-    get_token = GetToken(
-        domain,
-        os.environ["AUTH0_MGMT_CLIENT_ID"],
-        client_secret=os.environ["AUTH0_MGMT_CLIENT_SECRET"],
-    )
-
-    token = get_token.client_credentials("https://{}/api/v2/".format(domain))
-    mgmt_api_token = token["access_token"]
-
-    auth0 = Auth0(domain, mgmt_api_token)
-
     try:
-        user = auth0.users.list_permissions(user_id)
-        return user.get("permissions", [])
+        return await auth0_client.get_users_permissions(user_id)
     except Exception as e:
         logger.error(e)
         return []
@@ -165,28 +171,15 @@ async def remove_auth0_user_permissions(user_id: str, permissions: list) -> bool
     Returns:
         bool: True if the permissions were successfully removed, False otherwise.
     """
-    domain = os.environ["AUTH0_DOMAIN"]
-
-    get_token = GetToken(
-        domain,
-        os.environ["AUTH0_MGMT_CLIENT_ID"],
-        client_secret=os.environ["AUTH0_MGMT_CLIENT_SECRET"],
-    )
-
-    token = get_token.client_credentials("https://{}/api/v2/".format(domain))
-    mgmt_api_token = token["access_token"]
-
-    auth0 = Auth0(domain, mgmt_api_token)
-
     try:
-        auth0.users.remove_permissions(user_id, permissions)
+        await auth0_client.remove_user_permissions(user_id, permissions)
         return True
     except Exception as e:
         logger.error(e)
         return False
 
 
-def delete_auth0_user(user: UserMetadataModel) -> bool:
+async def delete_auth0_user(user: UserMetadataModel) -> bool:
     """
     Deletes an Auth0 user with the specified ID.
 
@@ -196,21 +189,8 @@ def delete_auth0_user(user: UserMetadataModel) -> bool:
     Returns:
         bool: True if the user was successfully deleted, False otherwise.
     """
-    domain = os.environ["AUTH0_DOMAIN"]
-
-    get_token = GetToken(
-        domain,
-        os.environ["AUTH0_MGMT_CLIENT_ID"],
-        client_secret=os.environ["AUTH0_MGMT_CLIENT_SECRET"],
-    )
-
-    token = get_token.client_credentials("https://{}/api/v2/".format(domain))
-    mgmt_api_token = token["access_token"]
-
-    auth0 = Auth0(domain, mgmt_api_token)
-
     try:
-        auth0.users.delete(f"{user.signup_method}|{user.user_id}")
+        await auth0_client.delete_user(user.user_id)
         return True
     except Exception as e:
         logger.error(e)
@@ -230,22 +210,9 @@ async def update_users_permissions(
     Returns:
         bool: True if the permissions were successfully updated, False otherwise.
     """
-    domain = os.environ["AUTH0_DOMAIN"]
-
-    get_token = GetToken(
-        domain,
-        os.environ["AUTH0_MGMT_CLIENT_ID"],
-        client_secret=os.environ["AUTH0_MGMT_CLIENT_SECRET"],
-    )
-
-    token = get_token.client_credentials("https://{}/api/v2/".format(domain))
-    mgmt_api_token = token["access_token"]
-
-    auth0 = Auth0(domain, mgmt_api_token)
-
     try:
         # Update on auth0
-        auth0.users.add_permissions(f"{user.signup_method}|{user.user_id}", permissions)
+        await auth0_client.add_user_permissions(user.user_id, permissions)
 
         # Update in dynamodb
         user.permissions = [

@@ -55,6 +55,10 @@ class UserMetadataModel(BaseModel):
     asana_workspace_id = UnicodeAttribute(null=True)
     asana_personal_access_token = UnicodeAttribute(null=True)
     asana_project_id = UnicodeAttribute(null=True)
+
+    parent_user_id = UnicodeAttribute(null=True)  # None if user is not a sub user
+
+    sub_users_remaining = NumberAttribute(null=True, default=0)
     generations_count = NumberAttribute(null=True, default=10)
     file_uploads_count = NumberAttribute(null=True, default=3)
     renew_datetime = UnicodeAttribute(null=True)
@@ -97,7 +101,11 @@ class UserMetadataModel(BaseModel):
             generations_count=generations_count,
             file_uploads_count=file_uploads_count,
             created_datetime=datetime.datetime.now(),
-            renew_datetime=renew_datetime if renew_datetime else (datetime.datetime.now() + datetime.timedelta(days=30)).isoformat(),
+            renew_datetime=(
+                renew_datetime
+                if renew_datetime
+                else (datetime.datetime.now() + datetime.timedelta(days=30)).isoformat()
+            ),
             subscription_tier=subscription_tier,
         )
 
@@ -140,7 +148,11 @@ class UserMetadataModel(BaseModel):
             generations_count=generations_count,
             file_uploads_count=file_uploads_count,
             created_datetime=datetime.datetime.now(),
-            renew_datetime=renew_datetime if renew_datetime else (datetime.datetime.now() + datetime.timedelta(days=30)).isoformat(),
+            renew_datetime=(
+                renew_datetime
+                if renew_datetime
+                else (datetime.datetime.now() + datetime.timedelta(days=30)).isoformat()
+            ),
             subscription_tier=subscription_tier,
         )
 
@@ -160,11 +172,7 @@ class UserMetadataModel(BaseModel):
         shortcut: bool = getattr(self, "shortcut_api_key") is not None
         asana: bool = getattr(self, "asana_workspace_id") is not None
 
-        platforms_linked = {
-            "jira": jira,
-            "shortcut": shortcut,
-            "asana": asana
-        }
+        platforms_linked = {"jira": jira, "shortcut": shortcut, "asana": asana}
 
         return platforms_linked
 
@@ -173,7 +181,9 @@ class UserMetadataModel(BaseModel):
         platform_linked = await self.check_platform_linked()
 
         if not platform_linked.get(platform.name.lower(), False):
-            raise PlatformLinkError(f"User does not have {platform.name} credentials. Please link your {platform.name} credentials.")
+            raise PlatformLinkError(
+                f"User does not have {platform.name} credentials. Please link your {platform.name} credentials."
+            )
 
         init_params = dict()
         match platform:
@@ -189,6 +199,49 @@ class UserMetadataModel(BaseModel):
                 init_params["project_id"] = self.asana_project_id
 
         return PlatformClient(platform, **init_params)
+
+    async def get_parent_user(self) -> Optional["UserMetadataModel"]:
+        """Get the parent user of the sub user."""
+        if not self.parent_user_id:
+            return None
+
+        try:
+            return await UserMetadataModel.get(self.parent_user_id)
+        except UserMetadataModel.DoesNotExist:
+            logger.info(f"Parent user with ID {self.parent_user_id} not found.")
+            return None
+
+    async def get_parent_user_upload_count(self) -> int:
+        """Get the file uploads count of the parent user."""
+        parent_user = await self.get_parent_user()
+        if parent_user:
+            return parent_user.file_uploads_count
+        return 0
+
+    async def get_parent_user_generations_count(self) -> int:
+        """Get the generations count of the parent user."""
+        parent_user = await self.get_parent_user()
+        if parent_user:
+            return parent_user.generations_count
+        return 0
+
+    async def get_parent_user_subscription_tier(self) -> str:
+        """Get the subscription tier of the parent user."""
+        parent_user = await self.get_parent_user()
+        if parent_user:
+            return parent_user.subscription_tier
+        return "free"
+
+    async def get_sub_accounts(self) -> list:
+        """Get the sub accounts of the user."""
+        try:
+            users_iterator = await UserMetadataModel.query(
+                UserMetadataModel.parent_user_id == self.user_id
+            )
+        except UserMetadataModel.DoesNotExist:
+            return []
+
+        return [user for user in users_iterator]
 
     async def save(self, condition: Optional[Condition] = None) -> Dict[str, Any]:
         """Save the user metadata to DynamoDB."""

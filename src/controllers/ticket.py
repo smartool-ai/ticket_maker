@@ -44,7 +44,16 @@ async def invoke_ticket_generation(
         TicketGenerationSchema: The datetime when the lambda was invoked.
     """
     logger.info(f"User has {user.generations_count} ticket generations remaining")
-    if user.generations_count == 0:
+    generations_count = 0
+
+    # First check if the user is a sub-user and get the parent user's ticket generations count
+    if user.parent_user_id:
+        logger.info("User is a sub-user. Checking parent user's ticket generations count")
+        generations_count = await user.get_parent_user_generations_count()
+    else:  # If the user is not a sub-user, get the user's ticket generations count
+        generations_count = user.generations_count
+
+    if generations_count == 0:
         logger.error("User has reached the maximum number of ticket generations.")
         raise TicketGenerationLimitReachedError(message="User has reached the maximum number of ticket generations.")
 
@@ -121,7 +130,16 @@ async def expand_ticket(
         TicketList: The list of sub tickets generated from the transcript.
     """
     logger.info(f"User has {user.generations_count} ticket generations remaining")
-    if user.generations_count == 0:
+    generations_count = 0
+
+    # First check if the user is a sub-user and get the parent user's ticket generations count
+    if user.parent_user_id:
+        logger.info("User is a sub-user. Checking parent user's ticket generations count")
+        generations_count = await user.get_parent_user_generations_count()
+    else:  # If the user is not a sub-user, get the user's ticket generations count
+        generations_count = user.generations_count
+
+    if generations_count == 0:
         logger.error("User has reached the maximum number of ticket generations.")
         raise TicketGenerationLimitReachedError(message="User has reached the maximum number of ticket generations.")
 

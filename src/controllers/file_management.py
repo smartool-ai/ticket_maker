@@ -39,7 +39,16 @@ async def upload_file(
         Dict: The response containing the uploaded file details.
     """
     logger.info(f"User has {user.file_uploads_count} file uploads remaining")
-    if user.file_uploads_count == 0:
+    upload_count = 0
+
+    # First check if the user is a sub-user and get the parent user's file uploads count
+    if user.parent_user_id:
+        logger.info("User is a sub-user. Checking parent user's file uploads count")
+        upload_count = await user.get_parent_user_upload_count()
+    else:  # If the user is not a sub-user, get the user's file uploads count
+        upload_count = user.file_uploads_count
+
+    if upload_count == 0:
         logger.error("User has reached the maximum number of file uploads.")
         raise FileUploadLimitReachedError(
             message="User has reached the maximum number of file uploads."

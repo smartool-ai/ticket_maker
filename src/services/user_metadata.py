@@ -2,6 +2,21 @@ from typing import Optional
 from src.models.dynamo.user_metadata import UserMetadataModel
 
 
+async def create_user_metadata(user_id: str, user_params: dict) -> UserMetadataModel:
+    """Create a new user metadata record.
+
+    Args:
+        user_id (str): The ID of the user.
+        user_params (dict): The user metadata parameters.
+
+    Returns:
+        UserMetadataModel: The created user metadata record.
+    """
+    user_metadata = await UserMetadataModel.initialize(user_id=user_id, **user_params)
+    await user_metadata.save()
+    return user_metadata
+
+
 async def add_or_update_user_metadata(user_id: str, **kwargs) -> UserMetadataModel:
     """Add or update a user metadata record.
 

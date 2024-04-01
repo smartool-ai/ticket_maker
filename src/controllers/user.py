@@ -13,18 +13,23 @@ from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.user_metadata import UserMetadataModel
 from src.schemas.user_metadata import UserMetadataReturnSchema
 from src.services.user import (
-    get_auth0_user_permissions,
-    syncronous_get_user_metadata,
-    delete_user_metadata,
+    create_auth0_user,
     delete_auth0_user,
+    delete_user_metadata,
+    get_auth0_user_permissions,
     remove_auth0_user_permissions,
+    send_new_sub_user_invite,
+    syncronous_get_user_metadata,
     update_users_permissions,
 )
+from src.services.user_metadata import create_user_metadata
 
 router = APIRouter()
 logger = get_module_logger()
 token_authentication = TokenAuthentication()
 granted_user = token_authentication.require_user_with_permission("manage:users")
+admin_user = token_authentication.require_user_with_permission("manage:admin")
+safe_endpoints = True if os.getenv("STAGE_NAME") != "prod" else False
 
 
 @router.put("/user/subscription", tags=["User Management"])
@@ -73,36 +78,6 @@ async def update_user_subscription(
     return await updated_user.to_serializable_dict()
 
 
-# @router.get("/user/{email}", tags=["User Management"])
-# @authorized_api_handler()
-# async def get_user(
-#     email: str, response: Response, user: Dict = Depends(granted_user)
-# ) -> Dict:
-#     """
-#     Get user information by email.
-
-#     Args:
-#         email (str): The email of the user.
-#         response (Response): The FastAPI response object.
-#         user (Dict): The user information obtained from the token.
-
-#     Returns:
-#         Dict: The user information.
-
-#     Raises:
-#         HTTPException: If the user is not found.
-#     """
-#     user_management = get_user_management_by_email(email)
-
-#     if user_management is None:
-#         response.status_code = 404
-#         return {"error": "User not found"}
-
-#     user = user_management.to_dict()
-
-#     return user
-
-
 @router.delete("/user", tags=["User Management"])
 @authorized_api_handler()
 async def delete_user(user_id: str, _: Dict = Depends(granted_user)) -> Dict:
@@ -125,7 +100,7 @@ async def delete_user(user_id: str, _: Dict = Depends(granted_user)) -> Dict:
         raise ResourceNotFoundException(f"User with id {user_id} not found")
 
     delete_user_metadata(user.email)
-    delete_auth0_user(user.user_id)
+    await delete_auth0_user(user.user_id)
 
     return {"status": "ok"}
 
@@ -160,6 +135,60 @@ async def password_reset(
     logger.info(f"Password reset response: {response.text}")
 
     if response.status_code != 200:
-        return {"message": "Password reset email failed", "status_code": response.status_code}
+        return {
+            "message": "Password reset email failed",
+            "status_code": response.status_code,
+        }
 
     return {"message": "Password reset email sent", "status_code": response.status_code}
+
+
+@router.post(
+    "/user-metadata/invite-sub-user",
+    include_in_schema=safe_endpoints,
+    tags=["User Metadata"],
+)
+@authorized_api_handler(models_to_initialize=[UserMetadataModel])
+async def invite_sub_user(
+    email: str, user: UserMetadataModel = Depends(granted_user)
+) -> Dict:
+    """
+    Invite a sub user to the platform
+
+    Invite Steps:
+        1. Create new auth0 user and set permissions to same as parent user
+        2. Create new user metadata with same permissions as parent user and reference parent user_id as parent_user_id
+        3. Send email to sub user with link to set password
+
+    Args:
+        email (str): The email of the sub user to invite.
+        user (UserMetadataModel, optional): The user to invite the sub user. Defaults to Depends(granted_user).
+    """
+    logger.info(f"User: {user.email} is inviting user: {email} to join the platform.")
+
+    # Create new auth0 user
+    new_user = await create_auth0_user(email)
+
+    if not new_user:
+        return {"message": "Failed to create user"}
+
+    new_user_id: str = new_user.get("user_id").split("|")[1]
+
+    # Set permissions to same as parent user
+    new_user_permissions = await get_auth0_user_permissions(new_user.get("user_id"))
+    await update_users_permissions(user, new_user_permissions)
+
+    # Create new user metadata
+    new_user_meta: dict = {
+        "email": email,
+        "permissions": new_user_permissions,
+        "signup_method": "Username-Password-Authentication",
+        "parent_user_id": user.user_id,
+    }
+
+    _: UserMetadataModel = await create_user_metadata(new_user_id, new_user_meta)
+
+    # Send email to sub user
+    _: dict = await send_new_sub_user_invite(new_user_id, user)
+
+    return {"message": "User invited successfully"}
