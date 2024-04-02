@@ -28,6 +28,9 @@ class UserMetadataSchema(BaseModel):
     asana_project_id: Optional[str] = None  # User's Asana project ID
     renew_datetime: Optional[str] = None  # Renew datetime
 
+    # Auth0 user store fields
+    name: Optional[str] = None  # User's name
+
 
 class UserMetadataReturnSchema(BaseModel):
     """
@@ -39,6 +42,7 @@ class UserMetadataReturnSchema(BaseModel):
     file_uploads_count: Optional[int] = None  # Number of file uploads
     renew_datetime: Optional[str] = None  # Renew datetime
     subscription_tier: Optional[SubscriptionTier] = None  # Subscription tier
+    signup_method: Optional[str] = None  # Signup method
 
 
 class JiraParamsSchema(BaseModel):

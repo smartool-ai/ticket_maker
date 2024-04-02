@@ -107,6 +107,23 @@ async def create_auth0_user(email: str) -> dict:
         return {}
 
 
+async def update_auth0_user(user_id: str, **kwargs) -> dict:
+    """
+    Updates an Auth0 user with the specified ID.
+
+    Args:
+        user_id (str): The user ID.
+
+    Returns:
+        dict: The user data.
+    """
+    try:
+        return await auth0_client.update_user(user_id, **kwargs)
+    except Exception as e:
+        logger.error(e)
+        return {}
+
+
 async def send_new_sub_user_invite(user_id: str, inviter: UserMetadataModel) -> dict:
     """
     Sends an invitation to a new user to join the platform.

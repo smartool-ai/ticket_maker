@@ -37,6 +37,8 @@ class UserMetadataModel(BaseModel):
         renew_datetime (str): Datetime when the user's credentials need to be renewed
         subscription_tier (str): The user's subscription tier
 
+        name (str): Auth0 user store field
+
     """
 
     class Meta:
@@ -64,6 +66,9 @@ class UserMetadataModel(BaseModel):
     renew_datetime = UnicodeAttribute(null=True)
     subscription_tier = UnicodeAttribute(null=True, default="free")
 
+    # Auth0 user store fields
+    name = UnicodeAttribute(null=True)
+
     @classmethod
     async def initialize(
         cls,
@@ -83,6 +88,7 @@ class UserMetadataModel(BaseModel):
         file_uploads_count: Optional[int] = 3,
         renew_datetime: Optional[str] = None,
         subscription_tier: Optional[str] = "free",
+        name: Optional[str] = None,
     ) -> "UserMetadataModel":
         """Initialize a UserMetadataModel."""
         user_metadata = UserMetadataModel(
@@ -107,6 +113,7 @@ class UserMetadataModel(BaseModel):
                 else (datetime.datetime.now() + datetime.timedelta(days=30)).isoformat()
             ),
             subscription_tier=subscription_tier,
+            name=name,
         )
 
         return user_metadata
@@ -130,6 +137,7 @@ class UserMetadataModel(BaseModel):
         file_uploads_count: Optional[int] = 3,
         renew_datetime: Optional[str] = None,
         subscription_tier: Optional[str] = "free",
+        name: Optional[str] = None,
     ) -> "UserMetadataModel":
         """Initialize a UserMetadataModel synchronously."""
         user_metadata = UserMetadataModel(
@@ -154,6 +162,7 @@ class UserMetadataModel(BaseModel):
                 else (datetime.datetime.now() + datetime.timedelta(days=30)).isoformat()
             ),
             subscription_tier=subscription_tier,
+            name=name,
         )
 
         return user_metadata
@@ -264,6 +273,7 @@ class UserMetadataModel(BaseModel):
             "file_uploads_count": self.file_uploads_count,
             "renew_datetime": self.renew_datetime,
             "subscription_tier": self.subscription_tier.upper(),
+            "signup_method": self.signup_method,
         }
 
     async def to_json(self) -> str:

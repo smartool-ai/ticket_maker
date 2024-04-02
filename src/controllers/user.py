@@ -9,6 +9,7 @@ from pixelum_core.loggers.loggers import get_module_logger
 import requests
 
 from src.lib.constants import SUBSCRIPTION_TIER_MAP
+from src.lib.custom_exceptions import InvalidInput
 from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.user_metadata import UserMetadataModel
 from src.schemas.user_metadata import UserMetadataReturnSchema
@@ -119,6 +120,9 @@ async def password_reset(
         Response: Success message
     """
     logger.info(f"Sending password reset email to user: {user.email}")
+
+    if user.signup_method != "Username-Password-Authentication":
+        raise InvalidInput(f"User is not allowed to reset password as their signup method is: {user.signup_method}")
 
     headers = {
         "content-type": "application/json",

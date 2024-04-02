@@ -10,8 +10,19 @@ from pixelum_core.enums.enums import SubscriptionTier
 from src.lib.enums import PlatformEnum
 from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.user_metadata import UserMetadataModel
-from src.schemas.user_metadata import PlatformParamsSchema, UserMetadataSchema, UserMetadataReturnSchema
-from src.services.user_metadata import add_or_update_user_metadata, get_user_metadata_by_user_id, link_asana, link_jira, link_shortcut
+from src.schemas.user_metadata import (
+    PlatformParamsSchema,
+    UserMetadataSchema,
+    UserMetadataReturnSchema,
+)
+from src.services.user import update_auth0_user
+from src.services.user_metadata import (
+    add_or_update_user_metadata,
+    get_user_metadata_by_user_id,
+    link_asana,
+    link_jira,
+    link_shortcut,
+)
 
 router = APIRouter()
 logger = getLogger(__name__)
@@ -26,24 +37,37 @@ safe_endpoints = True if os.getenv("STAGE_NAME") != "prod" else False
 @router.put("/user-metadata", tags=["User Metadata"])
 @authorized_api_handler(models_to_initialize=[UserMetadataModel])
 async def put_user_metadata(
-    user_metadata: UserMetadataSchema, user: Dict = Depends(granted_user)
+    user_metadata: UserMetadataSchema, user: UserMetadataModel = Depends(granted_user)
 ) -> Dict:
     """
     Add or update user metadata
 
     Args:
         user_metadata (UserMetadataSchema): The user metadata to add or update.
-        user (Dict, optional): The user dictionary obtained from the token. Defaults to Depends(granted_user).
+        user (UserMetadataModel, optional): The user to add or update the metadata for. Defaults to Depends(granted_user).
 
     Returns:
         Dict: The updated user metadata.
     """
-    # Extract the user ID from the token
-    user_id = user.get("sub").split("|")[1]
+    # Separate out the auth0 user store fields to update separately
+    auth0_user_store_fields = {
+        "name": user.name,
+    }
+    update_auth0_user: dict = await update_auth0_user(
+        user.user_id, **auth0_user_store_fields
+    )
+
+    if not update_auth0_user:
+        logger.error(
+            f"Failed to update user {user.user_id} in Auth0 for fields {auth0_user_store_fields}"
+        )
+        raise ValueError(
+            f"Failed to update user {user.user_id} in Auth0 for fields {auth0_user_store_fields}"
+        )
 
     # Add or update the user metadata in the database
     user_metadata_model: UserMetadataModel = await add_or_update_user_metadata(
-        user_id, **user_metadata.model_dump()
+        user.user_id, **user_metadata.model_dump()
     )
 
     # Convert the user metadata model to a serializable dictionary
@@ -105,7 +129,9 @@ async def link_ticket_service(
     return await user_metadata.to_serializable_dict()
 
 
-@router.post("/user-metadata/subscribe", include_in_schema=safe_endpoints, tags=["User Metadata"])
+@router.post(
+    "/user-metadata/subscribe", include_in_schema=safe_endpoints, tags=["User Metadata"]
+)
 @authorized_api_handler(models_to_initialize=[UserMetadataModel])
 async def subscribe_to_service(
     tier: SubscriptionTier,

@@ -99,6 +99,25 @@ class Auth0Client:
             logger.error(e)
             return []
 
+    async def update_user(self, user_id: str, **kwargs) -> dict:
+        """
+        Update an Auth0 user.
+
+        Args:
+            **kwargs: The user data to update.
+
+        Returns:
+            dict: The updated user data.
+        """
+        auth0 = await self.get_client()
+
+        try:
+            user = auth0.users.update(kwargs.get("user_id"), kwargs)
+            return user
+        except Exception as e:
+            logger.error(e)
+            raise ServerFailureError("Failed to update user. Please try again.")
+
     async def remove_user_permissions(
         self, user_id: str, permissions: List[str]
     ) -> dict:
