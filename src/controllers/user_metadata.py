@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends
 from pixelum_core.api.authorized_api_handler import authorized_api_handler
 from pixelum_core.enums.enums import SubscriptionTier
 
+from src.lib.custom_exceptions import InvalidInput
 from src.lib.enums import PlatformEnum
 from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.user_metadata import UserMetadataModel
@@ -51,17 +52,19 @@ async def put_user_metadata(
     """
     # Separate out the auth0 user store fields to update separately
     auth0_user_store_fields = {
-        "name": user.name,
+        "name": user_metadata.name,
     }
-    update_auth0_user: dict = await update_auth0_user(
-        user.user_id, **auth0_user_store_fields
+    signup_plat: str = user.signup_method if user.signup_method != "Username-Password-Authentication" else "auth0"
+    auth0_user_id = f"{signup_plat}|{user.user_id}"
+    updated_auth0_user: dict = await update_auth0_user(
+        auth0_user_id, **auth0_user_store_fields
     )
 
-    if not update_auth0_user:
+    if not updated_auth0_user:
         logger.error(
             f"Failed to update user {user.user_id} in Auth0 for fields {auth0_user_store_fields}"
         )
-        raise ValueError(
+        raise InvalidInput(
             f"Failed to update user {user.user_id} in Auth0 for fields {auth0_user_store_fields}"
         )
 

@@ -145,7 +145,7 @@ class Auth0Client:
         auth0 = await self.get_client()
 
         try:
-            user = auth0.users.update(kwargs.get("user_id"), kwargs)
+            user = auth0.users.update(user_id, kwargs)
             return user
         except Exception as e:
             logger.error(e)
