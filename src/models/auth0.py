@@ -1,5 +1,6 @@
 import os
 from typing import List, Optional
+import uuid
 
 from auth0.authentication import GetToken
 from auth0.management import Auth0
@@ -54,6 +55,8 @@ class Auth0Client:
                 {
                     "email": email,
                     "email_verified": False,
+                    "connection": "Username-Password-Authentication",
+                    "password": f"initialPassword${uuid.uuid4().hex[:8]}",  # random password
                 }
             )
             return user
@@ -134,8 +137,7 @@ class Auth0Client:
         auth0 = await self.get_client()
 
         try:
-            for permission in permissions:
-                auth0.users.add_permissions(user_id, permission)
+            auth0.users.add_permissions(user_id, permissions)
         except Exception as e:
             logger.error(e)
             raise ServerFailureError("Failed to update permissions. Please try again.")
