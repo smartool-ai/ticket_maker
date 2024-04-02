@@ -2,6 +2,7 @@ import os
 from typing import List, Optional
 import uuid
 
+import requests
 from auth0.authentication import GetToken
 from auth0.management import Auth0
 from pixelum_core.errors.custom_exceptions import ServerFailureError
@@ -12,6 +13,10 @@ logger = get_module_logger()
 
 class Auth0Client:
     client: Auth0
+    headers: dict = {
+        "content-type": "application/json",
+        "Authorization": "Bearer {}",
+    }
 
     def __init__(self, client_id, client_secret, domain):
         self.client_id = client_id
@@ -31,6 +36,31 @@ class Auth0Client:
         )
 
         return get_token.client_credentials(self.base_url).get("access_token")
+    
+    async def _url(self, path):
+        logger.debug(f"URL path: {self.base_url}{path}")
+        return f"{self.base_url}{path}"
+
+    async def _request(self, method, path, body, headers=None, params=None):
+        logger.debug(f"[auth0] request path: {path}")
+        logger.debug(f"[auth0] request body: {body}")
+
+        self.headers["Authorization"] = self.headers["Authorization"].format(await self._get_token())
+
+        response = requests.request(
+            method,
+            await self._url(path),
+            headers=headers if headers else self.headers,
+            json=body,
+            params=params,
+        )
+
+        logger.debug(f"[auth0] response status: {response.status_code}")
+        logger.debug(f"[auth0] response body: {response.content}")
+
+        response.raise_for_status()
+
+        return response
 
     async def get_client(self):
         """
@@ -199,10 +229,18 @@ class Auth0Client:
                     "user_id": user_id,
                     "result_url": os.getenv("AUTH0_INVITATION_URL"),
                     "ttl_sec": 172800,  # 2 days in seconds
-                    "mark_email_as_verified": True,
+                    "mark_email_as_verified": False,
                 }
             )
             return invitation
+            # body = {
+            #         "user_id": user_id,
+            #         "result_url": os.getenv("AUTH0_INVITATION_URL"),
+            #         "ttl_sec": 172800,  # 2 days in seconds
+            #         "mark_email_as_verified": False,
+            #     }
+            # resp = await self._request("POST", "tickets/password-change", body)
+            # return resp.json()
         except Exception as e:
             logger.error(e)
             raise ServerFailureError("Failed to send invitation. Please try again.")

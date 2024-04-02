@@ -59,6 +59,12 @@ Parameters:
   GemfuryToken:
     Type: String
     Default: 18e4sF-CbiwO6RFJbjByUxZSTfpyOII2U
+  SesAccessKeyId:
+    Type: String
+    Default: test
+  SesSecretAccessKey:
+    Type: String
+    Default: test
 
 Mappings:
   EnvMappings:
@@ -152,6 +158,8 @@ Resources:
           AUTH0_MGMT_API_ID: !Ref Auth0MgmtApiId
           REACT_APP_STRIPE_PUBLIC_KEY: !Ref StripePublishableKey
           REACT_APP_STRIPE_CLIENT_SECRET: !Ref StripeSecretKey
+          SES_ACCESS_KEY_ID: !Ref SesAccessKeyId
+          SES_SECRET_ACCESS_KEY: !Ref SesSecretAccessKey
       Events:
         CatchAll:
           Type: Api

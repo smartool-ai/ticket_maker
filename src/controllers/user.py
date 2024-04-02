@@ -15,12 +15,13 @@ from src.models.auth0 import auth0_client
 from src.models.dynamo.user_metadata import UserMetadataModel
 from src.schemas.user_metadata import UserMetadataReturnSchema
 from src.services.user import (
+    create_and_send_user_invitation_email_ses,
     create_auth0_user,
     delete_auth0_user,
     delete_user_metadata,
     get_auth0_user_permissions,
     remove_auth0_user_permissions,
-    send_new_sub_user_invite,
+    create_new_sub_user_invite_link,
     syncronous_get_user_metadata,
     update_users_permissions,
 )
@@ -123,7 +124,9 @@ async def password_reset(
     logger.info(f"Sending password reset email to user: {user.email}")
 
     if user.signup_method != "Username-Password-Authentication":
-        raise InvalidInput(f"User is not allowed to reset password as their signup method is: {user.signup_method}")
+        raise InvalidInput(
+            f"User is not allowed to reset password as their signup method is: {user.signup_method}"
+        )
 
     headers = {
         "content-type": "application/json",
@@ -187,7 +190,9 @@ async def invite_sub_user(
         "parent_user_id": user.user_id,
     }
 
-    new_user_model: UserMetadataModel = await create_user_metadata(new_user_id.split("|")[1], new_user_meta)
+    new_user_model: UserMetadataModel = await create_user_metadata(
+        new_user_id.split("|")[1], new_user_meta
+    )
 
     formatted_permissions = [
         {
@@ -201,6 +206,9 @@ async def invite_sub_user(
     await auth0_client.add_user_permissions(new_user_id, formatted_permissions)
 
     # Send email to sub user
-    _: dict = await send_new_sub_user_invite(new_user_id, user)
+    ticket_resp: dict = await create_new_sub_user_invite_link(new_user_id, user)
+    invite_link: str = ticket_resp.get("ticket")
+
+    _ = await create_and_send_user_invitation_email_ses(email, invite_link)
 
     return {"message": "User invited successfully"}

@@ -1,5 +1,7 @@
+import os
 from typing import List, Optional
 
+import boto3
 from pixelum_core.errors.custom_exceptions import ServerFailureError
 from pixelum_core.loggers.loggers import get_module_logger
 from pynamodb.exceptions import DoesNotExist
@@ -124,7 +126,9 @@ async def update_auth0_user(user_id: str, **kwargs) -> dict:
         return {}
 
 
-async def send_new_sub_user_invite(user_id: str, inviter: UserMetadataModel) -> dict:
+async def create_new_sub_user_invite_link(
+    user_id: str, inviter: UserMetadataModel
+) -> dict:
     """
     Sends an invitation to a new user to join the platform.
 
@@ -136,7 +140,9 @@ async def send_new_sub_user_invite(user_id: str, inviter: UserMetadataModel) -> 
         dict: The user data.
     """
     try:
-        logger.info(f"User: {inviter.email} is inviting user: {user_id} to join the platform.")
+        logger.info(
+            f"User: {inviter.email} is inviting user: {user_id} to join the platform."
+        )
         return await auth0_client.send_sub_user_invitation(user_id)
     except Exception as e:
         logger.error(e)
@@ -243,3 +249,25 @@ async def update_users_permissions(
     except Exception as e:
         logger.error(e)
         raise ServerFailureError(f"Failed to update user permissions {e}")
+
+
+async def create_and_send_user_invitation_email_ses(email: str, invitation_link: str):
+    ses_client = boto3.client(
+        "ses",
+        region_name=os.getenv("AWS_REGION", "us-west-2"),
+        aws_access_key_id=os.getenv("SES_ACCESS_KEY_ID"),
+        aws_secret_access_key=os.getenv("SES_SECRET_ACCESS_KEY"),
+    )
+    subject = "Invitation to Join Our Platform, Smartool.ai"
+    body = f"Hello,\n\nYou have been invited to join our platform. Please click on the following link to create your password: {invitation_link}"
+    sender = "admin@smartool.ai"
+    recipient = email
+
+    response = ses_client.send_email(
+        Source=sender,
+        Destination={"ToAddresses": [recipient]},
+        Message={"Subject": {"Data": subject}, "Body": {"Text": {"Data": body}}},
+    )
+
+    logger.info(f"Invitation email sent to {email}")
+    return response

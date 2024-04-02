@@ -97,7 +97,9 @@ sam-deploy-dev:
 		Auth0MgmtApiId=${AUTH0_MGMT_API_ID} \
 		StripeSecretKey=${STRIPE_SECRET_KEY} \
 		StripePublishableKey=${STRIPE_PUBLISHABLE_KEY} \
-		GemfuryToken=${GEMFURY_TOKEN}
+		GemfuryToken=${GEMFURY_TOKEN} \
+		SesAccessKeyId=${SES_ACCESS_KEY_ID} \
+		SesSecretAccessKey=${SES_SECRET_ACCESS_KEY}
 
 sam-deploy-staging:
 	make build
