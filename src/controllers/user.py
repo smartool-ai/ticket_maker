@@ -11,6 +11,7 @@ import requests
 from src.lib.constants import SUBSCRIPTION_TIER_MAP
 from src.lib.custom_exceptions import InvalidInput
 from src.lib.token_authentication import TokenAuthentication
+from src.models.auth0 import auth0_client
 from src.models.dynamo.user_metadata import UserMetadataModel
 from src.schemas.user_metadata import UserMetadataReturnSchema
 from src.services.user import (
@@ -150,7 +151,7 @@ async def password_reset(
 @router.post(
     "/user-metadata/invite-sub-user",
     include_in_schema=safe_endpoints,
-    tags=["User Metadata"],
+    tags=["User Management"],
 )
 @authorized_api_handler(models_to_initialize=[UserMetadataModel])
 async def invite_sub_user(
@@ -176,21 +177,28 @@ async def invite_sub_user(
     if not new_user:
         return {"message": "Failed to create user"}
 
-    new_user_id: str = new_user.get("user_id").split("|")[1]
-
-    # Set permissions to same as parent user
-    new_user_permissions = await get_auth0_user_permissions(new_user.get("user_id"))
-    await update_users_permissions(user, new_user_permissions)
+    new_user_id: str = new_user.get("user_id")
 
     # Create new user metadata
     new_user_meta: dict = {
         "email": email,
-        "permissions": new_user_permissions,
+        "permissions": user.permissions,
         "signup_method": "Username-Password-Authentication",
         "parent_user_id": user.user_id,
     }
 
-    _: UserMetadataModel = await create_user_metadata(new_user_id, new_user_meta)
+    new_user_model: UserMetadataModel = await create_user_metadata(new_user_id.split("|")[1], new_user_meta)
+
+    formatted_permissions = [
+        {
+            "permission_name": permission,
+            "resource_server_identifier": os.getenv("AUTH0_AUDIENCE"),
+        }
+        for permission in new_user_model.permissions
+    ]
+
+    # Set permissions to same as parent user
+    await auth0_client.add_user_permissions(new_user_id, formatted_permissions)
 
     # Send email to sub user
     _: dict = await send_new_sub_user_invite(new_user_id, user)
