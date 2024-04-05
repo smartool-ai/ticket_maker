@@ -93,6 +93,7 @@ class Shortcut(BaseClient):
         super().__init__()
         self.client = "Shortcut"
         self.api_token = kwargs.get("api_token")
+        self.project_id = kwargs.get("project_id")
         self.headers["Shortcut-Token"] = self.api_token
 
     async def create_story(self, ticket_params: dict):
@@ -130,6 +131,8 @@ class Shortcut(BaseClient):
             - tasks (List[CreateTaskParams]): An array of tasks connected to the story.
             - updated_at (Date): The time/date the Story was updated.
         """
+        ticket_params["project_id"] = self.project_id
+
         create_story_resp = await self._request("POST", "stories", ticket_params)
 
         return create_story_resp.json()
@@ -162,7 +165,7 @@ class Asana(BaseClient):
         self.headers["Authorization"] = f"Bearer {self.personal_access_token}"
         self.workspace_id = kwargs.get("workspace_id")
         self.project_id = kwargs.get("project_id")
-    
+
     async def create_story(self, ticket_params: dict):
         """
         Create a task in Asana.
@@ -183,6 +186,7 @@ class Asana(BaseClient):
         create_story_resp = await self._request("POST", "tasks", req_body)
 
         return create_story_resp.json()
+
 
 class PlatformClient:
     def __init__(self, platform: PlatformEnum, **kwargs):
