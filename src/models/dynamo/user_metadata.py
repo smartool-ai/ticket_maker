@@ -210,6 +210,7 @@ class UserMetadataModel(BaseModel):
                 init_params["email"] = self.jira_email
             case PlatformEnum.SHORTCUT:
                 init_params["api_token"] = self.shortcut_api_key
+                init_params["project_id"] = self.shortcut_project_id
             case PlatformEnum.ASANA:
                 init_params["workspace_id"] = self.asana_workspace_id
                 init_params["personal_access_token"] = self.asana_personal_access_token
