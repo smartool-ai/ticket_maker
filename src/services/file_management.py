@@ -6,6 +6,7 @@ import boto3
 import botocore
 from fastapi import UploadFile
 from pixelum_core.loggers.loggers import get_module_logger
+from pixelum_core.errors.custom_exceptions import ResourceNotFoundException
 
 from src.models.dynamo.documents import DocumentsModel
 
@@ -88,7 +89,7 @@ def get_file_details_from_s3(s3_key, return_content: Optional[bool] = False):
         return response
     except botocore.exceptions.ClientError as e:
         if e.response["Error"]["Code"] == "404":
-            return {"error": "File not found", "status_code": 404}
+            raise  ResourceNotFoundException("File not found.", resource_identifier=s3_key, resource_type="file")
         else:
             raise
 

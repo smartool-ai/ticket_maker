@@ -4,12 +4,11 @@ from typing import Dict, List
 from fastapi import APIRouter, Depends
 from pixelum_core.api.authorized_api_handler import authorized_api_handler
 from pixelum_core.enums.enums import SubscriptionTier
-from pixelum_core.errors.custom_exceptions import ResourceNotFoundException
+from pixelum_core.errors.custom_exceptions import InvalidInput, ResourceNotFoundException
 from pixelum_core.loggers.loggers import get_module_logger
 import requests
 
 from src.lib.constants import SUBSCRIPTION_TIER_MAP
-from src.lib.custom_exceptions import InvalidInput
 from src.lib.token_authentication import TokenAuthentication
 from src.models.auth0 import auth0_client
 from src.models.dynamo.user_metadata import UserMetadataModel

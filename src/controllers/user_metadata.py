@@ -5,9 +5,9 @@ from typing import Dict
 
 from fastapi import APIRouter, Depends
 from pixelum_core.api.authorized_api_handler import authorized_api_handler
+from pixelum_core.errors.custom_exceptions import InvalidInput
 from pixelum_core.enums.enums import SubscriptionTier
 
-from src.lib.custom_exceptions import InvalidInput
 from src.lib.enums import PlatformEnum
 from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.user_metadata import UserMetadataModel
@@ -55,18 +55,22 @@ async def put_user_metadata(
         "name": user_metadata.name,
     }
     signup_plat: str = user.signup_method if user.signup_method != "Username-Password-Authentication" else "auth0"
-    auth0_user_id = f"{signup_plat}|{user.user_id}"
-    updated_auth0_user: dict = await update_auth0_user(
-        auth0_user_id, **auth0_user_store_fields
-    )
 
-    if not updated_auth0_user:
-        logger.error(
-            f"Failed to update user {user.user_id} in Auth0 for fields {auth0_user_store_fields}"
+    if signup_plat != "auth0":
+        logger.error(f'Cannot update user store fields: [name] if account used social login.')
+    else:
+        auth0_user_id = f"{signup_plat}|{user.user_id}"
+        updated_auth0_user: dict = await update_auth0_user(
+            auth0_user_id, **auth0_user_store_fields
         )
-        raise InvalidInput(
-            f"Failed to update user {user.user_id} in Auth0 for fields {auth0_user_store_fields}"
-        )
+
+        if not updated_auth0_user:
+            logger.error(
+                f"Failed to update user {user.user_id} in Auth0 for fields {auth0_user_store_fields}"
+            )
+            raise InvalidInput(
+                f"Failed to update user {user.user_id} in Auth0 for fields {auth0_user_store_fields}"
+            )
 
     # Add or update the user metadata in the database
     user_metadata_model: UserMetadataModel = await add_or_update_user_metadata(
@@ -112,19 +116,20 @@ async def link_ticket_service(
     Returns:
         Dict: The updated user metadata.
     """
+    link_parameters_dict: dict = body.model_dump(exclude_none=True)
 
     match platform:
         case PlatformEnum.JIRA:
             user_metadata: UserMetadataModel = await link_jira(
-                user, **body.model_dump()
+                user, **link_parameters_dict
             )
         case PlatformEnum.SHORTCUT:
             user_metadata: UserMetadataModel = await link_shortcut(
-                user, **body.model_dump(exclude_none=True)
+                user, **link_parameters_dict
             )
         case PlatformEnum.ASANA:
             user_metadata: UserMetadataModel = await link_asana(
-                user, **body.model_dump(exclude_none=True)
+                user, **link_parameters_dict
             )
         case _:
             raise ValueError(f"Service {platform} not supported at this time.")

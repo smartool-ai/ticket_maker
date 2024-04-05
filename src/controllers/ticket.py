@@ -4,9 +4,9 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends
 from pixelum_core.api.authorized_api_handler import authorized_api_handler
+from pixelum_core.errors.custom_exceptions import TicketGenerationLimitReachedError
 
 from src.lib.enums import EventEnum, PlatformEnum
-from src.lib.custom_exceptions import TicketGenerationLimitReachedError
 from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.ticket import SubTicket, Ticket
 from src.models.dynamo.user_metadata import UserMetadataModel
