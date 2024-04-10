@@ -137,7 +137,7 @@ Resources:
   TranscriberFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Timeout: 60
+      Timeout: 90
       MemorySize: 1024
       VpcConfig:
         SecurityGroupIds:
