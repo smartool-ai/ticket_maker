@@ -127,6 +127,9 @@ Resources:
   Api:
     Type: AWS::Serverless::Api
     Properties:
+      AccessLogSetting:
+        DestinationArn: !GetAtt ApiLogGroup.Arn
+        Format: '$context.identity.sourceIp - - [$context.requestTime] "$context.httpMethod $context.resourcePath $context.protocol" $context.status $context.responseLength $context.requestId'
       Name: !Sub Transcriber ${StageName}
       Description: !Sub ${StageName} - An API Gateway and Lambda Integration for REST API
       StageName: !Ref StageName
@@ -167,11 +170,19 @@ Resources:
             Method: ANY
             Path: /{proxy+}
             RestApiId: !Ref Api
-        # KeepWarm:
-        #   Type: Schedule
-        #   Properties:
-        #     Schedule: rate(5 minutes)
-        #     Enabled: true
+        KeepWarm:
+          Type: Schedule
+          Properties:
+            Schedule: rate(5 minutes)
+            Enabled: true
+            Input: |
+              {
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "method": "GET",
+                "url": "/health"
+              }
       Role: !Join
         - ""
         - - "arn:aws:iam::"
