@@ -53,7 +53,7 @@ class UserMetadataModel(BaseModel):
     jira_email = UnicodeAttribute(null=True)
     jira_domain = UnicodeAttribute(null=True)
     shortcut_api_key = UnicodeAttribute(null=True)
-    shortcut_project_id = UnicodeAttribute(null=True)
+    shortcut_workspace_id = UnicodeAttribute(null=True)
     asana_workspace_id = UnicodeAttribute(null=True)
     asana_personal_access_token = UnicodeAttribute(null=True)
     asana_project_id = UnicodeAttribute(null=True)
@@ -80,7 +80,7 @@ class UserMetadataModel(BaseModel):
         jira_email: Optional[str] = None,
         jira_domain: Optional[str] = None,
         shortcut_api_key: Optional[str] = None,
-        shortcut_project_id: Optional[str] = None,
+        shortcut_workspace_id: Optional[str] = None,
         asana_workspace_id: Optional[str] = None,
         asana_personal_access_token: Optional[str] = None,
         asana_project_id: Optional[str] = None,
@@ -102,7 +102,7 @@ class UserMetadataModel(BaseModel):
             jira_email=jira_email,
             jira_domain=jira_domain,
             shortcut_api_key=shortcut_api_key,
-            shortcut_project_id=shortcut_project_id,
+            shortcut_workspace_id=shortcut_workspace_id,
             asana_workspace_id=asana_workspace_id,
             asana_personal_access_token=asana_personal_access_token,
             asana_project_id=asana_project_id,
@@ -133,7 +133,7 @@ class UserMetadataModel(BaseModel):
         jira_email: Optional[str] = None,
         jira_domain: Optional[str] = None,
         shortcut_api_key: Optional[str] = None,
-        shortcut_project_id: Optional[str] = None,
+        shortcut_workspace_id: Optional[str] = None,
         asana_workspace_id: Optional[str] = None,
         asana_personal_access_token: Optional[str] = None,
         asana_project_id: Optional[str] = None,
@@ -155,7 +155,7 @@ class UserMetadataModel(BaseModel):
             jira_email=jira_email,
             jira_domain=jira_domain,
             shortcut_api_key=shortcut_api_key,
-            shortcut_project_id=shortcut_project_id,
+            shortcut_workspace_id=shortcut_workspace_id,
             asana_workspace_id=asana_workspace_id,
             asana_personal_access_token=asana_personal_access_token,
             asana_project_id=asana_project_id,
@@ -210,13 +210,25 @@ class UserMetadataModel(BaseModel):
                 init_params["email"] = self.jira_email
             case PlatformEnum.SHORTCUT:
                 init_params["api_token"] = self.shortcut_api_key
-                init_params["project_id"] = self.shortcut_project_id
+                init_params["project_id"] = self.shortcut_workspace_id
             case PlatformEnum.ASANA:
                 init_params["workspace_id"] = self.asana_workspace_id
                 init_params["personal_access_token"] = self.asana_personal_access_token
                 init_params["project_id"] = self.asana_project_id
 
         return PlatformClient(platform, **init_params)
+
+    async def get_platform_details(self) -> dict:
+        """Get the platform details for the user."""
+        platforms = await self.check_platform_linked()
+        platform_details = {}
+        for platform, linked in platforms.items():
+            if linked:
+                platform_client: PlatformClient = await self.get_platform_client(PlatformEnum[platform.upper()])
+                platform_details[platform] = await platform_client.get_platform_details()
+            else:
+                platform_details[platform] = None
+        return platform_details
 
     async def get_parent_user(self) -> Optional["UserMetadataModel"]:
         """Get the parent user of the sub user."""
