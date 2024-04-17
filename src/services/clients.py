@@ -1,3 +1,4 @@
+from typing import List, Tuple
 import requests
 from requests.auth import HTTPBasicAuth
 
@@ -24,7 +25,7 @@ class BaseClient:
         logger.debug(f"URL path: {self.base_url}{path}")
         return f"{self.base_url}{path}"
 
-    async def _request(self, method, path, body, headers=None, auth=None):
+    async def _request(self, method, path, body=None, headers=None, auth=None):
         logger.debug(f"[{self.client}] request path: {path}")
         logger.debug(f"[{self.client}] request body: {body}")
         logger.info(f"[{self.client}] sending request to {method} {path}...")
@@ -53,6 +54,23 @@ class Jira(BaseClient):
         self.email = kwargs.get("email")
         self.token_auth = kwargs.get("token_auth")
         self.auth = HTTPBasicAuth(self.email, self.token_auth)
+
+    async def get_projects(self) -> List[Tuple[str, str]]:
+        """
+        Get all projects in Jira for a client.
+        """
+        projects_resp = await self._request("GET", "project")
+
+        projects_dict: List[dict] = projects_resp.json()
+
+        projects = [(project["id"], project["name"]) for project in projects_dict]
+
+        return projects
+
+    async def get_platform_details(self) -> dict:
+        return {
+            "projects": await self.get_projects()
+        }
 
     async def create_story(self, ticket_params: dict) -> dict:
         """Create a ticket in Jira."""
@@ -95,6 +113,23 @@ class Shortcut(BaseClient):
         self.api_token = kwargs.get("api_token")
         self.project_id = kwargs.get("project_id")
         self.headers["Shortcut-Token"] = self.api_token
+
+    async def get_workflows(self) -> List[Tuple[str, str]]:
+        """
+        Get all workflows in Shortcut for a client.
+        """
+        workflows_resp = await self._request("GET", "workflows")
+
+        workflows_dict: List[dict] = workflows_resp.json()
+
+        workflows = [(str(workflow["id"]), workflow["name"]) for workflow in workflows_dict]
+
+        return workflows
+
+    async def get_platform_details(self) -> dict:
+        return {
+            "workflow_ids": await self.get_workflows()
+        }
 
     async def create_story(self, ticket_params: dict):
         """
@@ -166,6 +201,23 @@ class Asana(BaseClient):
         self.workspace_id = kwargs.get("workspace_id")
         self.project_id = kwargs.get("project_id")
 
+    async def get_projects(self) -> List[Tuple[str, str]]:
+        """
+        Get all projects in Asana for a client.
+        """
+        projects_resp = await self._request("GET", "projects")
+
+        projects_dict: List[dict] = projects_resp.json()
+
+        projects = [(project["id"], project["name"]) for project in projects_dict]
+
+        return projects
+
+    async def get_platform_details(self) -> dict:
+        return {
+            "projects": await self.get_projects()
+        }
+
     async def create_story(self, ticket_params: dict):
         """
         Create a task in Asana.
@@ -209,3 +261,6 @@ class PlatformClient:
 
     async def get_story(self, *args, **kwargs):
         return await self.platform.get_story(*args, **kwargs)
+
+    async def get_platform_details(self) -> dict:
+        return await self.platform.get_platform_details()

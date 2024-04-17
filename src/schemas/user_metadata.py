@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional, Tuple
 from pydantic import BaseModel
 
 from pixelum_core.enums.enums import SubscriptionTier
@@ -57,6 +57,24 @@ class ShortcutParamsSchema(BaseModel):
 
 class AsanaParamsSchema(BaseModel):
     asana_api_key: str
+
+
+class JiraPlatformDetails(BaseModel):
+    projects: Optional[List[str]]
+
+
+class AsanaPlatformDetails(BaseModel):
+    projects: Optional[List[str]]
+
+
+class ShortcutPlatformDetails(BaseModel):
+    workflow_ids: Optional[List[Tuple[str, str]]]
+
+
+class PlatformDetailsSchema(BaseModel):
+    jira: Optional[JiraPlatformDetails]
+    asana: Optional[AsanaPlatformDetails]
+    shortcut: Optional[ShortcutPlatformDetails]
 
 
 class PlatformParamsSchema(BaseModel):
