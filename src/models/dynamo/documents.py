@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 
 from pixelum_core.dynamo.base_model import BaseModel
 from pixelum_core.loggers.loggers import get_module_logger
-from pynamodb.attributes import UnicodeAttribute
+from pynamodb.attributes import NumberAttribute, UnicodeAttribute
 from pynamodb.expressions.condition import Condition
 
 logger = get_module_logger()
@@ -23,6 +23,7 @@ class DocumentsModel(BaseModel):
     user_id = UnicodeAttribute(hash_key=True)
     document_id = UnicodeAttribute(range_key=True)
     document_type = UnicodeAttribute(null=False)
+    size = NumberAttribute(null=False)
     memo = UnicodeAttribute(null=True)
 
     @classmethod
@@ -31,6 +32,7 @@ class DocumentsModel(BaseModel):
         user_id: str,
         document_id: str,
         document_type: str,
+        size: float,
         memo: Optional[str] = None,
     ) -> "DocumentsModel":
         """
@@ -50,6 +52,7 @@ class DocumentsModel(BaseModel):
             document_id=document_id,
             document_type=document_type,
             created_datetime=datetime.datetime.now(),
+            size=size,
             memo=memo,
         )
 
@@ -94,6 +97,7 @@ class DocumentsModel(BaseModel):
             "document_id": self.document_id,
             "document_type": self.document_type,
             "created_datetime": self.created_datetime,
+            "size": self.size,
             "memo": self.memo,
         }
 

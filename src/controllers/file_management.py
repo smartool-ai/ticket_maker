@@ -63,6 +63,7 @@ async def upload_file(
             user_id=user_id,
             document_id=item.get("name"),
             document_type=item.get("extension"),
+            size=item.get("size", 0.0),
             memo=f"Transcript with filename: {item.get('name')} and extension: {item.get('extension')}",
         )
 
