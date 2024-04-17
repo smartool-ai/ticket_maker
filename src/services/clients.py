@@ -166,7 +166,7 @@ class Shortcut(BaseClient):
             - tasks (List[CreateTaskParams]): An array of tasks connected to the story.
             - updated_at (Date): The time/date the Story was updated.
         """
-        ticket_params["project_id"] = self.project_id
+        ticket_params["workflow_state_id"] = self.project_id
 
         create_story_resp = await self._request("POST", "stories", ticket_params)
 
