@@ -12,6 +12,7 @@ from src.lib.enums import PlatformEnum
 from src.lib.token_authentication import TokenAuthentication
 from src.models.dynamo.user_metadata import UserMetadataModel
 from src.schemas.user_metadata import (
+    PlatformDetailsSchema,
     PlatformParamsSchema,
     UserMetadataSchema,
     UserMetadataReturnSchema,
@@ -57,7 +58,7 @@ async def put_user_metadata(
     signup_plat: str = user.signup_method if user.signup_method != "Username-Password-Authentication" else "auth0"
 
     if signup_plat != "auth0":
-        logger.error(f'Cannot update user store fields: [name] if account used social login.')
+        logger.error(f'Cannot update user store fields: {user_metadata.name} if account used social login.')
     else:
         auth0_user_id = f"{signup_plat}|{user.user_id}"
         updated_auth0_user: dict = await update_auth0_user(
@@ -185,3 +186,22 @@ async def subscribe_to_service(
     await user.save()
 
     return await user.to_serializable_dict()
+
+
+@router.get("/user-metadata/platforms/details", tags=["User Metadata"])
+@authorized_api_handler(models_to_initialize=[UserMetadataModel])
+async def get_platform_details(
+    user: UserMetadataModel = Depends(granted_user),
+) -> PlatformDetailsSchema:
+    """
+    Get the details of the platforms linked to the user
+
+    Args:
+        user (UserMetadataModel, optional): The user to get the platform details for. Defaults to Depends(granted_user).
+
+    Returns:
+        Dict: The details of the platforms linked to the user.
+    """
+    resp = await user.get_platform_details()
+
+    return resp

@@ -218,6 +218,18 @@ class UserMetadataModel(BaseModel):
 
         return PlatformClient(platform, **init_params)
 
+    async def get_platform_details(self) -> dict:
+        """Get the platform details for the user."""
+        platforms = await self.check_platform_linked()
+        platform_details = {}
+        for platform, linked in platforms.items():
+            if linked:
+                platform_client: PlatformClient = await self.get_platform_client(PlatformEnum[platform.upper()])
+                platform_details[platform] = await platform_client.get_platform_details()
+            else:
+                platform_details[platform] = None
+        return platform_details
+
     async def get_parent_user(self) -> Optional["UserMetadataModel"]:
         """Get the parent user of the sub user."""
         if not self.parent_user_id:
