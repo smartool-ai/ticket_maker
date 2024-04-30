@@ -127,9 +127,6 @@ Resources:
   Api:
     Type: AWS::Serverless::Api
     Properties:
-      AccessLogSetting:
-        DestinationArn: !GetAtt ApiLogGroup.Arn
-        Format: '$context.identity.sourceIp - - [$context.requestTime] "$context.httpMethod $context.resourcePath $context.protocol" $context.status $context.responseLength $context.requestId'
       Name: !Sub Transcriber ${StageName}
       Description: !Sub ${StageName} - An API Gateway and Lambda Integration for REST API
       StageName: !Ref StageName

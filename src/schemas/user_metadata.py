@@ -71,6 +71,15 @@ class ShortcutPlatformDetails(BaseModel):
     workflow_ids: Optional[List[Tuple[str, str]]]
 
 
+class ShortcutWorkflowsSchema(BaseModel):
+    id: str
+    name: str
+
+
+class ShortcutWorkflowResponseSchema(BaseModel):
+    workflows: List[ShortcutWorkflowsSchema]
+
+
 class PlatformDetailsSchema(BaseModel):
     jira: Optional[JiraPlatformDetails]
     asana: Optional[AsanaPlatformDetails]

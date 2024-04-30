@@ -39,6 +39,7 @@ class Application:
         routers = [
             controllers.file_management.router,
             controllers.health.router,
+            controllers.shortcut.router,
             controllers.ticket.router,
             controllers.user.router,
             controllers.user_metadata.router,
